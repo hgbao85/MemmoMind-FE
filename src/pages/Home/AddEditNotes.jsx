@@ -14,7 +14,6 @@ const AddEditNotes = ({ onClose, noteData, type, getAllNotes }) => {
   // Edit Note
   const editNote = async () => {
     const noteId = noteData._id;
-    console.log(noteId);
 
     try {
       const res = await axios.post(
@@ -23,10 +22,7 @@ const AddEditNotes = ({ onClose, noteData, type, getAllNotes }) => {
         { withCredentials: true }
       );
 
-      console.log(res.data);
-
-      if (res.data.success === false) {
-        console.log(res.data.message);
+      if (!res.data.success) {
         setError(res.data.message);
         toast.error(res.data.message);
         return;
@@ -37,7 +33,6 @@ const AddEditNotes = ({ onClose, noteData, type, getAllNotes }) => {
       onClose();
     } catch (error) {
       toast.error(error.message);
-      console.log(error.message);
       setError(error.message);
     }
   };
@@ -51,11 +46,9 @@ const AddEditNotes = ({ onClose, noteData, type, getAllNotes }) => {
         { withCredentials: true }
       );
 
-      if (res.data.success === false) {
-        console.log(res.data.message);
+      if (!res.data.success) {
         setError(res.data.message);
         toast.error(res.data.message);
-
         return;
       }
 
@@ -64,7 +57,6 @@ const AddEditNotes = ({ onClose, noteData, type, getAllNotes }) => {
       onClose();
     } catch (error) {
       toast.error(error.message);
-      console.log(error.message);
       setError(error.message);
     }
   };
@@ -90,46 +82,55 @@ const AddEditNotes = ({ onClose, noteData, type, getAllNotes }) => {
   };
 
   return (
-    <div className="relative">
+    <div className="relative bg-white rounded-lg shadow-md p-6 mx-auto">
+      {/* Close Button */}
       <button
-        className="w-10 h-10 rounded-full flex items-center justify-center absolute -top-3 -right-3 hover:bg-slate-50"
+        className="absolute top-3 right-3 text-gray-400 hover:text-gray-600"
         onClick={onClose}
       >
-        <MdClose className="text-xl text-slate-400" />
+        <MdClose className="text-2xl" />
       </button>
-      <div className="flex flex-col gap-2">
-        <label className="input-label text-black uppercase">Tiêu đề</label>
 
+      {/* Title */}
+      <h2 className="text-xl font-bold text-gray-800 mb-4">
+        {type === "edit" ? "Chỉnh sửa ghi chú" : "Thêm ghi chú mới"}
+      </h2>
+
+      {/* Input: Title */}
+      <div className="mb-4">
+        <label className="block text-sm font-medium text-gray-700">Tiêu đề</label>
         <input
           type="text"
-          className="text-slate-950 outline-none"
-          placeholder="Nhập tiêu đề tại đây."
+          className="mt-1 p-2 border border-gray-300 rounded w-full focus:ring-2 focus:ring-[#C8BBBB] focus:outline-none"
+          placeholder="Nhập tiêu đề..."
           value={title}
           onChange={({ target }) => setTitle(target.value)}
         />
       </div>
-      <div className="flex flex-col gap-2 mt-4">
-        <label className="input-label text-black uppercase">Nội dung</label>
 
+      {/* Textarea: Content */}
+      <div className="mb-4">
+        <label className="block text-sm font-medium text-gray-700">Nội dung</label>
         <textarea
-          type="text"
-          className="text-sm text-slate-950 outline-none bg-slate-50 p-2 rounded"
-          placeholder="Nội dung..."
-          rows={10}
+          className="mt-1 p-2 border border-gray-300 rounded w-full h-32 resize-none focus:ring-2 focus:ring-[#C8BBBB] focus:outline-none"
+          placeholder="Nhập nội dung..."
           value={content}
           onChange={({ target }) => setContent(target.value)}
         />
       </div>
 
-      <div className="mt-3">
-        <label className="input-label text-black uppercase">Thẻ</label>
+      {/* Tag Input */}
+      <div className="mb-4">
+        <label className="block text-sm font-medium text-gray-700">Thẻ</label>
         <TagInput tags={tags} setTags={setTags} />
       </div>
 
-      {error && <p className="text-red-500 text-xs pt-4">{error}</p>}
+      {/* Error Message */}
+      {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
 
+      {/* Action Button */}
       <button
-        className="btn-primary font-medium mt-5 p-3 text-black bg-[#E9A5A5] hover:bg-[#C8BBBB]"
+        className="w-full py-2 bg-[#E9A5A5] text-white font-semibold rounded hover:bg-[#C8BBBB] transition-all"
         onClick={handleAddNote}
       >
         {type === "edit" ? "Cập nhật" : "Thêm"}

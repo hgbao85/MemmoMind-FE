@@ -10,7 +10,7 @@ import {
 } from "../../redux/user/userSlice";
 import axios from "axios";
 import { toast } from "react-toastify";
-import logo from './../../assets/image/logo.png';
+import logo from './../../assets/images/logomoi4m.png';
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -52,7 +52,7 @@ const Login = () => {
 
       toast.success(res.data.message);
       dispatch(signInSuccess(res.data));
-      navigate("/Homepage");
+      navigate("/homepage");
     } catch (error) {
       toast.error(error.message);
       dispatch(signInFailure(error.message));
@@ -67,10 +67,10 @@ const Login = () => {
   return (
     <div className="flex flex-col items-center min-h-screen bg-customGray">
       <div className="text-center mt-10 mb-10">
-        <img src={logo} alt="MemmoMind Logo" className="w-90" />
+        <img src={logo} alt="MemmoMind Logo" className="w-96" />
       </div>
       <div className="flex items-center justify-center">
-        <div className="w-96  rounded-2xl bg-customRedGray px-7 py-10 shadow-lg">
+        <div className="w-96 rounded-2xl bg-customRedGray px-7 py-10 shadow-lg">
           <form onSubmit={handleLogin}>
             <h4 className="text-xl mb-5 text-left">Đăng nhập</h4>
 

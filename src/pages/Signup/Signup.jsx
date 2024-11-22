@@ -4,7 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { validateEmail } from "../../utils/helper";
 import axios from "axios";
 import { toast } from "react-toastify";
-import logo from './../../assets/image/logo.png';
+import logo from './../../assets/images/logomoi4m.png';
 
 const Signup = () => {
   const [name, setName] = useState("");
@@ -61,10 +61,10 @@ const Signup = () => {
   return (
     <div className="flex flex-col items-center min-h-screen bg-customGray">
       <div className="text-center mt-10 mb-10">
-        <img src={logo} alt="MemmoMind Logo" className="w-90" />
+        <img src={logo} alt="MemmoMind Logo" className="w-96" />
       </div>
       <div className="flex items-center justify-center">
-        <div className="w-96 border rounded bg-customRedGray px-7 py-10">
+        <div className="w-96 rounded-2xl bg-customRedGray px-7 py-10">
           <form onSubmit={handleSignUp}>
             <h4 className="text-xl mb-5 text-left">Đăng ký</h4>
 
