@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import NoteCard from "../../components/Cards/NoteCard";
-import { MdAdd, MdOutlineMenu } from "react-icons/md";
+import { MdAdd, MdUpload, MdOutlineMenu } from "react-icons/md";
 import AddEditNotes from "./AddEditNotes";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -22,6 +22,8 @@ const Home = () => {
   const [addEditType, setAddEditType] = useState("add");
   const [noteData, setNoteData] = useState(null);
   const [fileContent, setFileContent] = useState("");
+  const [mindmapHtml, setMindmapHtml] = useState("");
+  const [summary, setSummary] = useState("");
   const fileInputRef = useRef(null);
 
   const navigate = useNavigate();
@@ -149,6 +151,54 @@ const Home = () => {
     fileInputRef.current.click();
   };
 
+  const handleSummarize = async () => {
+    if (!fileContent.trim()) {
+      toast.error("Vui lòng nhập văn bản hoặc tải lên tệp trước khi tóm tắt!");
+      return;
+    }
+
+    try {
+      const response = await axios.post(
+        "http://vietserver.bounceme.net:6082/summarize",
+        { text: fileContent },
+        {
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+
+      setSummary(response.data.response || "Không thể tạo tóm tắt.");
+      toast.success("Tóm tắt thành công!");
+    } catch (error) {
+      console.error("Error summarizing text:", error.message);
+      toast.error("Có lỗi xảy ra khi tóm tắt văn bản!");
+    }
+  };
+
+  const handleGenerateMindmap = async () => {
+    if (!fileContent.trim()) {
+      toast.error(
+        "Vui lòng nhập văn bản hoặc tải lên tệp trước khi tạo mindmap!"
+      );
+      return;
+    }
+
+    try {
+      const response = await axios.post(
+        "http://vietserver.bounceme.net:6082/mindmap",
+        { text: fileContent },
+        {
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+
+      setMindmapHtml(response.data);
+      toast.success("Tạo mindmap thành công!");
+    } catch (error) {
+      console.error("Error generating mindmap:", error);
+      toast.error("Có lỗi xảy ra khi tạo mindmap!");
+    }
+  };
+
   return (
     <>
       <Navbar
@@ -235,7 +285,7 @@ const Home = () => {
                 <>
                   Chọn một ghi chú có sẵn hoặc{" "}
                   <span
-                    className="underline cursor-pointer text-blue-600"
+                    className="underline cursor-pointer text-black font-semibold"
                     onClick={() => {
                       setAddEditType("add");
                       setNoteData(null);
@@ -249,14 +299,32 @@ const Home = () => {
               }
             />
           )}
+          {summary && (
+            <div className="mt-4 p-2 border rounded-md bg-gray-200">
+              <h3 className="text-lg font-semibold">Tóm tắt:</h3>
+              <p className="break-words whitespace-pre-wrap">{summary}</p>
+            </div>
+          )}
+          {mindmapHtml && (
+            <div className="mt-4 p-2 border rounded-md bg-gray-100">
+              <iframe
+                srcDoc={mindmapHtml}
+                style={{ width: "100%", height: "400px", border: "none" }}
+              />
+            </div>
+          )}
         </main>
 
         {/* RightSidebar */}
         <aside
           className={`transition-all duration-300 ${
             isRightSidebarOpen ? "w-1/5" : "w-16"
-          } h-full bg-[#C8BBBB] p-4 relative shadow-md`}
-          style={{ position: "absolute", right: 0 }}
+          } h-full bg-[#C8BBBB] p-4 relative shadow-md overflow-y-auto`}
+          style={{
+            position: "absolute",
+            right: 0,
+            maxHeight: "100vh",
+          }}
         >
           <div className="flex justify-between items-center">
             <button
@@ -269,12 +337,12 @@ const Home = () => {
 
           {isRightSidebarOpen && (
             <>
-              <h2 className="text-xl font-semibold mb-6 text-center">
-                Chào bạn blabla
+              <h2 className="text-l mb-6 text-center">
+                Chào bạn, {userInfo?.username}!
               </h2>
               <textarea
                 className="w-full h-24 p-2 border rounded-md mb-4"
-                placeholder="Nhập văn bản hoặc thêm tài liệu của bạn."
+                placeholder="Nhập văn bản hoặc tải lên tài liệu của bạn."
                 value={fileContent}
                 onChange={(e) => setFileContent(e.target.value)}
               ></textarea>
@@ -285,12 +353,26 @@ const Home = () => {
                 className="hidden"
                 ref={fileInputRef}
               />
-              <button
-                className="w-full h-12 text-black rounded-md mb-2"
-                onClick={handleUploadClick}
-              >
-                Tải lên tệp
-              </button>
+              <div className="flex justify-between gap-2">
+                <button
+                  className="w-12 h-12 text-black rounded-md flex items-center justify-center border border-gray-600"
+                  onClick={handleUploadClick}
+                >
+                  <MdUpload className="text-[24px] text-black" />
+                </button>
+                <button
+                  className="flex-1 h-12 text-black rounded-md flex items-center justify-center border border-gray-600"
+                  onClick={handleSummarize}
+                >
+                  Tóm tắt
+                </button>
+                <button
+                  className="flex-1 h-12 text-black rounded-md flex items-center justify-center border border-gray-600"
+                  onClick={handleGenerateMindmap}
+                >
+                  Mindmap
+                </button>
+              </div>
             </>
           )}
         </aside>

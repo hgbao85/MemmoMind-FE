@@ -5,7 +5,7 @@ import ProfileInfo from "./Cards/ProfileInfo";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { toast } from "react-toastify";
-import logo from "../assets/images/logo.png";
+import logo from "../assets/images/logomoi4m.png";
 import {
   signInSuccess,
   signoutFailure,
@@ -46,7 +46,7 @@ const Navbar = ({ userInfo, onSearchNote, handleClearSearch }) => {
 
       toast.success(res.data.message);
       dispatch(signInSuccess());
-      navigate("/");
+      navigate("/login");
     } catch (error) {
       toast.error(error.message);
       dispatch(signoutFailure(error.message));

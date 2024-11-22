@@ -1,4 +1,4 @@
-import logo from './../../assets/image/logo.png';
+import logo from './../../assets/images/logomoi4m.png';
 import Hoanavt from './../../assets/images/Hoanavt.jpg';
 import Baoavt from './../../assets/images/Baoavt.jpg';
 import Khanhavt from './../../assets/images/Khanhavt.png';
@@ -9,8 +9,8 @@ import Hangavt from './../../assets/images/Hangavt.jpg';
 const Welcome = () => {
     return (
         <div className="flex flex-col justify-between items-center min-h-screen bg-customGray">
-            <div className="text-center mt-10">
-                <img src={logo} alt="MemmoMind Logo" className="w-90" />
+            <div className="text-center mt-20">
+                <img src={logo} alt="MemmoMind Logo" className="w-96" />
             </div>
             <div className="text-center">
                 <p className="text-xl">Chào mừng bạn đến với thế giới Note mới cùng MEMMOMIND</p>
