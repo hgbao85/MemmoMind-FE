@@ -56,7 +56,7 @@ const Navbar = ({ userInfo, onSearchNote, handleClearSearch }) => {
   return (
     <div className="bg-[#E9E6E6] flex items-center justify-between px-6 py-2 drop-shadow">
       <Link to={"/homepage"}>
-        <img src={logo} alt="Logo" className="h-15 w-20" />
+        <img src={logo} alt="Logo" className="h-15 w-24" />
       </Link>
 
       <SearchBar

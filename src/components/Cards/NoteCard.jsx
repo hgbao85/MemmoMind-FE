@@ -12,14 +12,24 @@ const NoteCard = ({
   onEdit,
   onDelete,
 }) => {
-
   const handleOpenNote = () => {
-    onEdit(); // Gọi hàm `onEdit` khi nhấn vào NoteCard
+    onEdit();
+  };
+
+  const handleDeleteClick = (e) => {
+    e.stopPropagation();
+    const confirmDelete = window.confirm(
+      "Bạn có chắc chắn muốn xóa ghi chú này không?"
+    );
+    if (confirmDelete) {
+      onDelete();
+    }
   };
 
   return (
-    <div className="border-black rounded p-4 bg-[#A9A9A9] hover:shadow-xl transition-all ease-in-out mb-1 cursor-pointer"
-    onClick={handleOpenNote}
+    <div
+      className="border-black rounded p-4 bg-[#A9A9A9] hover:shadow-xl transition-all ease-in-out mb-1 cursor-pointer"
+      onClick={handleOpenNote}
     >
       <div className="flex items-center justify-between">
         <div>
@@ -29,7 +39,9 @@ const NoteCard = ({
           </span>
         </div>
 
-        <div className="flex items-center gap-2"
+        <div
+          className="flex items-center gap-2"
+          onClick={(e) => e.stopPropagation()}
         >
           <MdOutlinePushPin
             className={`hover:text-[#C8BBBB] icon-btn ${
@@ -39,7 +51,7 @@ const NoteCard = ({
           />
           <MdDelete
             className="icon-btn hover:text-[#C8BBBB]"
-            onClick={onDelete}
+            onClick={handleDeleteClick}
           />
         </div>
       </div>

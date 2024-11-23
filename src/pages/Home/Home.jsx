@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import NoteCard from "../../components/Cards/NoteCard";
-import { MdAdd, MdUpload, MdOutlineMenu } from "react-icons/md";
+import { MdClose, MdAdd, MdUpload, MdOutlineMenu } from "react-icons/md";
 import AddEditNotes from "./AddEditNotes";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -253,6 +253,7 @@ const Home = () => {
                       onEdit={() => handleEdit(note)}
                       onDelete={() => deleteNote(note)}
                       onPinNote={() => updateIsPinned(note)}
+                      tags={note.tags}
                     />
                   ))
                 )}
@@ -268,18 +269,7 @@ const Home = () => {
           }`}
           style={{ margin: "auto", marginRight: rightSidebarWidth }}
         >
-          {isAddEditVisible ? (
-            <AddEditNotes
-              onClose={() => {
-                setIsAddEditVisible(false);
-                setNoteData(null);
-                handleAddNoteSuccess();
-              }}
-              noteData={noteData}
-              type={addEditType}
-              getAllNotes={getAllNotes}
-            />
-          ) : (
+          {!isAddEditVisible && !summary && !mindmapHtml ? (
             <EmptyCard
               message={
                 <>
@@ -298,20 +288,49 @@ const Home = () => {
                 </>
               }
             />
-          )}
-          {summary && (
-            <div className="mt-4 p-2 border rounded-md bg-gray-200">
-              <h3 className="text-lg font-semibold">Tóm tắt:</h3>
-              <p className="break-words whitespace-pre-wrap">{summary}</p>
-            </div>
-          )}
-          {mindmapHtml && (
-            <div className="mt-4 p-2 border rounded-md bg-gray-100">
-              <iframe
-                srcDoc={mindmapHtml}
-                style={{ width: "100%", height: "400px", border: "none" }}
-              />
-            </div>
+          ) : (
+            <>
+              {isAddEditVisible && (
+                <AddEditNotes
+                  onClose={() => {
+                    setIsAddEditVisible(false);
+                    setNoteData(null);
+                    handleAddNoteSuccess();
+                  }}
+                  noteData={noteData}
+                  type={addEditType}
+                  getAllNotes={getAllNotes}
+                />
+              )}
+              {summary && (
+                <div className="relative mt-4 p-2 border rounded-md bg-gray-200">
+                  <button
+                    onClick={() => setSummary(null)}
+                    className="absolute top-2 right-2 text-gray-600 hover:text-black"
+                    aria-label="Close Summary"
+                  >
+                    <MdClose className="text-xl" />
+                  </button>
+                  <h3 className="text-lg font-semibold">Tóm tắt:</h3>
+                  <p className="break-words whitespace-pre-wrap">{summary}</p>
+                </div>
+              )}
+              {mindmapHtml && (
+                <div className="relative mt-4 p-2 border rounded-md bg-gray-100">
+                  <button
+                    onClick={() => setMindmapHtml(null)}
+                    className="absolute top-2 right-2 text-gray-600 hover:text-black"
+                    aria-label="Close Mindmap"
+                  >
+                    <MdClose className="text-xl" />
+                  </button>
+                  <iframe
+                    srcDoc={mindmapHtml}
+                    style={{ width: "100%", height: "400px", border: "none" }}
+                  />
+                </div>
+              )}
+            </>
           )}
         </main>
 
@@ -319,7 +338,7 @@ const Home = () => {
         <aside
           className={`transition-all duration-300 ${
             isRightSidebarOpen ? "w-1/5" : "w-16"
-          } h-full bg-[#C8BBBB] p-4 relative shadow-md overflow-y-auto`}
+          } h-full bg-[#C8BBBB] p-4 relative shadow-md`}
           style={{
             position: "absolute",
             right: 0,
@@ -342,10 +361,16 @@ const Home = () => {
               </h2>
               <textarea
                 className="w-full h-24 p-2 border rounded-md mb-4"
-                placeholder="Nhập văn bản hoặc tải lên tài liệu của bạn."
+                placeholder="Nhập văn bản hoặc tải lên tài liệu có sẵn."
                 value={fileContent}
                 onChange={(e) => setFileContent(e.target.value)}
+                style={{
+                  maxHeight: "490px",
+                  minHeight: "100px",
+                  resize: "vertical",
+                }}
               ></textarea>
+
               <input
                 type="file"
                 accept=".txt"
