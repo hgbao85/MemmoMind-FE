@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import NoteCard from "../../components/Cards/NoteCard";
-import { MdClose, MdAdd, MdUpload, MdOutlineMenu } from "react-icons/md";
+import { MdClose, MdAdd, MdUpload, MdOutlineMenu, MdFavorite, MdDelete } from "react-icons/md";
 import AddEditNotes from "./AddEditNotes";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -9,12 +9,18 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import EmptyCard from "../../components/EmptyCard/EmptyCard";
 
+axios.defaults.withCredentials = true;
+
 const Home = () => {
   const { currentUser } = useSelector((state) => state.user);
   const initialUserCheck = useRef(false);
 
   const [userInfo, setUserInfo] = useState(null);
   const [allNotes, setAllNotes] = useState([]);
+  const [pinnedNotes, setPinnedNotes] = useState([]);
+  const [deletedNotes, setDeletedNotes] = useState([]);
+  const [showPinned, setShowPinned] = useState(false);
+  const [showDeleted, setShowDeleted] = useState(false);
   const [isSearch, setIsSearch] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(true);
@@ -42,12 +48,15 @@ const Home = () => {
 
   const getAllNotes = async () => {
     try {
-      const res = await axios.get("http://localhost:3000/api/note/all", {
+      const res = await axios.get(`https://memmomind-be-oyse.onrender.com/api/note/all`, {
         withCredentials: true,
       });
 
       if (!res.data.success) return;
-      setAllNotes(res.data.notes);
+      const notes = res.data.notes;
+      setAllNotes(notes);
+      setPinnedNotes(notes.filter((note) => note.isPinned));
+      setDeletedNotes(notes.filter((note) => note.isDeleted));
     } catch (error) {
       console.log(error);
     }
@@ -59,30 +68,9 @@ const Home = () => {
     setIsAddEditVisible(true);
   };
 
-  const deleteNote = async (data) => {
-    const noteId = data._id;
-
-    try {
-      const res = await axios.delete(
-        `http://localhost:3000/api/note/delete/${noteId}`,
-        { withCredentials: true }
-      );
-
-      if (!res.data.success) {
-        toast.error(res.data.message);
-        return;
-      }
-
-      toast.success(res.data.message);
-      getAllNotes();
-    } catch (error) {
-      toast.error(error.message);
-    }
-  };
-
   const onSearchNote = async (query) => {
     try {
-      const res = await axios.get("http://localhost:3000/api/note/search", {
+      const res = await axios.get(`https://memmomind-be-oyse.onrender.com/api/note/search`, {
         params: { query },
         withCredentials: true,
       });
@@ -109,7 +97,7 @@ const Home = () => {
 
     try {
       const res = await axios.put(
-        `http://localhost:3000/api/note/update-note-pinned/${noteId}`,
+        `https://memmomind-be-oyse.onrender.com/api/note/update-note-pinned/${noteId}`,
         { isPinned: !noteData.isPinned },
         { withCredentials: true }
       );
@@ -126,13 +114,107 @@ const Home = () => {
     }
   };
 
+  // Di chuyển ghi chú vào thùng rác
+  const moveToTrash = async (noteId) => {
+    try {
+      const res = await axios.put(
+        `https://memmomind-be-oyse.onrender.com/api/note/trash/${noteId}`,
+        {},
+        { withCredentials: true }
+      );
+
+      if (!res.data.success) {
+        toast.error(res.data.message);
+        return;
+      }
+
+      toast.success(res.data.message);
+      getAllNotes();
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
+
+  // Khôi phục ghi chú từ thùng rác
+  const restoreNote = async (noteId) => {
+    try {
+      const res = await axios.put(
+        `https://memmomind-be-oyse.onrender.com/api/note/restore/${noteId}`,
+        {},
+        { withCredentials: true }
+      );
+
+      if (!res.data.success) {
+        toast.error(res.data.message);
+        return;
+      }
+
+      toast.success("Khôi phục ghi chú thành công!");
+      getAllNotes();
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
+
+  // Xóa ghi chú vĩnh viễn từ thùng rác
+  const permanentlyDeleteNote = async (noteId) => {
+    try {
+      const res = await axios.delete(
+        `https://memmomind-be-oyse.onrender.com/api/note/delete-permanent/${noteId}`,
+        { withCredentials: true }
+      );
+
+      if (!res.data.success) {
+        toast.error(res.data.message);
+        return;
+      }
+
+      toast.success(res.data.message);
+      getAllNotes();
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
+
+  // Lấy tất cả ghi chú trong thùng rác
+  const getTrashedNotes = async () => {
+    try {
+      const res = await axios.get(`https://memmomind-be-oyse.onrender.com/api/note/trash`, {
+        withCredentials: true,
+      });
+
+      if (!res.data.success) {
+        toast.error(res.data.message);
+        return;
+      }
+
+      setDeletedNotes(res.data.notes);
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
+
   const handleAddNoteSuccess = () => {
     getAllNotes();
   };
 
   const rightSidebarWidth = isRightSidebarOpen ? "20%" : "4rem";
 
-  //File upload
+  const handleShowPinned = () => {
+    setShowPinned(!showPinned);
+    setShowDeleted(false);
+  };
+
+  const handleShowDeleted = () => {
+    setShowDeleted(!showDeleted);
+    setShowPinned(false);
+
+    if (!showDeleted) {
+      getTrashedNotes();
+    }
+  };
+
+  // File upload
   const handleFileChange = (event) => {
     const file = event.target.files[0];
 
@@ -176,9 +258,7 @@ const Home = () => {
 
   const handleGenerateMindmap = async () => {
     if (!fileContent.trim()) {
-      toast.error(
-        "Vui lòng nhập văn bản hoặc tải lên tệp trước khi tạo mindmap!"
-      );
+      toast.error("Vui lòng nhập văn bản hoặc tải lên tệp trước khi tạo mindmap!");
       return;
     }
 
@@ -210,9 +290,7 @@ const Home = () => {
       <div className="flex h-screen" style={{ overflow: "hidden" }}>
         {/* Left Sidebar */}
         <aside
-          className={`transition-all duration-300 ${
-            isSidebarOpen ? "w-1/5" : "w-16"
-          } h-full bg-gray-100 p-4 relative shadow-md`}
+          className={`transition-all duration-300 ${isSidebarOpen ? "w-1/5" : "w-16"} h-full bg-gray-100 p-4 relative shadow-md`}
           style={{ backgroundColor: "#C8BBBB" }}
         >
           <div className="flex justify-between items-center">
@@ -228,6 +306,29 @@ const Home = () => {
                 <MdAdd className="text-[24px] text-black" />
               </button>
             )}
+
+            {isSidebarOpen && (
+              <button
+                className="w-12 h-12 flex items-center justify-center rounded-md"
+                onClick={handleShowPinned}
+              >
+                <MdFavorite
+                  className={`text-[24px] ${showPinned ? "text-red-500" : "text-black"}`}
+                />
+              </button>
+            )}
+
+            {isSidebarOpen && (
+              <button
+                className="w-12 h-12 flex items-center justify-center rounded-md"
+                onClick={handleShowDeleted}
+              >
+                <MdDelete
+                  className={`text-[24px] ${showDeleted ? "text-blue-500" : "text-black"}`}
+                />
+              </button>
+            )}
+
             <button
               className="w-12 h-12 flex items-center justify-center rounded-md"
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
@@ -241,9 +342,30 @@ const Home = () => {
               <div className="mt-4 overflow-y-auto max-h-[calc(100vh-100px)]">
                 {isSearch && allNotes.length === 0 ? (
                   <p className="text-center text-gray-500 mt-4">
-                    Oops! Không tìm thấy ghi chú nào phù hợp với tìm kiếm của
-                    bạn
+                    Oops! Không tìm thấy ghi chú nào phù hợp với tìm kiếm của bạn.
                   </p>
+                ) : showPinned ? (
+                  pinnedNotes.map((note) => (
+                    <NoteCard
+                      key={note._id}
+                      title={note.title}
+                      isPinned={note.isPinned}
+                      onEdit={() => handleEdit(note)}
+                      onDelete={() => moveToTrash(note._id)}
+                      onPinNote={() => updateIsPinned(note)}
+                      tags={note.tags}
+                    />
+                  ))
+                ) : showDeleted ? (
+                  deletedNotes.map((note) => (
+                    <NoteCard
+                      key={note._id}
+                      title={note.title}
+                      onRestore={() => restoreNote(note._id)}
+                      onPermanentlyDelete={() => permanentlyDeleteNote(note._id)}
+                      tags={note.tags}
+                    />
+                  ))
                 ) : (
                   allNotes.map((note) => (
                     <NoteCard
@@ -251,7 +373,7 @@ const Home = () => {
                       title={note.title}
                       isPinned={note.isPinned}
                       onEdit={() => handleEdit(note)}
-                      onDelete={() => deleteNote(note)}
+                      onDelete={() => moveToTrash(note._id)}
                       onPinNote={() => updateIsPinned(note)}
                       tags={note.tags}
                     />
@@ -264,14 +386,12 @@ const Home = () => {
 
         {/* Main Content */}
         <main
-          className={`flex-1 p-5 overflow-y-auto h-full transition-all duration-300 ${
-            isSidebarOpen ? "ml-0" : "ml-16"
-          }`}
+          className={`flex-1 p-5 overflow-y-auto h-full transition-all duration-300 ${isSidebarOpen ? "ml-0" : "ml-16"}`}
           style={{ margin: "auto", marginRight: rightSidebarWidth }}
         >
           {!isAddEditVisible && !summary && !mindmapHtml ? (
             <EmptyCard
-              message={
+              message={(
                 <>
                   Chọn một ghi chú có sẵn hoặc{" "}
                   <span
@@ -286,7 +406,7 @@ const Home = () => {
                   </span>{" "}
                   ghi chú mới
                 </>
-              }
+              )}
             />
           ) : (
             <>
@@ -334,11 +454,9 @@ const Home = () => {
           )}
         </main>
 
-        {/* RightSidebar */}
+        {/* Right Sidebar */}
         <aside
-          className={`transition-all duration-300 ${
-            isRightSidebarOpen ? "w-1/5" : "w-16"
-          } h-full bg-[#C8BBBB] p-4 relative shadow-md`}
+          className={`transition-all duration-300 ${isRightSidebarOpen ? "w-1/5" : "w-16"} h-full bg-[#C8BBBB] p-4 relative shadow-md`}
           style={{
             position: "absolute",
             right: 0,
@@ -356,9 +474,7 @@ const Home = () => {
 
           {isRightSidebarOpen && (
             <>
-              <h2 className="text-l mb-6 text-center">
-                Chào bạn, {userInfo?.username}!
-              </h2>
+              <h2 className="text-l mb-6 text-center">Chào bạn, {userInfo?.username}!</h2>
               <textarea
                 className="w-full h-24 p-2 border rounded-md mb-4"
                 placeholder="Nhập văn bản hoặc tải lên tài liệu có sẵn."

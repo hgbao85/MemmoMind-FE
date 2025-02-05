@@ -5,6 +5,8 @@ import TagInput from "../../components/Input/TagInput ";
 import axios from "axios";
 import { toast } from "react-toastify";
 
+axios.defaults.withCredentials = true;
+
 const AddEditNotes = ({ onClose, noteData, type, getAllNotes }) => {
   const [title, setTitle] = useState(noteData?.title || "");
   const [content, setContent] = useState(noteData?.content || "");
@@ -17,7 +19,7 @@ const AddEditNotes = ({ onClose, noteData, type, getAllNotes }) => {
 
     try {
       const res = await axios.post(
-        "http://localhost:3000/api/note/edit/" + noteId,
+        `https://memmomind-be-oyse.onrender.com/api/note/edit/` + noteId,
         { title, content, tags },
         { withCredentials: true }
       );
@@ -41,7 +43,7 @@ const AddEditNotes = ({ onClose, noteData, type, getAllNotes }) => {
   const addNewNote = async () => {
     try {
       const res = await axios.post(
-        "http://localhost:3000/api/note/add",
+        "https://memmomind-be-oyse.onrender.com/api/note/add",
         { title, content, tags },
         { withCredentials: true }
       );

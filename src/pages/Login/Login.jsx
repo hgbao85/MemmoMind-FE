@@ -12,6 +12,8 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import logo from './../../assets/images/logomoi4m.png';
 
+axios.defaults.withCredentials = true;
+
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -39,7 +41,7 @@ const Login = () => {
       dispatch(signInStart());
 
       const res = await axios.post(
-        "http://localhost:3000/api/auth/signin",
+        "https://memmomind-be-oyse.onrender.com/api/auth/signin",
         { email, password },
         { withCredentials: true }
       );
