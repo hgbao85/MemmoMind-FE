@@ -1,5 +1,5 @@
 import { useState } from "react";
-import PropTypes from "prop-types"; // Import PropTypes
+import PropTypes from "prop-types";
 import { MdClose } from "react-icons/md";
 import TagInput from "../../components/Input/TagInput ";
 import axios from "axios";
@@ -19,7 +19,7 @@ const AddEditNotes = ({ onClose, noteData, type, getAllNotes }) => {
 
     try {
       const res = await axios.post(
-        `https://memmomind-be-oyse.onrender.com/api/note/edit/` + noteId,
+        `http://localhost:3000/api/note/edit/` + noteId,
         { title, content, tags },
         { withCredentials: true }
       );
@@ -43,7 +43,7 @@ const AddEditNotes = ({ onClose, noteData, type, getAllNotes }) => {
   const addNewNote = async () => {
     try {
       const res = await axios.post(
-        "https://memmomind-be-oyse.onrender.com/api/note/add",
+        "http://localhost:3000/api/note/add",
         { title, content, tags },
         { withCredentials: true }
       );

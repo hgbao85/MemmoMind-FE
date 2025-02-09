@@ -34,7 +34,7 @@ const Navbar = ({ userInfo, onSearchNote, handleClearSearch }) => {
     try {
       dispatch(signoutStart());
 
-      const res = await axios.get(`https://memmomind-be.onrender.com/api/auth/signout`, {
+      const res = await axios.get(`http://localhost:3000/api/auth/signout`, {
         withCredentials: true,
       });
 

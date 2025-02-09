@@ -48,7 +48,7 @@ const Home = () => {
 
   const getAllNotes = async () => {
     try {
-      const res = await axios.get(`https://memmomind-be-oyse.onrender.com/api/note/all`, {
+      const res = await axios.get(`http://localhost:3000/api/note/all`, {
         withCredentials: true,
       });
 
@@ -70,7 +70,7 @@ const Home = () => {
 
   const onSearchNote = async (query) => {
     try {
-      const res = await axios.get(`https://memmomind-be-oyse.onrender.com/api/note/search`, {
+      const res = await axios.get(`http://localhost:3000/api/note/search`, {
         params: { query },
         withCredentials: true,
       });
@@ -97,7 +97,7 @@ const Home = () => {
 
     try {
       const res = await axios.put(
-        `https://memmomind-be-oyse.onrender.com/api/note/update-note-pinned/${noteId}`,
+        `http://localhost:3000/api/note/update-note-pinned/${noteId}`,
         { isPinned: !noteData.isPinned },
         { withCredentials: true }
       );
@@ -118,7 +118,7 @@ const Home = () => {
   const moveToTrash = async (noteId) => {
     try {
       const res = await axios.put(
-        `https://memmomind-be-oyse.onrender.com/api/note/trash/${noteId}`,
+        `http://localhost:3000/api/note/trash/${noteId}`,
         {},
         { withCredentials: true }
       );
@@ -139,7 +139,7 @@ const Home = () => {
   const restoreNote = async (noteId) => {
     try {
       const res = await axios.put(
-        `https://memmomind-be-oyse.onrender.com/api/note/restore/${noteId}`,
+        `http://localhost:3000/api/note/restore/${noteId}`,
         {},
         { withCredentials: true }
       );
@@ -160,7 +160,7 @@ const Home = () => {
   const permanentlyDeleteNote = async (noteId) => {
     try {
       const res = await axios.delete(
-        `https://memmomind-be-oyse.onrender.com/api/note/delete-permanent/${noteId}`,
+        `http://localhost:3000/api/note/delete-permanent/${noteId}`,
         { withCredentials: true }
       );
 
@@ -179,7 +179,7 @@ const Home = () => {
   // Lấy tất cả ghi chú trong thùng rác
   const getTrashedNotes = async () => {
     try {
-      const res = await axios.get(`https://memmomind-be-oyse.onrender.com/api/note/trash`, {
+      const res = await axios.get(`http://localhost:3000/api/note/trash`, {
         withCredentials: true,
       });
 

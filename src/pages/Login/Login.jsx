@@ -41,7 +41,7 @@ const Login = () => {
       dispatch(signInStart());
 
       const res = await axios.post(
-        "https://memmomind-be-oyse.onrender.com/api/auth/signin",
+        "http://localhost:3000/api/auth/signin",
         { email, password },
         { withCredentials: true }
       );
