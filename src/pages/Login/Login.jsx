@@ -3,16 +3,10 @@ import PasswordInput from "../../components/Input/PasswordInput";
 import { Link, useNavigate } from "react-router-dom";
 import { validateEmail } from "../../utils/helper";
 import { useDispatch } from "react-redux";
-import {
-  signInFailure,
-  signInStart,
-  signInSuccess,
-} from "../../redux/user/userSlice";
-import axios from "axios";
+import { signInFailure, signInStart, signInSuccess } from "../../redux/user/userSlice";
 import { toast } from "react-toastify";
 import logo from './../../assets/images/logomoi4m.png';
-
-axios.defaults.withCredentials = true;
+import { loginUser } from "../../services/api"; // ✅ Import hàm đăng nhập từ api.js
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -29,41 +23,23 @@ const Login = () => {
       setError("Vui lòng nhập địa chỉ email hợp lệ");
       return;
     }
-
     if (!password) {
       setError("Vui lòng nhập mật khẩu");
       return;
     }
 
     setError("");
+    dispatch(signInStart());
 
     try {
-      dispatch(signInStart());
-
-      const res = await axios.post(
-        "http://localhost:3000/api/auth/signin",
-        { email, password },
-        { withCredentials: true }
-      );
-
-      if (res.data.success === false) {
-        toast.error(res.data.message);
-        console.log(res.data);
-        dispatch(signInFailure(res.data.message));
-      }
-
-      toast.success(res.data.message);
-      dispatch(signInSuccess(res.data));
+      const data = await loginUser(email, password); // ✅ Gọi API từ api.js
+      toast.success(data.message || "Đăng nhập thành công!");
+      dispatch(signInSuccess(data));
       navigate("/homepage");
-    } catch (error) {
-      toast.error(error.message);
-      dispatch(signInFailure(error.message));
+    } catch (errorMessage) {
+      toast.error(errorMessage);
+      dispatch(signInFailure(errorMessage));
     }
-  };
-
-  const handleForgotPassword = () => {
-    // Navigate to Forgot Password page or implement your logic
-    navigate("/forgot-password");
   };
 
   return (
@@ -85,7 +61,6 @@ const Login = () => {
               value={email}
             />
 
-
             <PasswordInput
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -98,12 +73,6 @@ const Login = () => {
             </button>
 
             <p className="text-sm text-center mt-2">
-              <span className="cursor-pointer text-gray-600 hover:text-gray -500" onClick={handleForgotPassword}>
-                Quên mật khẩu?
-              </span>
-            </p>
-
-            <p className="text-sm text-center mt-4">
               Bạn chưa đăng ký?{" "}
               <Link
                 to={"/signup"}

@@ -2,9 +2,9 @@ import { useState } from "react";
 import PasswordInput from "../../components/Input/PasswordInput";
 import { Link, useNavigate } from "react-router-dom";
 import { validateEmail } from "../../utils/helper";
-import axios from "axios";
 import { toast } from "react-toastify";
 import logo from './../../assets/images/logomoi4m.png';
+import { registerUser } from "../../services/api"; // ✅ Import API đăng ký
 
 const Signup = () => {
   const [name, setName] = useState("");
@@ -34,27 +34,14 @@ const Signup = () => {
 
     setError("");
 
-    // sign up api
+    // Gọi API đăng ký
     try {
-      const res = await axios.post(
-        "http://localhost:3000/api/auth/signup",
-        { username: name, email, password },
-        { withCredentials: true }
-      );
-
-      if (res.data.success === false) {
-        setError(res.data.message);
-        toast.error(res.data.message);
-        return;
-      }
-
-      toast.success(res.data.message);
-      setError("");
+      const data = await registerUser(name, email, password); // ✅ Sử dụng API từ api.js
+      toast.success(data.message);
       navigate("/login");
-    } catch (error) {
-      toast.error(error.message);
-      console.log(error.message);
-      setError(error.message);
+    } catch (errorMessage) {
+      toast.error(errorMessage);
+      setError(errorMessage);
     }
   };
 

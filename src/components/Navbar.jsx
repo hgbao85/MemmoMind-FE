@@ -34,7 +34,7 @@ const Navbar = ({ userInfo, onSearchNote, handleClearSearch }) => {
     try {
       dispatch(signoutStart());
 
-      const res = await axios.get(`http://localhost:3000/api/auth/signout`, {
+      const res = await axios.post(`http://localhost:8000/api/auth/logout`, {
         withCredentials: true,
       });
 

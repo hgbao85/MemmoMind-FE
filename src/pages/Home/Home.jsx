@@ -40,56 +40,64 @@ const Home = () => {
       if (!currentUser) {
         navigate("/");
       } else {
-        setUserInfo(currentUser.rest);
+        getUserInfo();
         getAllNotes();
+        getTrashedNotes();
       }
     }
   }, [currentUser, navigate]);
 
-  const getAllNotes = async () => {
+  // 📌 Hàm lấy thông tin User hiện tại
+  const getUserInfo = async () => {
     try {
-      const res = await axios.get(`http://localhost:3000/api/note/all`, {
-        withCredentials: true,
-      });
-
-      if (!res.data.success) return;
-      const notes = res.data.notes;
-      setAllNotes(notes);
-      setPinnedNotes(notes.filter((note) => note.isPinned));
-      setDeletedNotes(notes.filter((note) => note.isDeleted));
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const handleEdit = (noteDetails) => {
-    setAddEditType("edit");
-    setNoteData(noteDetails);
-    setIsAddEditVisible(true);
-  };
-
-  const onSearchNote = async (query) => {
-    try {
-      const res = await axios.get(`http://localhost:3000/api/note/search`, {
-        params: { query },
+      const res = await axios.get("http://localhost:8000/api/user/current", {
         withCredentials: true,
       });
 
       if (!res.data.success) {
-        toast.error(res.data.message);
+        toast.error("Không thể lấy thông tin người dùng!");
         return;
       }
 
-      setIsSearch(true);
-      setAllNotes(res.data.notes);
+      console.log("User Info:", res.data.user);
+      setUserInfo(res.data.user);
     } catch (error) {
-      toast.error(error.message);
+      console.error("Error fetching user info:", error);
+      toast.error("Lỗi khi lấy thông tin người dùng!");
     }
   };
 
-  const handleClearSearch = () => {
-    setIsSearch(false);
-    getAllNotes();
+  // 📝 Lấy tất cả ghi chú
+  const getAllNotes = async () => {
+    try {
+      const res = await axios.get(`http://localhost:8000/api/note/all`, {
+        withCredentials: true,
+      });
+
+      if (!res.data.success) return;
+      const notes = res.data.notes.filter((note) => !note.isDeleted);
+      setAllNotes(notes);
+      setPinnedNotes(notes.filter((note) => note.isPinned));
+    } catch (error) {
+      console.error("Error fetching notes:", error);
+      toast.error("Lỗi khi tải danh sách ghi chú!");
+    }
+  };
+
+  // 📌 Lấy danh sách ghi chú đã ghim (isPinned=true)
+  const getPinnedNotes = async () => {
+    try {
+      const res = await axios.get(`http://localhost:8000/api/note/all?isPinned=true`, { withCredentials: true });
+
+      if (!res.data.notes) return;
+
+      // ⚡ Lọc bỏ những ghi chú đã bị xóa (isDeleted=true)
+      const filteredNotes = res.data.notes.filter((note) => !note.isDeleted);
+      setPinnedNotes(filteredNotes);
+    } catch (error) {
+      console.error("Error fetching pinned notes:", error);
+      toast.error("Lỗi khi tải danh sách ghi chú đã ghim!");
+    }
   };
 
   const updateIsPinned = async (noteData) => {
@@ -97,7 +105,7 @@ const Home = () => {
 
     try {
       const res = await axios.put(
-        `http://localhost:3000/api/note/update-note-pinned/${noteId}`,
+        `http://localhost:8000/api/note/update-note-pinned/${noteId}`,
         { isPinned: !noteData.isPinned },
         { withCredentials: true }
       );
@@ -114,11 +122,64 @@ const Home = () => {
     }
   };
 
+  // 🗑 Lấy danh sách ghi chú trong thùng rác (isDeleted=true)
+  const getTrashedNotes = async () => {
+    try {
+      const res = await axios.get(`http://localhost:8000/api/note/all?isDeleted=true`, { withCredentials: true });
+      if (!res.data.notes) return;
+      setDeletedNotes(res.data.notes);
+    } catch (error) {
+      console.error("Error fetching deleted notes:", error);
+      toast.error("Lỗi khi tải danh sách ghi chú đã xóa!");
+    }
+  };
+
+
+  const handleEdit = (noteDetails) => {
+    setAddEditType("edit");
+    setNoteData(noteDetails);
+    setIsAddEditVisible(true);
+  };
+
+  const onSearchNote = async (query) => {
+    try {
+      if (!query.trim()) {
+        toast.error("Vui lòng nhập từ khóa tìm kiếm!");
+        return;
+      }
+
+      const res = await axios.get(`http://localhost:8000/api/notes/search`, {
+        params: { keyword: query },
+        withCredentials: true,
+      });
+
+      console.log("Search Response:", res.data);
+
+      if (!res.data.notes || res.data.notes.length === 0) {
+        toast.info("Không tìm thấy ghi chú nào!");
+        setIsSearch(false);
+        return;
+      }
+
+      setIsSearch(true);
+      setAllNotes(res.data.notes);
+    } catch (error) {
+      console.error("Error searching notes:", error);
+      toast.error(error.response?.data?.message || "Lỗi khi tìm kiếm!");
+    }
+  };
+
+  const handleClearSearch = () => {
+    setIsSearch(false);
+    getAllNotes();
+    toast.info("Đã xóa bộ lọc tìm kiếm!");
+  };
+
   // Di chuyển ghi chú vào thùng rác
   const moveToTrash = async (noteId) => {
     try {
       const res = await axios.put(
-        `http://localhost:3000/api/note/trash/${noteId}`,
+        `http://localhost:8000/api/note/trash/${noteId}`,
         {},
         { withCredentials: true }
       );
@@ -138,61 +199,61 @@ const Home = () => {
   // Khôi phục ghi chú từ thùng rác
   const restoreNote = async (noteId) => {
     try {
-      const res = await axios.put(
-        `http://localhost:3000/api/note/restore/${noteId}`,
-        {},
-        { withCredentials: true }
-      );
-
-      if (!res.data.success) {
-        toast.error(res.data.message);
+      if (!noteId) {
+        toast.error("ID ghi chú không hợp lệ!");
         return;
       }
 
-      toast.success("Khôi phục ghi chú thành công!");
+      const res = await axios.delete(
+        `http://localhost:8000/api/note/delete-restore/${noteId}?actionType=restore`,
+        { withCredentials: true }
+      );
+
+      console.log("Restore Response:", res.data);
+
+      if (!res.data || res.data.message !== "Operation performed successfully") {
+        toast.error(res.data.message || "Lỗi khi khôi phục ghi chú!");
+        return;
+      }
+
+      toast.success("Khôi phục note thành công!")
+      getTrashedNotes();
       getAllNotes();
     } catch (error) {
-      toast.error(error.message);
+      console.error("Error restoring note:", error);
+      toast.error(error.response?.data?.message || "Lỗi khi khôi phục ghi chú!");
     }
   };
+
 
   // Xóa ghi chú vĩnh viễn từ thùng rác
   const permanentlyDeleteNote = async (noteId) => {
     try {
+      if (!noteId) {
+        toast.error("ID ghi chú không hợp lệ!");
+        return;
+      }
+
       const res = await axios.delete(
-        `http://localhost:3000/api/note/delete-permanent/${noteId}`,
+        `http://localhost:8000/api/note/delete-restore/${noteId}?actionType=delete`,
         { withCredentials: true }
       );
 
-      if (!res.data.success) {
-        toast.error(res.data.message);
+      console.log("Delete Response:", res.data);
+
+      if (!res.data || res.data.message !== "Operation performed successfully") {
+        toast.error(res.data.message || "Lỗi khi xóa ghi chú!");
         return;
       }
 
-      toast.success(res.data.message);
-      getAllNotes();
+      toast.success("Xóa ghi chú vĩnh viễn thành công!");
+      getTrashedNotes();
     } catch (error) {
-      toast.error(error.message);
+      console.error("Error deleting note:", error);
+      toast.error(error.response?.data?.message || "Lỗi khi xóa ghi chú!");
     }
   };
 
-  // Lấy tất cả ghi chú trong thùng rác
-  const getTrashedNotes = async () => {
-    try {
-      const res = await axios.get(`http://localhost:3000/api/note/trash`, {
-        withCredentials: true,
-      });
-
-      if (!res.data.success) {
-        toast.error(res.data.message);
-        return;
-      }
-
-      setDeletedNotes(res.data.notes);
-    } catch (error) {
-      toast.error(error.message);
-    }
-  };
 
   const handleAddNoteSuccess = () => {
     getAllNotes();
@@ -200,11 +261,14 @@ const Home = () => {
 
   const rightSidebarWidth = isRightSidebarOpen ? "20%" : "4rem";
 
+  // 📌 Hiển thị ghi chú ghim
   const handleShowPinned = () => {
+    getPinnedNotes();
     setShowPinned(!showPinned);
     setShowDeleted(false);
   };
 
+  // 🗑 Hiển thị ghi chú trong thùng rác
   const handleShowDeleted = () => {
     setShowDeleted(!showDeleted);
     setShowPinned(false);
@@ -241,11 +305,9 @@ const Home = () => {
 
     try {
       const response = await axios.post(
-        "http://vietserver.bounceme.net:6082/summarize",
+        "http://localhost:6082/summarize",
         { text: fileContent },
-        {
-          headers: { "Content-Type": "application/json" },
-        }
+        { headers: { "Content-Type": "application/json" } }
       );
 
       setSummary(response.data.response || "Không thể tạo tóm tắt.");
@@ -264,7 +326,7 @@ const Home = () => {
 
     try {
       const response = await axios.post(
-        "http://vietserver.bounceme.net:6082/mindmap",
+        "http://localhost:6082/mindmap",
         { text: fileContent },
         {
           headers: { "Content-Type": "application/json" },
@@ -361,9 +423,12 @@ const Home = () => {
                     <NoteCard
                       key={note._id}
                       title={note.title}
+                      date={note.date}
+                      content={note.content}
+                      tags={note.tags}
+                      isDeleted={true}
                       onRestore={() => restoreNote(note._id)}
                       onPermanentlyDelete={() => permanentlyDeleteNote(note._id)}
-                      tags={note.tags}
                     />
                   ))
                 ) : (
@@ -371,11 +436,14 @@ const Home = () => {
                     <NoteCard
                       key={note._id}
                       title={note.title}
+                      date={note.date}
+                      content={note.content}
+                      tags={note.tags}
                       isPinned={note.isPinned}
+                      isDeleted={false}
                       onEdit={() => handleEdit(note)}
                       onDelete={() => moveToTrash(note._id)}
                       onPinNote={() => updateIsPinned(note)}
-                      tags={note.tags}
                     />
                   ))
                 )}
@@ -474,7 +542,7 @@ const Home = () => {
 
           {isRightSidebarOpen && (
             <>
-              <h2 className="text-l mb-6 text-center">Chào bạn, {userInfo?.username}!</h2>
+              <h2 className="text-l mb-6 text-center">Chào bạn, {userInfo?.name}!</h2>
               <textarea
                 className="w-full h-24 p-2 border rounded-md mb-4"
                 placeholder="Nhập văn bản hoặc tải lên tài liệu có sẵn."

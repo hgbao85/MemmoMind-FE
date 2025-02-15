@@ -1,4 +1,4 @@
-import { MdDelete, MdOutlinePushPin } from "react-icons/md";
+import { MdDelete, MdOutlinePushPin, MdRestore } from "react-icons/md";
 import moment from "moment";
 import PropTypes from "prop-types";
 
@@ -8,12 +8,17 @@ const NoteCard = ({
   content,
   tags,
   isPinned,
+  isDeleted,
   onPinNote,
   onEdit,
   onDelete,
+  onRestore,
+  onPermanentlyDelete,
 }) => {
   const handleOpenNote = () => {
-    onEdit();
+    if (!isDeleted) {
+      onEdit();
+    }
   };
 
   const handleDeleteClick = (e) => {
@@ -23,6 +28,21 @@ const NoteCard = ({
     );
     if (confirmDelete) {
       onDelete();
+    }
+  };
+
+  const handleRestoreClick = (e) => {
+    e.stopPropagation();
+    onRestore();
+  };
+
+  const handlePermanentlyDeleteClick = (e) => {
+    e.stopPropagation();
+    const confirmDelete = window.confirm(
+      "Bạn có chắc chắn muốn xóa vĩnh viễn ghi chú này không? Hành động này không thể hoàn tác!"
+    );
+    if (confirmDelete) {
+      onPermanentlyDelete();
     }
   };
 
@@ -39,21 +59,31 @@ const NoteCard = ({
           </span>
         </div>
 
-        <div
-          className="flex items-center gap-2"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <MdOutlinePushPin
-            className={`hover:text-[#C8BBBB] icon-btn ${
-              isPinned ? "text-black" : "text-slate-300"
-            }`}
-            onClick={onPinNote}
-          />
-          <MdDelete
-            className="icon-btn hover:text-[#C8BBBB]"
-            onClick={handleDeleteClick}
-          />
-        </div>
+        {/* Nếu ghi chú đã bị xóa, hiển thị nút Khôi phục & Xóa vĩnh viễn */}
+        {isDeleted ? (
+          <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+            <MdRestore
+              className="icon-btn hover:text-green-500"
+              onClick={handleRestoreClick}
+            />
+            <MdDelete
+              className="icon-btn hover:text-red-500"
+              onClick={handlePermanentlyDeleteClick}
+            />
+          </div>
+        ) : (
+          // Nếu không bị xóa, hiển thị nút Pinned & Delete
+          <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+            <MdOutlinePushPin
+              className={`hover:text-[#C8BBBB] icon-btn ${isPinned ? "text-black" : "text-slate-300"}`}
+              onClick={onPinNote}
+            />
+            <MdDelete
+              className="icon-btn hover:text-[#C8BBBB]"
+              onClick={handleDeleteClick}
+            />
+          </div>
+        )}
       </div>
 
       <p className="text-xs text-slate-600 mt-2">{content.slice(0, 60)}</p>
@@ -74,15 +104,19 @@ NoteCard.propTypes = {
   content: PropTypes.string,
   tags: PropTypes.arrayOf(PropTypes.string),
   isPinned: PropTypes.bool.isRequired,
-  onPinNote: PropTypes.func.isRequired,
-  onEdit: PropTypes.func.isRequired,
-  onDelete: PropTypes.func.isRequired,
+  isDeleted: PropTypes.bool,
+  onPinNote: PropTypes.func,
+  onEdit: PropTypes.func,
+  onDelete: PropTypes.func,
+  onRestore: PropTypes.func,
+  onPermanentlyDelete: PropTypes.func,
 };
 
 // Define default props
 NoteCard.defaultProps = {
-  content: "", // Default empty string if no content provided
-  tags: [], // Default empty array if no tags provided
+  content: "",
+  tags: [],
+  isDeleted: false,
 };
 
 export default NoteCard;
