@@ -1,9 +1,8 @@
 import axios from "axios";
 
-// Định nghĩa baseURL cho API
-const API_BASE_URL = "http://localhost:8000/api";
+// 🔹 Base URL của API
+const API_BASE_URL = "https://memmomind-be-ycwv.onrender.com/api";
 
-// Cấu hình axios mặc định
 const api = axios.create({
     baseURL: API_BASE_URL,
     withCredentials: true,
@@ -12,17 +11,42 @@ const api = axios.create({
     },
 });
 
-// Hàm đăng nhập
+
+
+// ✅ Thêm Interceptor để tự động gửi token
+api.interceptors.request.use((config) => {
+    const token = localStorage.getItem("token");
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+        console.log("✅ Token gửi đi:", config.headers.Authorization);
+    } else {
+        console.warn("❌ Không có token, có thể yêu cầu sẽ bị lỗi 401!");
+    }
+    return config;
+}, (error) => {
+    return Promise.reject(error);
+});
+
+// 🔹 Hàm đăng nhập
 export const loginUser = async (email, password) => {
     try {
         const response = await api.post("/auth/login", { email, password });
+
+        // ✅ Lưu token vào localStorage sau khi đăng nhập thành công
+        if (response.data?.token) {
+            localStorage.setItem("token", response.data.token);
+            console.log("✅ Token đã được lưu vào localStorage:", response.data.token);
+        } else {
+            console.warn("❌ Không nhận được token từ server!");
+        }
+
         return response.data;
     } catch (error) {
         throw error.response?.data?.message || "Lỗi kết nối server!";
     }
 };
 
-// 🔹 Thêm API đăng ký
+// 🔹 API đăng ký
 export const registerUser = async (name, email, password) => {
     try {
         const response = await api.post("/auth/register", { name, email, password });
@@ -32,5 +56,5 @@ export const registerUser = async (name, email, password) => {
     }
 };
 
-// Xuất API để dùng ở nhiều nơi
+// ✅ Xuất API để sử dụng trong toàn bộ ứng dụng
 export default api;

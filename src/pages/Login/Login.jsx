@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react"; // Thêm useEffect
 import PasswordInput from "../../components/Input/PasswordInput";
 import { Link, useNavigate } from "react-router-dom";
 import { validateEmail } from "../../utils/helper";
@@ -12,13 +12,21 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
+  // ✅ Kiểm tra token trong localStorage khi component được mount
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      console.log("✅ Token hiện tại trong localStorage:", token);
+    } else {
+      console.warn("❌ Không có token trong localStorage!");
+    }
+  }, []);
+
   const handleLogin = async (e) => {
     e.preventDefault();
-
     if (!validateEmail(email)) {
       setError("Vui lòng nhập địa chỉ email hợp lệ");
       return;
@@ -27,12 +35,16 @@ const Login = () => {
       setError("Vui lòng nhập mật khẩu");
       return;
     }
-
     setError("");
     dispatch(signInStart());
-
     try {
-      const data = await loginUser(email, password); // ✅ Gọi API từ api.js
+      const data = await loginUser(email, password);
+      if (data?.token) {
+        localStorage.setItem("token", data.token);
+        console.log("✅ Token đã được lưu vào localStorage:", data.token);
+      } else {
+        console.warn("❌ Không nhận được token từ server!");
+      }
       toast.success(data.message || "Đăng nhập thành công!");
       dispatch(signInSuccess(data));
       navigate("/homepage");
@@ -51,7 +63,6 @@ const Login = () => {
         <div className="w-96 rounded-2xl bg-customRedGray px-7 py-10 shadow-lg">
           <form onSubmit={handleLogin}>
             <h4 className="text-xl mb-5 text-left">Đăng nhập</h4>
-
             <input
               type="text"
               placeholder="Email"
@@ -60,18 +71,14 @@ const Login = () => {
               onChange={(e) => setEmail(e.target.value)}
               value={email}
             />
-
             <PasswordInput
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
-
             {error && <p className="text-red-500 text-sm pb-1">{error}</p>}
-
             <button type="submit" className="w-full py-2 mb-4 bg-bgsubmit text-white rounded-full hover:bg-gray-500">
               Đăng nhập
             </button>
-
             <p className="text-sm text-center mt-2">
               Bạn chưa đăng ký?{" "}
               <Link

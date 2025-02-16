@@ -5,11 +5,9 @@ import AddEditNotes from "./AddEditNotes";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/Navbar";
-import axios from "axios";
 import { toast } from "react-toastify";
 import EmptyCard from "../../components/EmptyCard/EmptyCard";
-
-axios.defaults.withCredentials = true;
+import api from "../../services/api";
 
 const Home = () => {
   const { currentUser } = useSelector((state) => state.user);
@@ -50,7 +48,7 @@ const Home = () => {
   // 📌 Hàm lấy thông tin User hiện tại
   const getUserInfo = async () => {
     try {
-      const res = await axios.get("http://localhost:8000/api/user/current", {
+      const res = await api.get("https://memmomind-be-ycwv.onrender.com/api/user/current", {
         withCredentials: true,
       });
 
@@ -70,7 +68,7 @@ const Home = () => {
   // 📝 Lấy tất cả ghi chú
   const getAllNotes = async () => {
     try {
-      const res = await axios.get(`http://localhost:8000/api/note/all`, {
+      const res = await api.get(`https://memmomind-be-ycwv.onrender.com/api/note/all`, {
         withCredentials: true,
       });
 
@@ -87,7 +85,9 @@ const Home = () => {
   // 📌 Lấy danh sách ghi chú đã ghim (isPinned=true)
   const getPinnedNotes = async () => {
     try {
-      const res = await axios.get(`http://localhost:8000/api/note/all?isPinned=true`, { withCredentials: true });
+      const res = await api.get(`https://memmomind-be-ycwv.onrender.com/api/note/all?isPinned=true`, {
+       withCredentials: true 
+      });
 
       if (!res.data.notes) return;
 
@@ -104,8 +104,8 @@ const Home = () => {
     const noteId = noteData._id;
 
     try {
-      const res = await axios.put(
-        `http://localhost:8000/api/note/update-note-pinned/${noteId}`,
+      const res = await api.put(
+        `https://memmomind-be-ycwv.onrender.com/api/note/update-note-pinned/${noteId}`,
         { isPinned: !noteData.isPinned },
         { withCredentials: true }
       );
@@ -125,7 +125,7 @@ const Home = () => {
   // 🗑 Lấy danh sách ghi chú trong thùng rác (isDeleted=true)
   const getTrashedNotes = async () => {
     try {
-      const res = await axios.get(`http://localhost:8000/api/note/all?isDeleted=true`, { withCredentials: true });
+      const res = await api.get(`https://memmomind-be-ycwv.onrender.com/api/note/all?isDeleted=true`, { withCredentials: true });
       if (!res.data.notes) return;
       setDeletedNotes(res.data.notes);
     } catch (error) {
@@ -148,7 +148,7 @@ const Home = () => {
         return;
       }
 
-      const res = await axios.get(`http://localhost:8000/api/notes/search`, {
+      const res = await api.get(`https://memmomind-be-ycwv.onrender.com/api/notes/search`, {
         params: { keyword: query },
         withCredentials: true,
       });
@@ -178,8 +178,8 @@ const Home = () => {
   // Di chuyển ghi chú vào thùng rác
   const moveToTrash = async (noteId) => {
     try {
-      const res = await axios.put(
-        `http://localhost:8000/api/note/trash/${noteId}`,
+      const res = await api.put(
+        `https://memmomind-be-ycwv.onrender.com/api/note/trash/${noteId}`,
         {},
         { withCredentials: true }
       );
@@ -204,8 +204,8 @@ const Home = () => {
         return;
       }
 
-      const res = await axios.delete(
-        `http://localhost:8000/api/note/delete-restore/${noteId}?actionType=restore`,
+      const res = await api.delete(
+        `https://memmomind-be-ycwv.onrender.com/api/note/delete-restore/${noteId}?actionType=restore`,
         { withCredentials: true }
       );
 
@@ -234,8 +234,8 @@ const Home = () => {
         return;
       }
 
-      const res = await axios.delete(
-        `http://localhost:8000/api/note/delete-restore/${noteId}?actionType=delete`,
+      const res = await api.delete(
+        `https://memmomind-be-ycwv.onrender.com/api/note/delete-restore/${noteId}?actionType=delete`,
         { withCredentials: true }
       );
 
@@ -304,7 +304,7 @@ const Home = () => {
     }
 
     try {
-      const response = await axios.post(
+      const response = await api.post(
         "http://localhost:6082/summarize",
         { text: fileContent },
         { headers: { "Content-Type": "application/json" } }
@@ -325,7 +325,7 @@ const Home = () => {
     }
 
     try {
-      const response = await axios.post(
+      const response = await api.post(
         "http://localhost:6082/mindmap",
         { text: fileContent },
         {

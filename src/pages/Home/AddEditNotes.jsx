@@ -2,10 +2,8 @@ import { useState } from "react";
 import PropTypes from "prop-types";
 import { MdClose } from "react-icons/md";
 import TagInput from "../../components/Input/TagInput ";
-import axios from "axios";
 import { toast } from "react-toastify";
-
-axios.defaults.withCredentials = true;
+import api from "../../services/api";
 
 const AddEditNotes = ({ onClose, noteData, type, getAllNotes }) => {
   const [title, setTitle] = useState(noteData?.title || "");
@@ -18,8 +16,8 @@ const AddEditNotes = ({ onClose, noteData, type, getAllNotes }) => {
     const noteId = noteData._id;
 
     try {
-      const res = await axios.post(
-        `http://localhost:8000/api/note/edit/` + noteId,
+      const res = await api.post(
+        `https://memmomind-be-ycwv.onrender.com/api/note/edit/` + noteId,
         { title, content, tags },
         { withCredentials: true }
       );
@@ -42,8 +40,8 @@ const AddEditNotes = ({ onClose, noteData, type, getAllNotes }) => {
   // Add Note
   const addNewNote = async () => {
     try {
-      const res = await axios.post(
-        "http://localhost:8000/api/note/add",
+      const res = await api.post(
+        "https://memmomind-be-ycwv.onrender.com/api/note/add",
         { title, content, tags },
         { withCredentials: true }
       );

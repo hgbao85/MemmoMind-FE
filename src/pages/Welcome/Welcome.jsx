@@ -8,40 +8,102 @@ import Hangavt from './../../assets/images/Hangavt.jpg';
 
 const Welcome = () => {
     return (
-        <div className="flex flex-col justify-between items-center min-h-screen bg-customGray">
-            <div className="text-center mt-20">
-                <img src={logo} alt="MemmoMind Logo" className="w-96" />
-            </div>
-            <div className="text-center">
-                <p className="text-xl">Chào mừng bạn đến với thế giới Note mới cùng MEMMOMIND</p>
-                <a href="/login" className="mt-10 inline-block px-6 py-2 bg-customGray font-bold text-black rounded-md text-lg hover:bg-gray-300 underline">
-                    Trải nghiệm ngay
-                </a>
-            </div>
-            <footer className="bg-customRedGray w-full text-center p-4">
-                <div className="mb-3">
-                    <h3>© 2024 Copyright: MemmoMind.com</h3>
-                </div>
-                <div className="flex justify-center space-x-4">
-                    <a href="https://www.facebook.com/me.tuongvy170423/" target="_blank" rel="noopener noreferrer">
-                        <img src={Vyavt} alt="Vy" className="w-10 h-10 rounded-full hover:opacity-50" />
-                    </a>
-                    <a href="https://www.facebook.com/profile.php?id=100010611695553" target="_blank" rel="noopener noreferrer">
-                        <img src={Hangavt} alt="Hang" className="w-10 h-10 rounded-full hover:opacity-50" />
-                    </a>
-                    <a href="https://www.linkedin.com/in/vietlequoc-69619b2bb/" target="_blank" rel="noopener noreferrer">
-                        <img src={Vietavt} alt="Viet" className="w-10 h-10 rounded-full hover:opacity-50" />
-                    </a>
-                    <a href="https://www.facebook.com/profile.php?id=100030005325166" target="_blank" rel="noopener noreferrer">
-                        <img src={Khanhavt} alt="Khanh" className="w-10 h-10 rounded-full hover:opacity-50" />
-                    </a>
-                    <a href="https://www.facebook.com/caotrunghoan203" target="_blank" rel="noopener noreferrer">
-                        <img src={Hoanavt} alt="Hoan" className="w-10 h-10 rounded-full hover:opacity-50" />
-                    </a>
-                    <a href="https://www.facebook.com/baoo.85/" target="_blank" rel="noopener noreferrer">
-                        <img src={Baoavt} alt="Bao" className="w-10 h-10 rounded-full hover:opacity-50" />
+        <div className="flex flex-col justify-between items-center min-h-screen bg-customGray pt-[100px]">
+            <div className="flex flex-col md:flex-row justify-center items-start w-full px-8 mt-12 animate-fade-in">
+
+                <div className="text-center md:w-1/2">
+                    <img src={logo} alt="MemmoMind Logo" className="w-96 mx-auto" />
+                    <p className="text-xl mt-4 pl-[20px]">Chào mừng bạn đến với thế giới Note mới cùng MEMMOMIND</p>
+                    <a 
+                        href="/login" 
+                        className="mt-6 inline-block px-6 py-2 bg-customGray font-bold text-black rounded-md text-lg hover:bg-gray-400"
+                    >
+                        Trải nghiệm ngay
                     </a>
                 </div>
+
+                <div className="md:w-1/2 mt-8 md:mt-0 md:pl-12">
+                    <div className="text-left">
+                        <h2 className="text-2xl font-bold text-gray-800 mb-4">Tính năng nổi bật</h2>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            
+                        <div className="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition duration-300">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 mx-auto text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+                </svg>
+                <p className="mt-2 text-gray-700">Tạo ghi chú nhanh chóng</p>
+            </div>
+
+            <div className="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition duration-300">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 mx-auto text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 14l2 2 4-4" />
+                </svg>
+                <p className="mt-2 text-gray-700">Quản lý công việc dễ dàng</p>
+            </div>
+
+            <div className="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition duration-300">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 mx-auto text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 10h16M4 14h16M4 18h7" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 18h6" />
+                </svg>
+                <p className="mt-2 text-gray-700">Tóm tắt nội dung chính</p>
+            </div>
+
+            <div className="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition duration-300">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 mx-auto text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <circle cx="12" cy="12" r="3" strokeWidth="2" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3v3m0 12v3m9-9h-3m-12 0H3m2.83-7.17l2.12 2.12m8.49 8.49l2.12 2.12m0-12.73l-2.12 2.12m-8.49 8.49l-2.12 2.12" />
+                </svg>
+                <p className="mt-2 text-gray-700">Vẽ MindMap</p>
+                            </div>
+                        </div>
+                    </div>
+                
+                </div>
+            </div>
+
+            {/* Footer */}
+            <footer className="bg-customRedGray w-full text-center p-4 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0 md:space-x-6 mt-12">
+
+                <div className="flex justify-center pl-[20px]">
+                    <a
+                        href="https://www.facebook.com/profile.php?id=61572800944085" 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="flex items-center space-x-1 text-white hover:text-blue-400 transition duration-300"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M18.77 7.46H14.5v-1.9c0-.9.6-1.1 1-1.1h3V.5h-4.33C10.24.5 9.5 3.44 9.5 5.32v2.15h-3v4h3v12h5v-12h3.85l.42-4z" />
+                        </svg>
+                        <span className="text-sm">Theo dõi chúng tôi</span>
+                    </a>
+                </div>
+
+                <div className="flex justify-center space-x-2">
+                    {[
+                        { img: Vyavt, link: "https://www.facebook.com/me.tuongvy170423/" },
+                        { img: Hangavt, link: "https://www.facebook.com/profile.php?id=100010611695553" },
+                        { img: Vietavt, link: "https://www.linkedin.com/in/vietlequoc-69619b2bb/" },
+                        { img: Khanhavt, link: "https://www.facebook.com/profile.php?id=100030005325166" },
+                        { img: Hoanavt, link: "https://www.facebook.com/caotrunghoan203" },
+                        { img: Baoavt, link: "https://www.facebook.com/fx.baohg/" },
+                    ].map((person, index) => (
+                        <a key={index} href={person.link} target="_blank" rel="noopener noreferrer">
+                            <img 
+                                src={person.img} 
+                                alt={`Avatar ${index + 1}`} 
+                                className="w-8 h-8 rounded-full object-cover border-2 border-white hover:border-blue-400 transition duration-300" 
+                            />
+                        </a>
+                    ))}
+                </div>
+
+                <div className="flex justify-center pr-[20px]">
+                    <h3 className="text-sm text-white">© 2025 MemmoMind.io.vn</h3>
+                </div>
+
             </footer>
 
         </div>

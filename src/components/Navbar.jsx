@@ -11,7 +11,7 @@ import {
   signoutFailure,
   signoutStart,
 } from "../redux/user/userSlice";
-import axios from "axios";
+import api from "../services/api";
 
 const Navbar = ({ userInfo, onSearchNote, handleClearSearch }) => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -34,7 +34,7 @@ const Navbar = ({ userInfo, onSearchNote, handleClearSearch }) => {
     try {
       dispatch(signoutStart());
 
-      const res = await axios.post(`http://localhost:8000/api/auth/logout`, {
+      const res = await api.post(`https://memmomind-be-ycwv.onrender.com/api/auth/logout`, {
         withCredentials: true,
       });
 
