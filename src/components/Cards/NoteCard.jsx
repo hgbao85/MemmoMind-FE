@@ -1,4 +1,4 @@
-import { MdDelete, MdOutlinePushPin, MdRestore } from "react-icons/md";
+import { MdDelete, MdStar, MdRestore } from "react-icons/md";
 import moment from "moment";
 import PropTypes from "prop-types";
 
@@ -74,7 +74,7 @@ const NoteCard = ({
         ) : (
           // Nếu không bị xóa, hiển thị nút Pinned & Delete
           <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-            <MdOutlinePushPin
+            <MdStar
               className={`hover:text-[#C8BBBB] icon-btn ${isPinned ? "text-black" : "text-slate-300"}`}
               onClick={onPinNote}
             />

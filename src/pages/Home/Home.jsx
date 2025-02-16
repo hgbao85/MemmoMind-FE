@@ -68,30 +68,34 @@ const Home = () => {
   // 📝 Lấy tất cả ghi chú
   const getAllNotes = async () => {
     try {
-      const res = await api.get(`https://memmomind-be-ycwv.onrender.com/api/note/all`, {
+      const res = await api.get("https://memmomind-be-ycwv.onrender.com/api/note/all", {
         withCredentials: true,
       });
 
       if (!res.data.success) return;
-      const notes = res.data.notes.filter((note) => !note.isDeleted);
-      setAllNotes(notes);
-      setPinnedNotes(notes.filter((note) => note.isPinned));
+
+      let fetchedNotes = res.data.notes.filter((note) => !note.isDeleted);
+
+      fetchedNotes = fetchedNotes.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+      setAllNotes(fetchedNotes);
+      setPinnedNotes(fetchedNotes.filter((note) => note.isPinned));
     } catch (error) {
       console.error("Error fetching notes:", error);
       toast.error("Lỗi khi tải danh sách ghi chú!");
     }
   };
 
+
   // 📌 Lấy danh sách ghi chú đã ghim (isPinned=true)
   const getPinnedNotes = async () => {
     try {
       const res = await api.get(`https://memmomind-be-ycwv.onrender.com/api/note/all?isPinned=true`, {
-       withCredentials: true 
+        withCredentials: true
       });
 
       if (!res.data.notes) return;
 
-      // ⚡ Lọc bỏ những ghi chú đã bị xóa (isDeleted=true)
       const filteredNotes = res.data.notes.filter((note) => !note.isDeleted);
       setPinnedNotes(filteredNotes);
     } catch (error) {
@@ -106,7 +110,7 @@ const Home = () => {
     try {
       const res = await api.put(
         `https://memmomind-be-ycwv.onrender.com/api/note/update-note-pinned/${noteId}`,
-        { isPinned: !noteData.isPinned },
+        {},
         { withCredentials: true }
       );
 
@@ -115,12 +119,23 @@ const Home = () => {
         return;
       }
 
-      toast.success(res.data.message);
-      getAllNotes();
+      setAllNotes((prevNotes) =>
+        prevNotes.map((note) =>
+          note._id === noteId ? { ...note, isPinned: !note.isPinned } : note
+        )
+      );
+
+      setPinnedNotes((prevPinned) =>
+        !noteData.isPinned
+          ? [...prevPinned, { ...noteData, isPinned: true }]
+          : prevPinned.filter((note) => note._id !== noteId)
+      );
+
     } catch (error) {
       toast.error(error.message);
     }
   };
+
 
   // 🗑 Lấy danh sách ghi chú trong thùng rác (isDeleted=true)
   const getTrashedNotes = async () => {
@@ -148,7 +163,7 @@ const Home = () => {
         return;
       }
 
-      const res = await api.get(`https://memmomind-be-ycwv.onrender.com/api/notes/search`, {
+      const res = await api.get(`https://memmomind-be-ycwv.onrender.com/api/note/search`, {
         params: { keyword: query },
         withCredentials: true,
       });
@@ -172,7 +187,7 @@ const Home = () => {
   const handleClearSearch = () => {
     setIsSearch(false);
     getAllNotes();
-    toast.info("Đã xóa bộ lọc tìm kiếm!");
+    // toast.info("Đã xóa bộ lọc tìm kiếm!");
   };
 
   // Di chuyển ghi chú vào thùng rác
@@ -311,7 +326,7 @@ const Home = () => {
       );
 
       setSummary(response.data.response || "Không thể tạo tóm tắt.");
-      toast.success("Tóm tắt thành công!");
+      // toast.success("Tóm tắt thành công!");
     } catch (error) {
       console.error("Error summarizing text:", error.message);
       toast.error("Có lỗi xảy ra khi tóm tắt văn bản!");
@@ -334,7 +349,7 @@ const Home = () => {
       );
 
       setMindmapHtml(response.data);
-      toast.success("Tạo mindmap thành công!");
+      // toast.success("Tạo mindmap thành công!");
     } catch (error) {
       console.error("Error generating mindmap:", error);
       toast.error("Có lỗi xảy ra khi tạo mindmap!");
@@ -411,11 +426,11 @@ const Home = () => {
                     <NoteCard
                       key={note._id}
                       title={note.title}
+                      date={note.createdAt}
                       isPinned={note.isPinned}
                       onEdit={() => handleEdit(note)}
                       onDelete={() => moveToTrash(note._id)}
                       onPinNote={() => updateIsPinned(note)}
-                      tags={note.tags}
                     />
                   ))
                 ) : showDeleted ? (
@@ -423,9 +438,7 @@ const Home = () => {
                     <NoteCard
                       key={note._id}
                       title={note.title}
-                      date={note.date}
-                      content={note.content}
-                      tags={note.tags}
+                      date={note.createdAt}
                       isDeleted={true}
                       onRestore={() => restoreNote(note._id)}
                       onPermanentlyDelete={() => permanentlyDeleteNote(note._id)}
@@ -436,9 +449,7 @@ const Home = () => {
                     <NoteCard
                       key={note._id}
                       title={note.title}
-                      date={note.date}
-                      content={note.content}
-                      tags={note.tags}
+                      date={note.createdAt}
                       isPinned={note.isPinned}
                       isDeleted={false}
                       onEdit={() => handleEdit(note)}

@@ -17,7 +17,7 @@ const AddEditNotes = ({ onClose, noteData, type, getAllNotes }) => {
 
     try {
       const res = await api.post(
-        `https://memmomind-be-ycwv.onrender.com/api/note/edit/` + noteId,
+        `http://localhost:3000/api/note/edit/` + noteId,
         { title, content, tags },
         { withCredentials: true }
       );
@@ -41,7 +41,7 @@ const AddEditNotes = ({ onClose, noteData, type, getAllNotes }) => {
   const addNewNote = async () => {
     try {
       const res = await api.post(
-        "https://memmomind-be-ycwv.onrender.com/api/note/add",
+        "http://localhost:3000/api/note/add",
         { title, content, tags },
         { withCredentials: true }
       );
@@ -52,7 +52,7 @@ const AddEditNotes = ({ onClose, noteData, type, getAllNotes }) => {
         return;
       }
 
-      toast.success(res.data.message);
+      // toast.success(res.data.message);
       getAllNotes();
       onClose();
     } catch (error) {
