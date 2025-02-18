@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import NoteCard from "../../components/Cards/NoteCard";
-import { MdClose, MdAdd, MdUpload, MdOutlineMenu, MdFavorite, MdDelete } from "react-icons/md";
+import { MdClose, MdUpload, MdOutlineMenu, MdFavorite, MdDelete, MdHome } from "react-icons/md";
 import AddEditNotes from "./AddEditNotes";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -28,6 +28,9 @@ const Home = () => {
   const [fileContent, setFileContent] = useState("");
   const [mindmapHtml, setMindmapHtml] = useState("");
   const [summary, setSummary] = useState("");
+  const [showAllNotes, setShowAllNotes] = useState(true);
+  const [selectedNote, setSelectedNote] = useState(null);
+
   const fileInputRef = useRef(null);
 
   const navigate = useNavigate();
@@ -86,6 +89,15 @@ const Home = () => {
     }
   };
 
+  const handleSelectNote = (note) => {
+    setSelectedNote(note); // 🔄 Cập nhật ghi chú đang được chọn
+  };
+
+  const handleShowAllNotes = () => {
+    setShowAllNotes(true);
+    setShowPinned(false);
+    setShowDeleted(false);
+  };
 
   // 📌 Lấy danh sách ghi chú đã ghim (isPinned=true)
   const getPinnedNotes = async () => {
@@ -278,7 +290,7 @@ const Home = () => {
 
   // 📌 Hiển thị ghi chú ghim
   const handleShowPinned = () => {
-    getPinnedNotes();
+    setShowAllNotes(false);
     setShowPinned(!showPinned);
     setShowDeleted(false);
   };
@@ -374,13 +386,9 @@ const Home = () => {
             {isSidebarOpen && (
               <button
                 className="w-12 h-12 flex items-center justify-center rounded-md"
-                onClick={() => {
-                  setAddEditType("add");
-                  setNoteData(null);
-                  setIsAddEditVisible(true);
-                }}
+                onClick={handleShowAllNotes} // 🔄 Khi nhấn, hiển thị danh sách tất cả ghi chú
               >
-                <MdAdd className="text-[24px] text-black" />
+                <MdHome className="text-[24px] text-black" />
               </button>
             )}
 
@@ -561,7 +569,7 @@ const Home = () => {
                 onChange={(e) => setFileContent(e.target.value)}
                 style={{
                   maxHeight: "490px",
-                  minHeight: "100px",
+                  minHeight: "200px",
                   resize: "vertical",
                 }}
               ></textarea>

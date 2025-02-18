@@ -1,3 +1,4 @@
+import React from 'react';
 import logo from './../../assets/images/logomoi4m.png';
 import Hoanavt from './../../assets/images/Hoanavt.jpg';
 import Baoavt from './../../assets/images/Baoavt.jpg';
@@ -7,16 +8,60 @@ import Vyavt from './../../assets/images/Vyavt.png';
 import Hangavt from './../../assets/images/Hangavt.jpg';
 
 const Welcome = () => {
+    const [activeFeature, setActiveFeature] = React.useState(null);
+
+    const features = [
+        {
+            icon: (
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 mx-auto text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+                </svg>
+            ),
+            description: "Tạo ghi chú nhanh chóng",
+        },
+        {
+            icon: (
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 mx-auto text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 14l2 2 4-4" />
+                </svg>
+            ),
+            description: "Quản lý công việc dễ dàng",
+        },
+        {
+            icon: (
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 mx-auto text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 10h16M4 14h16M4 18h7" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 18h6" />
+                </svg>
+            ),
+            description: "Tóm tắt nội dung chính",
+        },
+        {
+            icon: (
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 mx-auto text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <circle cx="12" cy="12" r="3" strokeWidth="2" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3v3m0 12v3m9-9h-3m-12 0H3m2.83-7.17l2.12 2.12m8.49 8.49l2.12 2.12m0-12.73l-2.12 2.12m-8.49 8.49l-2.12 2.12" />
+                </svg>
+            ),
+            description: "Vẽ MindMap",
+        },
+    ];
+
     return (
         <div className="flex flex-col justify-between items-center min-h-screen bg-customGray pt-[100px]">
             <div className="flex flex-col md:flex-row justify-center items-start w-full px-8 mt-12 animate-fade-in">
 
                 <div className="text-center md:w-1/2">
                     <img src={logo} alt="MemmoMind Logo" className="w-96 mx-auto" />
-                    <p className="text-xl mt-4 pl-[20px]">Chào mừng bạn đến với thế giới Note mới cùng MEMMOMIND</p>
-                    <a 
-                        href="/login" 
-                        className="mt-6 inline-block px-6 py-2 bg-customGray font-bold text-black rounded-md text-lg hover:bg-gray-400"
+                    <p className="text-xl mt-6 text-gray-800">
+                        Chào mừng bạn đến với thế giới Note mới cùng MEMMOMIND
+                        <span className="inline-block ml-2" role="img" aria-label="smile">😊</span>
+                    </p>
+                    <a
+                        href="/login"
+                        className="mt-6 inline-block px-6 py-2 bg-customGray font-bold text-black rounded-md text-lg hover:bg-gray-400 transition-all duration-300"
                     >
                         Trải nghiệm ngay
                     </a>
@@ -26,41 +71,21 @@ const Welcome = () => {
                     <div className="text-left">
                         <h2 className="text-2xl font-bold text-gray-800 mb-4">Tính năng nổi bật</h2>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            
-                        <div className="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition duration-300">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 mx-auto text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
-                </svg>
-                <p className="mt-2 text-gray-700">Tạo ghi chú nhanh chóng</p>
-            </div>
-
-            <div className="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition duration-300">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 mx-auto text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 14l2 2 4-4" />
-                </svg>
-                <p className="mt-2 text-gray-700">Quản lý công việc dễ dàng</p>
-            </div>
-
-            <div className="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition duration-300">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 mx-auto text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 10h16M4 14h16M4 18h7" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 18h6" />
-                </svg>
-                <p className="mt-2 text-gray-700">Tóm tắt nội dung chính</p>
-            </div>
-
-            <div className="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition duration-300">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 mx-auto text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <circle cx="12" cy="12" r="3" strokeWidth="2" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3v3m0 12v3m9-9h-3m-12 0H3m2.83-7.17l2.12 2.12m8.49 8.49l2.12 2.12m0-12.73l-2.12 2.12m-8.49 8.49l-2.12 2.12" />
-                </svg>
-                <p className="mt-2 text-gray-700">Vẽ MindMap</p>
-                            </div>
+                            {features.map((feature, index) => (
+                                <div
+                                    key={index}
+                                    className={`bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 cursor-pointer 
+                                    ${activeFeature === index ? 'h-auto' : 'h-20'}`}  // Set height based on active feature
+                                    onClick={() => setActiveFeature(activeFeature === index ? null : index)}
+                                >
+                                    {feature.icon}
+                                    <div className={`mt-2 text-gray-700 ${activeFeature === index ? 'block text-center' : 'hidden'}`}>
+                                        {feature.description}
+                                    </div>
+                                </div>
+                            ))}
                         </div>
                     </div>
-                
                 </div>
             </div>
 
@@ -69,9 +94,9 @@ const Welcome = () => {
 
                 <div className="flex justify-center pl-[20px]">
                     <a
-                        href="https://www.facebook.com/profile.php?id=61572800944085" 
-                        target="_blank" 
-                        rel="noopener noreferrer" 
+                        href="https://www.facebook.com/profile.php?id=61572800944085"
+                        target="_blank"
+                        rel="noopener noreferrer"
                         className="flex items-center space-x-1 text-white hover:text-blue-400 transition duration-300"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
@@ -91,10 +116,10 @@ const Welcome = () => {
                         { img: Baoavt, link: "https://www.facebook.com/fx.baohg/" },
                     ].map((person, index) => (
                         <a key={index} href={person.link} target="_blank" rel="noopener noreferrer">
-                            <img 
-                                src={person.img} 
-                                alt={`Avatar ${index + 1}`} 
-                                className="w-8 h-8 rounded-full object-cover border-2 border-white hover:border-blue-400 transition duration-300" 
+                            <img
+                                src={person.img}
+                                alt={`Avatar ${index + 1}`}
+                                className="w-8 h-8 rounded-full object-cover border-2 border-white hover:border-blue-400 transition duration-300"
                             />
                         </a>
                     ))}
