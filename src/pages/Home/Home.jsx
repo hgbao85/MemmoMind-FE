@@ -8,6 +8,7 @@ import Navbar from "../../components/Navbar";
 import { toast } from "react-toastify";
 import EmptyCard from "../../components/EmptyCard/EmptyCard";
 import api from "../../services/api";
+import axios from "axios";
 
 const Home = () => {
   const { currentUser } = useSelector((state) => state.user);
@@ -331,8 +332,8 @@ const Home = () => {
     }
 
     try {
-      const response = await api.post(
-        "http://localhost:6082/summarize",
+      const response = await axios.post(
+        "/summarize",
         { text: fileContent },
         { headers: { "Content-Type": "application/json" } }
       );
@@ -352,8 +353,8 @@ const Home = () => {
     }
 
     try {
-      const response = await api.post(
-        "http://localhost:6082/mindmap",
+      const response = await axios.post(
+        "/mindmap",
         { text: fileContent },
         {
           headers: { "Content-Type": "application/json" },
@@ -564,7 +565,7 @@ const Home = () => {
               <h2 className="text-l mb-6 text-center">Chào bạn, {userInfo?.name}!</h2>
               <textarea
                 className="w-full h-24 p-2 border rounded-md mb-4"
-                placeholder="Nhập văn bản hoặc tải lên tài liệu có sẵn."
+                placeholder="Nhập văn bản hoặc tải lên tài liệu (.txt) có sẵn."
                 value={fileContent}
                 onChange={(e) => setFileContent(e.target.value)}
                 style={{
