@@ -45,7 +45,7 @@ const Login = () => {
       } else {
         console.warn("❌ Không nhận được token từ server!");
       }
-      toast.success(data.message || "Đăng nhập thành công!");
+      // toast.success(data.message || "Đăng nhập thành công!");
       dispatch(signInSuccess(data));
       navigate("/homepage");
     } catch (errorMessage) {
