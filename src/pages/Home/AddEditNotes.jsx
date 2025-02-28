@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import { MdClose } from "react-icons/md";
 import TagInput from "../../components/Input/TagInput ";
@@ -11,13 +11,20 @@ const AddEditNotes = ({ onClose, noteData, type, getAllNotes }) => {
   const [tags, setTags] = useState(noteData?.tags || []);
   const [error, setError] = useState(null);
 
+
+  useEffect(() => {
+    setTitle(noteData?.title || "");
+    setContent(noteData?.content || "");
+    setTags(noteData?.tags || []);
+  }, [noteData]);
+
   // Edit Note
   const editNote = async () => {
     const noteId = noteData._id;
 
     try {
       const res = await api.post(
-        `http://localhost:3000/api/note/edit/` + noteId,
+        `https://memmomind-be-ycwv.onrender.com/api/note/edit/` + noteId,
         { title, content, tags },
         { withCredentials: true }
       );
@@ -41,7 +48,7 @@ const AddEditNotes = ({ onClose, noteData, type, getAllNotes }) => {
   const addNewNote = async () => {
     try {
       const res = await api.post(
-        "http://localhost:3000/api/note/add",
+        "https://memmomind-be-ycwv.onrender.com/api/note/add",
         { title, content, tags },
         { withCredentials: true }
       );
