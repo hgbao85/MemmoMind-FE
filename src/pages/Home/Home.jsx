@@ -1,18 +1,19 @@
 import { useEffect, useState, useRef } from "react";
 import NoteCard from "../../components/Cards/NoteCard";
-import { MdClose, MdOutlineMenu, MdFavorite, MdDelete, MdHome } from "react-icons/md";
+import { MdClose, MdAdd, MdOutlineMenu, MdFavorite, MdDelete, MdHome } from "react-icons/md";
 import AddEditNotes from "./AddEditNotes";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/Navbar";
 import { toast } from "react-toastify";
-import EmptyCard from "../../components/EmptyCard/EmptyCard";
+// import EmptyCard from "../../components/EmptyCard/EmptyCard";
 import api from "../../services/api";
 import axios from "axios";
 
 const Home = () => {
   const { currentUser } = useSelector((state) => state.user);
   const initialUserCheck = useRef(false);
+  const [formKey, setFormKey] = useState(0);
 
   const [userInfo, setUserInfo] = useState(null);
   const [allNotes, setAllNotes] = useState([]);
@@ -23,7 +24,6 @@ const Home = () => {
   const [isSearch, setIsSearch] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(true);
-  const [isAddEditVisible, setIsAddEditVisible] = useState(false);
   const [addEditType, setAddEditType] = useState("add");
   const [noteData, setNoteData] = useState(null);
   const [fileContent, setFileContent] = useState("");
@@ -31,10 +31,10 @@ const Home = () => {
   const [summary, setSummary] = useState("");
   const [flashcard, setFlashCard] = useState("");
   const [showAllNotes, setShowAllNotes] = useState(true);
-  const [selectedNote, setSelectedNote] = useState(null);
-  const [imageSrc, setImageSrc] = useState(null); // Dùng cho ảnh
+  // const [selectedNote, setSelectedNote] = useState(null);
+  const [imageSrc, setImageSrc] = useState(null);
   const [pdfUrl, setPdfUrl] = useState(null);
-  // const fileInputRef = useRef(null);// Chứa nội dung TXT
+  const [isManuallyClosed, setIsManuallyClosed] = useState(false);
   const [uploadedFile, setUploadedFile] = useState(null);
 
   const navigate = useNavigate();
@@ -48,6 +48,8 @@ const Home = () => {
         getUserInfo();
         getAllNotes();
         getTrashedNotes();
+        setAddEditType("add");
+        setIsManuallyClosed(false);
       }
     }
   }, [currentUser, navigate]);
@@ -93,9 +95,16 @@ const Home = () => {
     }
   };
 
-  const handleSelectNote = (note) => {
-    setSelectedNote(note); // 🔄 Cập nhật ghi chú đang được chọn
+  // const handleSelectNote = (note) => {
+  //   setSelectedNote(note);
+  // };
+
+  const handleAddNote = (note) => {
+    setIsManuallyClosed(false);
+    setNoteData(note);
+    setAddEditType("add");
   };
+
 
   const handleShowAllNotes = () => {
     setShowAllNotes(true);
@@ -104,21 +113,21 @@ const Home = () => {
   };
 
   // 📌 Lấy danh sách ghi chú đã ghim (isPinned=true)
-  const getPinnedNotes = async () => {
-    try {
-      const res = await api.get(`https://memmomind-be-ycwv.onrender.com/api/note/all?isPinned=true`, {
-        withCredentials: true
-      });
+  // const getPinnedNotes = async () => {
+  //   try {
+  //     const res = await api.get(`https://memmomind-be-ycwv.onrender.com/api/note/all?isPinned=true`, {
+  //       withCredentials: true
+  //     });
 
-      if (!res.data.notes) return;
+  //     if (!res.data.notes) return;
 
-      const filteredNotes = res.data.notes.filter((note) => !note.isDeleted);
-      setPinnedNotes(filteredNotes);
-    } catch (error) {
-      console.error("Error fetching pinned notes:", error);
-      toast.error("Lỗi khi tải danh sách ghi chú đã ghim!");
-    }
-  };
+  //     const filteredNotes = res.data.notes.filter((note) => !note.isDeleted);
+  //     setPinnedNotes(filteredNotes);
+  //   } catch (error) {
+  //     console.error("Error fetching pinned notes:", error);
+  //     toast.error("Lỗi khi tải danh sách ghi chú đã ghim!");
+  //   }
+  // };
 
   const updateIsPinned = async (noteData) => {
     const noteId = noteData._id;
@@ -166,10 +175,10 @@ const Home = () => {
   };
 
 
-  const handleEdit = (noteDetails) => {
+  const handleEdit = (note) => {
+    setIsManuallyClosed(false);
+    setNoteData(note);
     setAddEditType("edit");
-    setNoteData(noteDetails);
-    setIsAddEditVisible(true);
   };
 
   const onSearchNote = async (query) => {
@@ -203,7 +212,6 @@ const Home = () => {
   const handleClearSearch = () => {
     setIsSearch(false);
     getAllNotes();
-    // toast.info("Đã xóa bộ lọc tìm kiếm!");
   };
 
   // Di chuyển ghi chú vào thùng rác
@@ -309,162 +317,140 @@ const Home = () => {
     }
   };
 
-  // File upload
-//   const handleFileChange = (event) => {
-//     const file = event.target.files[0];
-
-//     if (file && file.type === "text/plain") {
-//       const reader = new FileReader();
-//       reader.onload = () => {
-//         setFileContent(reader.result);
-//       };
-//       reader.readAsText(file);
-//     } else {
-//       toast.error("Vui lòng chọn tệp văn bản (.txt)");
-//     }
-//   };
-
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
     if (!file) return;
-  
+
     const reader = new FileReader();
     setUploadedFile(file); // Lưu file để gửi API
-  
+
     if (file.type === "text/plain") {
       reader.onload = (e) => setFileContent(e.target.result);
       reader.readAsText(file);
     } else if (file.type.startsWith("image/")) {
-    const imageUrl = URL.createObjectURL(file);
-        setImageSrc(imageUrl);
-        setPdfUrl(null);
+      const imageUrl = URL.createObjectURL(file);
+      setImageSrc(imageUrl);
+      setPdfUrl(null);
     } else if (file.type === "application/pdf") {
-        const pdfUrl = URL.createObjectURL(file);
-        setPdfUrl(pdfUrl);
-        setImageSrc(null);
+      const pdfUrl = URL.createObjectURL(file);
+      setPdfUrl(pdfUrl);
+      setImageSrc(null);
     } else {
       alert("Chỉ hỗ trợ .txt, .pdf, .jpg, .png");
     }
   };
-  
 
-  // const handleUploadClick = () => {
-  //   fileInputRef.current.click();
-  // };
+  // Chuyển file thành base64
+  const convertFileToBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result.split(",")[1]); // Lấy phần Base64
+      reader.onerror = (error) => reject(error);
+    });
+  };
 
-// Hàm chuyển đổi file thành base64 (chỉ áp dụng cho ảnh/PDF)
-const convertFileToBase64 = (file) => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result.split(",")[1]); // Lấy phần Base64
-    reader.onerror = (error) => reject(error);
-  });
-};
 
-// Hàm tóm tắt
-const handleSummarize = async () => {
-  if (!fileContent.trim() && !uploadedFile) {
-    toast.error("Vui lòng nhập văn bản hoặc tải lên tệp trước khi tóm tắt!");
-    return;
-  }
-
-  try {
-    let payload = { userId: currentUser.user._id };
-
-    if (uploadedFile) {
-      if (uploadedFile.type === "text/plain") {
-        // Nếu là file TXT, đọc nội dung và gửi dưới dạng text
-        const text = await uploadedFile.text();
-        payload.text = text;
-      } else {
-        // Nếu là ảnh hoặc PDF, chuyển sang Base64
-        const base64String = await convertFileToBase64(uploadedFile);
-        payload.file = base64String;
-        payload.fileType = uploadedFile.type;
-      }
-    } else {
-      payload.text = fileContent;
+  const handleSummarize = async () => {
+    if (!fileContent.trim() && !uploadedFile) {
+      toast.error("Vui lòng nhập văn bản hoặc tải lên tệp trước khi tóm tắt!");
+      return;
     }
 
-    const response = await axios.post("/summarize", payload, {
-      headers: { "Content-Type": "application/json" },
-    });
+    try {
+      let payload = { userId: currentUser.user._id };
 
-    setSummary(response.data.response || "Không thể tạo tóm tắt.");
-  } catch (error) {
-    console.error("Error summarizing:", error.message);
-    toast.error("Có lỗi xảy ra khi tóm tắt!");
-  }
-};
-
-// Hàm tạo Mindmap
-const handleGenerateMindmap = async () => {
-  if (!fileContent.trim() && !uploadedFile) {
-    toast.error("Vui lòng nhập văn bản hoặc tải lên tệp trước khi tạo mindmap!");
-    return;
-  }
-
-  try {
-    let payload = { userId: currentUser.user._id };
-
-    if (uploadedFile) {
-      if (uploadedFile.type === "text/plain") {
-        const text = await uploadedFile.text();
-        payload.text = text;
+      if (uploadedFile) {
+        if (uploadedFile.type === "text/plain") {
+          const text = await uploadedFile.text();
+          payload.text = text;
+        } else {
+          const base64String = await convertFileToBase64(uploadedFile);
+          payload.file = base64String;
+          payload.fileType = uploadedFile.type;
+          payload.fileName = uploadedFile.name;
+        }
       } else {
-        const base64String = await convertFileToBase64(uploadedFile);
-        payload.file = base64String;
-        payload.fileType = uploadedFile.type;
+        payload.text = fileContent;
       }
-    } else {
-      payload.text = fileContent;
+
+      const response = await axios.post("/summarize", payload, {
+        headers: { "Content-Type": "application/json" },
+      });
+
+      setSummary(response.data.response || "Không thể tạo tóm tắt.");
+    } catch (error) {
+      console.error("Error summarizing:", error.message);
+      toast.error("Có lỗi xảy ra khi tóm tắt!");
+    }
+  };
+
+
+  const handleGenerateMindmap = async () => {
+    if (!fileContent.trim() && !uploadedFile) {
+      toast.error("Vui lòng nhập văn bản hoặc tải lên tệp trước khi tạo mindmap!");
+      return;
     }
 
-    const response = await axios.post("/mindmap", payload, {
-      headers: { "Content-Type": "application/json" },
-    });
+    try {
+      let payload = { userId: currentUser.user._id };
 
-    setMindmapHtml(response.data);
-  } catch (error) {
-    console.error("Error generating mindmap:", error);
-    toast.error("Có lỗi xảy ra khi tạo mindmap!");
-  }
-};
-
-// Hàm tạo Flashcard
-const handleGenerateFlashCard = async () => {
-  if (!fileContent.trim() && !uploadedFile) {
-    toast.error("Vui lòng nhập văn bản hoặc tải lên tệp trước khi tạo flashcard!");
-    return;
-  }
-
-  try {
-    let payload = { userId: currentUser.user._id };
-
-    if (uploadedFile) {
-      if (uploadedFile.type === "text/plain") {
-        const text = await uploadedFile.text();
-        payload.text = text;
+      if (uploadedFile) {
+        if (uploadedFile.type === "text/plain") {
+          const text = await uploadedFile.text();
+          payload.text = text;
+        } else {
+          const base64String = await convertFileToBase64(uploadedFile);
+          payload.file = base64String;
+          payload.fileType = uploadedFile.type;
+        }
       } else {
-        const base64String = await convertFileToBase64(uploadedFile);
-        payload.file = base64String;
-        payload.fileType = uploadedFile.type;
+        payload.text = fileContent;
       }
-    } else {
-      payload.text = fileContent;
+
+      const response = await axios.post("/mindmap", payload, {
+        headers: { "Content-Type": "application/json" },
+      });
+
+      setMindmapHtml(response.data);
+    } catch (error) {
+      console.error("Error generating mindmap:", error);
+      toast.error("Có lỗi xảy ra khi tạo mindmap!");
+    }
+  };
+
+  const handleGenerateFlashCard = async () => {
+    if (!fileContent.trim() && !uploadedFile) {
+      toast.error("Vui lòng nhập văn bản hoặc tải lên tệp trước khi tạo flashcard!");
+      return;
     }
 
-    const response = await axios.post("/flashcard", payload, {
-      headers: { "Content-Type": "application/json" },
-    });
+    try {
+      let payload = { userId: currentUser.user._id };
 
-    setFlashCard(response.data);
-  } catch (error) {
-    console.error("Error generating flashcard:", error);
-    toast.error("Có lỗi xảy ra khi tạo flashcard!");
-  }
-};
+      if (uploadedFile) {
+        if (uploadedFile.type === "text/plain") {
+          const text = await uploadedFile.text();
+          payload.text = text;
+        } else {
+          const base64String = await convertFileToBase64(uploadedFile);
+          payload.file = base64String;
+          payload.fileType = uploadedFile.type;
+        }
+      } else {
+        payload.text = fileContent;
+      }
+
+      const response = await axios.post("/flashcard", payload, {
+        headers: { "Content-Type": "application/json" },
+      });
+
+      setFlashCard(response.data);
+    } catch (error) {
+      console.error("Error generating flashcard:", error);
+      toast.error("Có lỗi xảy ra khi tạo flashcard!");
+    }
+  };
 
 
 
@@ -486,11 +472,21 @@ const handleGenerateFlashCard = async () => {
             {isSidebarOpen && (
               <button
                 className="w-12 h-12 flex items-center justify-center rounded-md"
-                onClick={handleShowAllNotes} // 🔄 Khi nhấn, hiển thị danh sách tất cả ghi chú
+                onClick={handleShowAllNotes}
               >
                 <MdHome className="text-[24px] text-black" />
               </button>
             )}
+
+            {isSidebarOpen && (
+              <button
+                className="w-12 h-12 flex items-center justify-center rounded-md"
+                onClick={handleAddNote}
+              >
+                <MdAdd className="text-[24px] text-black" />
+              </button>
+            )}
+
 
             {isSidebarOpen && (
               <button
@@ -576,83 +572,62 @@ const handleGenerateFlashCard = async () => {
           className={`flex-1 p-5 overflow-y-auto h-full transition-all duration-300 ${isSidebarOpen ? "ml-0" : "ml-16"}`}
           style={{ margin: "auto", marginRight: rightSidebarWidth }}
         >
-          {!isAddEditVisible && !summary && !mindmapHtml ? (
-            <EmptyCard
-              message={(
-                <>
-                  Chọn một ghi chú có sẵn hoặc{" "}
-                  <span
-                    className="underline cursor-pointer text-black font-semibold"
-                    onClick={() => {
-                      setAddEditType("add");
-                      setNoteData(null);
-                      setIsAddEditVisible(true);
-                    }}
-                  >
-                    tạo
-                  </span>{" "}
-                  ghi chú mới
-                </>
-              )}
-            />
-          ) : (
-            <>
-              {isAddEditVisible && (
-                <AddEditNotes
-                  onClose={() => {
-                    setIsAddEditVisible(false);
-                    setNoteData(null);
-                    handleAddNoteSuccess();
-                  }}
-                  noteData={noteData}
-                  type={addEditType}
-                  getAllNotes={getAllNotes}
-                />
-              )}
-              {summary && (
-                <div className="relative mt-4 p-2 border rounded-md bg-gray-200">
-                  <button
-                    onClick={() => setSummary(null)}
-                    className="absolute top-2 right-2 text-gray-600 hover:text-black"
-                    aria-label="Close Summary"
-                  >
-                    <MdClose className="text-xl" />
-                  </button>
-                  <h3 className="text-lg font-semibold">Tóm tắt:</h3>
-                  <p className="break-words whitespace-pre-wrap">{summary}</p>
-                </div>
-              )}
-              {mindmapHtml && (
-                <div className="relative mt-4 p-2 border rounded-md bg-gray-100">
-                  <button
-                    onClick={() => setMindmapHtml(null)}
-                    className="absolute top-2 right-2 text-gray-600 hover:text-black"
-                    aria-label="Close Mindmap"
-                  >
-                    <MdClose className="text-xl" />
-                  </button>
-                  <iframe
-                    srcDoc={mindmapHtml}
-                    style={{ width: "100%", height: "400px", border: "none" }}
-                  />
-                </div>
-              )}
-              {flashcard && (
-                <div className="relative mt-4 p-2 border rounded-md bg-gray-100">
-                  <button
-                    onClick={() => setFlashCard(null)}
-                    className="absolute top-2 right-2 text-gray-600 hover:text-black"
-                    aria-label="Close Flashcard"
-                  >
-                    <MdClose className="text-xl" />
-                  </button>
-                  <iframe
-                    srcDoc={flashcard}
-                    style={{ width: "100%", height: "400px", border: "none" }}
-                  />
-                </div>
-              )}
-            </>
+          {!isManuallyClosed && (
+            <AddEditNotes
+              key={formKey}
+              onClose={() => {
+                setNoteData(null);
+                setAddEditType("add");
+                setIsManuallyClosed(true);
+                handleAddNoteSuccess();
+                setFormKey(prev => prev + 1);
+              }}
+              noteData={noteData}
+              type={addEditType}
+              getAllNotes={getAllNotes}
+            />)}
+          {summary && (
+            <div className="relative mt-4 p-2 border rounded-md bg-gray-200">
+              <button
+                onClick={() => setSummary(null)}
+                className="absolute top-2 right-2 text-gray-600 hover:text-black"
+                aria-label="Close Summary"
+              >
+                <MdClose className="text-xl" />
+              </button>
+              <h3 className="text-lg font-semibold">Tóm tắt:</h3>
+              <p className="break-words whitespace-pre-wrap">{summary}</p>
+            </div>
+          )}
+          {mindmapHtml && (
+            <div className="relative mt-4 p-2 border rounded-md bg-gray-100">
+              <button
+                onClick={() => setMindmapHtml(null)}
+                className="absolute top-2 right-2 text-gray-600 hover:text-black"
+                aria-label="Close Mindmap"
+              >
+                <MdClose className="text-xl" />
+              </button>
+              <iframe
+                srcDoc={mindmapHtml}
+                style={{ width: "100%", height: "400px", border: "none" }}
+              />
+            </div>
+          )}
+          {flashcard && (
+            <div className="relative mt-4 p-2 border rounded-md bg-gray-100">
+              <button
+                onClick={() => setFlashCard(null)}
+                className="absolute top-2 right-2 text-gray-600 hover:text-black"
+                aria-label="Close Flashcard"
+              >
+                <MdClose className="text-xl" />
+              </button>
+              <iframe
+                srcDoc={flashcard}
+                style={{ width: "100%", height: "400px", border: "none" }}
+              />
+            </div>
           )}
         </main>
 
@@ -678,29 +653,29 @@ const handleGenerateFlashCard = async () => {
             <>
               <h2 className="text-l mb-6 text-center">Chào bạn, {userInfo?.name}!</h2>
               <div className="max-w-lg mx-auto p-4 border rounded-md">
-      <textarea
-        className="w-full h-24 p-2 border rounded-md mb-4"
-        placeholder="Nhập văn bản hoặc tải lên tài liệu (.txt) có sẵn."
-        value={fileContent}
-        onChange={(e) => setFileContent(e.target.value)}
-        style={{ maxHeight: "500px", minHeight: "150px", resize: "vertical" }}
-      ></textarea>
+                <textarea
+                  className="w-full h-24 p-2 border rounded-md mb-4"
+                  placeholder="Nhập văn bản hoặc tải lên tài liệu (.txt) có sẵn."
+                  value={fileContent}
+                  onChange={(e) => setFileContent(e.target.value)}
+                  style={{ maxHeight: "500px", minHeight: "150px", resize: "vertical" }}
+                ></textarea>
 
-      <input type="file" accept=".txt,.pdf,image/*" onChange={handleFileUpload} className="mb-4" />
+                <input type="file" accept=".txt,.pdf,image/*" onChange={handleFileUpload} className="mb-4" />
 
-      {imageSrc && <img src={imageSrc} alt="Uploaded" className="w-1/2 h-auto mt-2 border rounded-md" />}
+                {imageSrc && <img src={imageSrc} alt="Uploaded" className="w-1/2 h-auto mt-2 border rounded-md" />}
 
-      {pdfUrl && (
-        <a href={pdfUrl} target="_blank" rel="noopener noreferrer" className="text-blue-500 underline mt-2 block">
-          Xem PDF
-        </a>
-      )}
-      {imageSrc && (
-        <a href={imageSrc} target="_blank" rel="noopener noreferrer" className="text-blue-500 underline mt-2 block">
-          Xem ảnh
-        </a>
-      )}
-    </div>
+                {pdfUrl && (
+                  <a href={pdfUrl} target="_blank" rel="noopener noreferrer" className="text-blue-500 underline mt-2 block">
+                    Xem PDF
+                  </a>
+                )}
+                {imageSrc && (
+                  <a href={imageSrc} target="_blank" rel="noopener noreferrer" className="text-blue-500 underline mt-2 block">
+                    Xem ảnh
+                  </a>
+                )}
+              </div>
 
               {/* <input
                 type="file"
