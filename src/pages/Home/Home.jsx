@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import NoteCard from "../../components/Cards/NoteCard";
-import { MdClose, MdAdd, MdOutlineMenu, MdFavorite, MdDelete, MdHome, MdArrowBack, MdArrowForward } from "react-icons/md";
+import { MdClose, MdAdd, MdOutlineMenu, MdFavorite, MdDelete, MdHome, MdArrowBack, MdArrowForward, MdSave } from "react-icons/md";
 import AddEditNotes from "./AddEditNotes";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -110,7 +110,6 @@ const Home = () => {
     setAddEditType("add");
   };
 
-
   const handleShowAllNotes = () => {
     setShowAllNotes(true);
     setShowPinned(false);
@@ -165,7 +164,6 @@ const Home = () => {
       toast.error(error.message);
     }
   };
-
 
   // 🗑 Lấy danh sách ghi chú trong thùng rác (isDeleted=true)
   const getTrashedNotes = async () => {
@@ -371,6 +369,204 @@ const Home = () => {
       setIsFlipped(false);
       setIsTransitioning(false);
     }, 100);
+  };
+
+  const saveMindmapAsHTML = () => {
+    if (!mindmapHtml) {
+      toast.error("Không có Mindmap để lưu!");
+      return;
+    }
+
+    const blob = new Blob([mindmapHtml], { type: "text/html" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "mindmap.html";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const saveFlashcardAsHTML = () => {
+    let flashcardHTML = `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Flashcards</title>
+        <style>
+          * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+          }
+          body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #f8f9fa;
+          }
+          h1 {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 20px;
+          }
+
+          /* 📌 Thêm khung viền bao quanh */
+          .flashcard-wrapper {
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.1);
+            border: 2px solid #d1d5db;
+            width: 90%;
+            max-width: 650px;
+            text-align: center;
+          }
+
+          .flashcard-container {
+            width: 100%;
+            max-width: 600px;
+            height: 300px;
+            perspective: 1000px;
+            position: relative;
+            margin: auto;
+          }
+
+          .flashcard {
+            width: 100%;
+            height: 100%;
+            transform-style: preserve-3d;
+            transition: transform 0.6s ease-in-out;
+            cursor: pointer;
+            position: relative;
+            border-radius: 12px;
+          }
+
+          .flipped {
+            transform: rotateY(180deg);
+          }
+
+          .front, .back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.15);
+            font-size: 18px;
+            font-weight: bold;
+          }
+
+          .front {
+            background: #cfe2ff;
+            color: #0d47a1;
+          }
+
+          .back {
+            background: #ffd6a5;
+            transform: rotateY(180deg);
+            color: #5d4037;
+          }
+
+          .navigation {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 20px;
+            gap: 30px;
+          }
+
+          .btn {
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            transition: transform 0.2s ease-in-out;
+          }
+
+          .btn:hover {
+            transform: scale(1.2);
+          }
+
+          #counter {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+          }
+        </style>
+      </head>
+      <body>
+        <h1>Flashcards</h1>
+
+        <!-- 📌 Thêm khung bao quanh -->
+        <div class="flashcard-wrapper">
+          <div class="flashcard-container">
+            <div class="flashcard" id="flashcard">
+              <div class="front" id="flashcard-front"></div>
+              <div class="back" id="flashcard-back"></div>
+            </div>
+          </div>
+          <div class="navigation">
+            <button class="btn" onclick="prevCard()">⬅</button>
+            <span id="counter">1 / ${flashcard.length}</span>
+            <button class="btn" onclick="nextCard()">➡</button>
+          </div>
+        </div>
+
+        <script>
+          let flashcards = ${JSON.stringify(flashcard)};
+          let currentIndex = 0;
+          let isFlipped = false;
+
+          function updateFlashcard() {
+            let card = flashcards[currentIndex];
+            let topic = Object.keys(card)[0];
+            let content = card[topic];
+            document.getElementById("flashcard-front").innerHTML = "<h3 style='margin-bottom: 10px; text-transform: uppercase; font-size: 16px; font-weight: bold;'>" + topic + "</h3><p style='font-size: 20px; font-weight: 600;'>" + (content.Question?.[0] || "Không có dữ liệu") + "</p>";
+            document.getElementById("flashcard-back").innerHTML = "<p style='font-size: 20px; font-weight: 600;'>" + (content.Answer?.[0] || "Không có dữ liệu") + "</p>";
+            document.getElementById("counter").innerText = (currentIndex + 1) + " / " + flashcards.length;
+            document.getElementById("flashcard").classList.remove("flipped");
+            isFlipped = false;
+          }
+
+          document.getElementById("flashcard").addEventListener("click", () => {
+            isFlipped = !isFlipped;
+            document.getElementById("flashcard").classList.toggle("flipped");
+          });
+
+          function nextCard() {
+            currentIndex = (currentIndex + 1) % flashcards.length;
+            updateFlashcard();
+          }
+
+          function prevCard() {
+            currentIndex = (currentIndex - 1 + flashcards.length) % flashcards.length;
+            updateFlashcard();
+          }
+
+          updateFlashcard();
+        </script>
+      </body>
+      </html>
+    `;
+
+    const blob = new Blob([flashcardHTML], { type: "text/html" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "flashcard.html";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
   };
 
   const handleSummarize = async () => {
@@ -630,59 +826,100 @@ const Home = () => {
             </div>
           )}
           {mindmapHtml && (
-            <div className="relative mt-4 p-2 border rounded-md bg-gray-100">
-              <button
-                onClick={() => setMindmapHtml(null)}
-                className="absolute top-2 right-2 text-gray-600 hover:text-black"
-                aria-label="Close Mindmap"
-              >
-                <MdClose className="text-xl" />
-              </button>
-              <iframe
-                srcDoc={mindmapHtml}
-                style={{ width: "100%", height: "400px", border: "none" }}
-              />
-            </div>
-          )}
-          {flashcard && flashcard.length > 0 && (
-            <div className="relative mt-6 p-5 border rounded-lg bg-gray-100 flex flex-col items-center shadow-md">
-              <button
-                onClick={() => setFlashCard([])}
-                className="absolute top-3 right-3 text-gray-600 hover:text-black"
-                aria-label="Close Flashcard"
-              >
-                <MdClose className="text-2xl" />
-              </button>
-
-              <div className="flashcard-container">
-                <div
-                  className={`flashcard ${isFlipped ? "flipped" : ""} ${isTransitioning ? "hidden" : ""}`}
-                  onClick={() => setIsFlipped(!isFlipped)}
+            <div
+              className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 p-4"
+              style={{ zIndex: 1000 }}
+            >
+              <div className="relative w-full max-w-5xl bg-white rounded-lg shadow-lg p-4">
+                <button
+                  onClick={() => setMindmapHtml(null)}
+                  className="absolute top-2 right-2 text-gray-600 hover:text-black"
+                  aria-label="Close Mindmap"
                 >
-                  <div className="front">
-                    <h3 className="text-sm font-semibold uppercase tracking-wide">{topic}</h3>
-                    <p className="question text-xl font-bold text-gray-800 mt-5">
-                      {content?.Question?.[0] || "Không có dữ liệu"}
-                    </p>
-                  </div>
-                  <div className="back">
-                    <p className="answer text-xl font-bold text-gray-900 mt-5">
-                      {content?.Answer?.[0] || "Không có dữ liệu"}
-                    </p>
-                  </div>
+                  <MdClose className="text-xl" />
+                </button>
+
+                <h2 className="text-xl font-bold text-center text-gray-800 mb-3">Mindmap</h2>
+
+                <iframe
+                  srcDoc={mindmapHtml}
+                  className="w-full h-[510px] border-none rounded-md shadow"
+                  style={{
+                    display: "block",
+                    overflow: "hidden",
+                  }}
+                />
+
+                <div className="flex justify-end mt-3">
+                  <button
+                    onClick={saveMindmapAsHTML}
+                    className="px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 flex items-center shadow-sm text-sm"
+                  >
+                    <MdSave className="inline-block mr-1 text-base" />
+                    Tải Mindmap
+                  </button>
                 </div>
               </div>
+            </div>
+          )}
 
-              <div className="flex justify-between items-center w-full max-w-lg mt-6">
-                <button onClick={handlePrev} className="btn-arrow">
-                  <MdArrowBack className="text-3xl" />
+          {flashcard && flashcard.length > 0 && (
+            <div
+              className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 p-4"
+              style={{ zIndex: 1000 }}
+            >
+              <div className="relative w-full max-w-3xl bg-white rounded-lg shadow-lg p-6 flex flex-col items-center">
+
+                <button
+                  onClick={() => setFlashCard([])}
+                  className="absolute top-3 right-3 text-gray-600 hover:text-black"
+                  aria-label="Close Flashcard"
+                >
+                  <MdClose className="text-2xl" />
                 </button>
-                <p className="text-lg font-semibold text-gray-700">
-                  {currentIndex + 1} / {flashcard.length}
-                </p>
-                <button onClick={handleNext} className="btn-arrow">
-                  <MdArrowForward className="text-3xl" />
-                </button>
+
+                <h2 className="text-2xl font-bold text-gray-800 mb-4 text-center">Flashcards</h2>
+
+                <div className="flashcard-container w-full max-w-2xl">
+                  <div
+                    className={`flashcard ${isFlipped ? "flipped" : ""} ${isTransitioning ? "hidden" : ""}`}
+                    onClick={() => setIsFlipped(!isFlipped)}
+                  >
+                    <div className="front">
+                      <h3 className="text-lg font-semibold uppercase tracking-wide text-center">{topic}</h3>
+                      <p className="question text-xl font-bold text-gray-800 mt-4 text-center">
+                        {content?.Question?.[0] || "Không có dữ liệu"}
+                      </p>
+                    </div>
+                    <div className="back">
+                      <p className="answer text-xl font-bold text-gray-900 mt-4 text-center">
+                        {content?.Answer?.[0] || "Không có dữ liệu"}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex justify-between items-center w-full max-w-md mt-4">
+                  <button onClick={handlePrev} className="btn-arrow">
+                    <MdArrowBack className="text-3xl" />
+                  </button>
+                  <p className="text-lg font-semibold text-gray-700">
+                    {currentIndex + 1} / {flashcard.length}
+                  </p>
+                  <button onClick={handleNext} className="btn-arrow">
+                    <MdArrowForward className="text-3xl" />
+                  </button>
+                </div>
+
+                <div className="w-full flex justify-end mt-3">
+                  <button
+                    onClick={saveFlashcardAsHTML}
+                    className="px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 flex items-center shadow-sm text-sm"
+                  >
+                    <MdSave className="inline-block mr-1 text-base" />
+                    Tải xuống
+                  </button>
+                </div>
               </div>
             </div>
           )}
@@ -734,20 +971,7 @@ const Home = () => {
                 )}
               </div>
 
-              {/* <input
-                type="file"
-                accept=".txt"
-                onChange={handleFileChange}
-                className="hidden"
-                ref={fileInputRef}
-              /> */}
               <div className="flex justify-between gap-2 pt-2">
-                {/* <button
-                  className="w-12 h-12 text-black rounded-md flex items-center justify-center border border-gray-600"
-                  onClick={handleUploadClick}
-                >
-                  <MdUpload className="text-[24px] text-black" />
-                </button> */}
                 <button
                   className="flex-1 h-12 text-black rounded-md flex items-center justify-center border border-gray-600"
                   onClick={handleSummarize}
@@ -758,13 +982,13 @@ const Home = () => {
                   className="flex-1 h-12 text-black rounded-md flex items-center justify-center border border-gray-600"
                   onClick={handleGenerateMindmap}
                 >
-                  Mindmap
+                  MindMap
                 </button>
                 <button
                   className="flex-1 h-12 text-black rounded-md flex items-center justify-center border border-gray-600"
                   onClick={handleGenerateFlashCard}
                 >
-                  Flash Card
+                  FlashCards
                 </button>
               </div>
             </>
