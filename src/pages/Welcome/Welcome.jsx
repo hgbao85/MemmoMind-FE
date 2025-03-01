@@ -13,7 +13,7 @@ const Welcome = () => {
     const features = [
         {
             icon: (
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 mx-auto text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 mx-auto text-blue-500 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
                 </svg>
@@ -22,16 +22,16 @@ const Welcome = () => {
         },
         {
             icon: (
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 mx-auto text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 14l2 2 4-4" />
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 mx-auto text-green-500 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6a2 2 0 012-2h12a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V6z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16M4 12h16" />
                 </svg>
             ),
-            description: "Quản lý công việc dễ dàng",
+            description: "Tạo Flashcard",
         },
         {
             icon: (
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 mx-auto text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 mx-auto text-purple-500 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 10h16M4 14h16M4 18h7" />
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 18h6" />
                 </svg>
@@ -40,7 +40,7 @@ const Welcome = () => {
         },
         {
             icon: (
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 mx-auto text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 mx-auto text-yellow-500 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <circle cx="12" cy="12" r="3" strokeWidth="2" />
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3v3m0 12v3m9-9h-3m-12 0H3m2.83-7.17l2.12 2.12m8.49 8.49l2.12 2.12m0-12.73l-2.12 2.12m-8.49 8.49l-2.12 2.12" />
                 </svg>
@@ -56,15 +56,9 @@ const Welcome = () => {
                 <div className="text-center md:w-1/2">
                     <img src={logo} alt="MemmoMind Logo" className="w-96 mx-auto" />
                     <p className="text-xl mt-6 text-gray-800">
-                        Chào mừng bạn đến với thế giới Note mới cùng MEMMOMIND
+                        Chào mừng bạn đến với thế giới Note cùng MEMMOMIND
                         <span className="inline-block ml-2" role="img" aria-label="smile">😊</span>
                     </p>
-                    <a
-                        href="/login"
-                        className="mt-6 inline-block px-6 py-2 bg-customGray font-bold text-black rounded-md text-lg hover:bg-gray-400 transition-all duration-300"
-                    >
-                        Trải nghiệm ngay
-                    </a>
                 </div>
 
                 <div className="md:w-1/2 mt-8 md:mt-0 md:pl-12">
@@ -74,12 +68,16 @@ const Welcome = () => {
                             {features.map((feature, index) => (
                                 <div
                                     key={index}
-                                    className={`bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 cursor-pointer 
-                                    ${activeFeature === index ? 'h-auto' : 'h-20'}`}  // Set height based on active feature
+                                    className={`bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 cursor-pointer transform
+                                    ${activeFeature === index ? 'scale-110' : ''}`}
                                     onClick={() => setActiveFeature(activeFeature === index ? null : index)}
                                 >
-                                    {feature.icon}
-                                    <div className={`mt-2 text-gray-700 ${activeFeature === index ? 'block text-center' : 'hidden'}`}>
+                                    <div className={`transition-all duration-300 ${activeFeature === index ? 'hidden' : 'block'}`}>
+                                        {feature.icon}
+                                    </div>
+                                    <div className={`text-gray-700 transition-all duration-300
+                                        ${activeFeature === index ? 'opacity-100 scale-100 text-center' : 'opacity-0 scale-95 hidden'}`}
+                                    >
                                         {feature.description}
                                     </div>
                                 </div>
@@ -89,10 +87,17 @@ const Welcome = () => {
                 </div>
             </div>
 
-            {/* Footer */}
-            <footer className="bg-customRedGray w-full text-center p-4 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0 md:space-x-6 mt-12">
+            <a
+                href="/login"
+                className="inline-block px-8 py-3 bg-customGray font-bold text-black rounded-md text-lg hover:bg-gray-400 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 border-2 border-gray-400 animate-pulse"
+            >
+                Trải nghiệm ngay ➜
+            </a>
 
-                <div className="flex justify-center pl-[20px]">
+            {/* Footer */}
+            <footer className="bg-customRedGray w-full text-center p-4 flex flex-col md:flex-row justify-between items-center mt-12">
+
+                <div className="flex flex-1 justify-start items-center">
                     <a
                         href="https://www.facebook.com/profile.php?id=61572800944085"
                         target="_blank"
@@ -106,7 +111,7 @@ const Welcome = () => {
                     </a>
                 </div>
 
-                <div className="flex justify-center space-x-2">
+                <div className="flex flex-1 justify-center space-x-2">
                     {[
                         { img: Vyavt, link: "https://www.facebook.com/me.tuongvy170423/" },
                         { img: Hangavt, link: "https://www.facebook.com/profile.php?id=100010611695553" },
@@ -125,12 +130,10 @@ const Welcome = () => {
                     ))}
                 </div>
 
-                <div className="flex justify-center pr-[20px]">
+                <div className="flex flex-1 justify-end items-center">
                     <h3 className="text-sm text-white">© 2025 MemmoMind.io.vn</h3>
                 </div>
-
             </footer>
-
         </div>
     );
 };

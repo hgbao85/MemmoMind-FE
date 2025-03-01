@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import NoteCard from "../../components/Cards/NoteCard";
-import { MdClose, MdAdd, MdOutlineMenu, MdFavorite, MdDelete, MdHome } from "react-icons/md";
+import { MdClose, MdAdd, MdOutlineMenu, MdFavorite, MdDelete, MdHome, MdArrowBack, MdArrowForward } from "react-icons/md";
 import AddEditNotes from "./AddEditNotes";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -9,6 +9,7 @@ import { toast } from "react-toastify";
 // import EmptyCard from "../../components/EmptyCard/EmptyCard";
 import api from "../../services/api";
 import axios from "axios";
+import "./flashcard.css";
 
 const Home = () => {
   const { currentUser } = useSelector((state) => state.user);
@@ -36,7 +37,11 @@ const Home = () => {
   const [pdfUrl, setPdfUrl] = useState(null);
   const [isManuallyClosed, setIsManuallyClosed] = useState(false);
   const [uploadedFile, setUploadedFile] = useState(null);
-
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isFlipped, setIsFlipped] = useState(false);
+  const topic = flashcard.length > 0 && currentIndex < flashcard.length ? Object.keys(flashcard[currentIndex])[0] : "";
+  const content = flashcard.length > 0 && currentIndex < flashcard.length ? flashcard[currentIndex][topic] : null;
+  const [isTransitioning, setIsTransitioning] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -336,7 +341,7 @@ const Home = () => {
       setPdfUrl(pdfUrl);
       setImageSrc(null);
     } else {
-      alert("Chỉ hỗ trợ .txt, .pdf, .jpg, .png");
+      alert("Chỉ hỗ trợ các định dạng file: .txt, .pdf, .jpg, .png");
     }
   };
 
@@ -350,6 +355,23 @@ const Home = () => {
     });
   };
 
+  const handleNext = () => {
+    setIsTransitioning(true);  // Ẩn flashcard trước khi chuyển
+    setTimeout(() => {
+      setCurrentIndex((prev) => (prev + 1) % flashcard.length);
+      setIsFlipped(false); // Reset trạng thái lật
+      setIsTransitioning(false); // Hiển thị flashcard sau khi cập nhật
+    }, 100);
+  };
+
+  const handlePrev = () => {
+    setIsTransitioning(true);
+    setTimeout(() => {
+      setCurrentIndex((prev) => (prev - 1 + flashcard.length) % flashcard.length);
+      setIsFlipped(false);
+      setIsTransitioning(false);
+    }, 100);
+  };
 
   const handleSummarize = async () => {
     if (!fileContent.trim() && !uploadedFile) {
@@ -374,7 +396,7 @@ const Home = () => {
         payload.text = fileContent;
       }
 
-      const response = await axios.post("/summarize", payload, {
+      const response = await axios.post("http://vietserver.ddns.net:6082/summarize", payload, {
         headers: { "Content-Type": "application/json" },
       });
 
@@ -403,12 +425,13 @@ const Home = () => {
           const base64String = await convertFileToBase64(uploadedFile);
           payload.file = base64String;
           payload.fileType = uploadedFile.type;
+          payload.fileName = uploadedFile.name;
         }
       } else {
         payload.text = fileContent;
       }
 
-      const response = await axios.post("/mindmap", payload, {
+      const response = await axios.post("http://vietserver.ddns.net:6082/mindmap", payload, {
         headers: { "Content-Type": "application/json" },
       });
 
@@ -436,16 +459,23 @@ const Home = () => {
           const base64String = await convertFileToBase64(uploadedFile);
           payload.file = base64String;
           payload.fileType = uploadedFile.type;
+          payload.fileName = uploadedFile.name;
         }
       } else {
         payload.text = fileContent;
       }
 
-      const response = await axios.post("/flashcard", payload, {
+      const response = await axios.post("http://vietserver.ddns.net:6082/flashcard", payload, {
         headers: { "Content-Type": "application/json" },
       });
-
-      setFlashCard(response.data);
+      console.log("Flashcard Data:", response.data);
+      if (Array.isArray(response.data) && response.data.length > 0) {
+        setFlashCard(response.data);
+        setCurrentIndex(0);
+      } else {
+        toast.error("Dữ liệu flashcard không hợp lệ!");
+        setFlashCard([]);
+      }
     } catch (error) {
       console.error("Error generating flashcard:", error);
       toast.error("Có lỗi xảy ra khi tạo flashcard!");
@@ -474,7 +504,7 @@ const Home = () => {
                 className="w-12 h-12 flex items-center justify-center rounded-md"
                 onClick={handleShowAllNotes}
               >
-                <MdHome className="text-[24px] text-black" />
+                <MdHome className="text-[24px] text-black hover:text-white" />
               </button>
             )}
 
@@ -483,7 +513,7 @@ const Home = () => {
                 className="w-12 h-12 flex items-center justify-center rounded-md"
                 onClick={handleAddNote}
               >
-                <MdAdd className="text-[24px] text-black" />
+                <MdAdd className="text-[24px] text-black hover:text-white" />
               </button>
             )}
 
@@ -494,7 +524,7 @@ const Home = () => {
                 onClick={handleShowPinned}
               >
                 <MdFavorite
-                  className={`text-[24px] ${showPinned ? "text-red-500" : "text-black"}`}
+                  className={`text-[24px] ${showPinned ? "text-red-500 hover:text-red-600" : "text-black hover:text-red-600"}`}
                 />
               </button>
             )}
@@ -505,7 +535,7 @@ const Home = () => {
                 onClick={handleShowDeleted}
               >
                 <MdDelete
-                  className={`text-[24px] ${showDeleted ? "text-blue-500" : "text-black"}`}
+                  className={`text-[24px] ${showDeleted ? "text-blue-500 hover:text-blue-600" : "text-black hover:text-blue-600"}`}
                 />
               </button>
             )}
@@ -514,7 +544,7 @@ const Home = () => {
               className="w-12 h-12 flex items-center justify-center rounded-md"
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
             >
-              <MdOutlineMenu className="text-[24px] text-black" />
+              <MdOutlineMenu className="text-[24px] text-black hover:text-white" />
             </button>
           </div>
 
@@ -614,19 +644,46 @@ const Home = () => {
               />
             </div>
           )}
-          {flashcard && (
-            <div className="relative mt-4 p-2 border rounded-md bg-gray-100">
+          {flashcard && flashcard.length > 0 && (
+            <div className="relative mt-6 p-5 border rounded-lg bg-gray-100 flex flex-col items-center shadow-md">
               <button
-                onClick={() => setFlashCard(null)}
-                className="absolute top-2 right-2 text-gray-600 hover:text-black"
+                onClick={() => setFlashCard([])}
+                className="absolute top-3 right-3 text-gray-600 hover:text-black"
                 aria-label="Close Flashcard"
               >
-                <MdClose className="text-xl" />
+                <MdClose className="text-2xl" />
               </button>
-              <iframe
-                srcDoc={flashcard}
-                style={{ width: "100%", height: "400px", border: "none" }}
-              />
+
+              <div className="flashcard-container">
+                <div
+                  className={`flashcard ${isFlipped ? "flipped" : ""} ${isTransitioning ? "hidden" : ""}`}
+                  onClick={() => setIsFlipped(!isFlipped)}
+                >
+                  <div className="front">
+                    <h3 className="text-sm font-semibold uppercase tracking-wide">{topic}</h3>
+                    <p className="question text-xl font-bold text-gray-800 mt-5">
+                      {content?.Question?.[0] || "Không có dữ liệu"}
+                    </p>
+                  </div>
+                  <div className="back">
+                    <p className="answer text-xl font-bold text-gray-900 mt-5">
+                      {content?.Answer?.[0] || "Không có dữ liệu"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-between items-center w-full max-w-lg mt-6">
+                <button onClick={handlePrev} className="btn-arrow">
+                  <MdArrowBack className="text-3xl" />
+                </button>
+                <p className="text-lg font-semibold text-gray-700">
+                  {currentIndex + 1} / {flashcard.length}
+                </p>
+                <button onClick={handleNext} className="btn-arrow">
+                  <MdArrowForward className="text-3xl" />
+                </button>
+              </div>
             </div>
           )}
         </main>
@@ -655,7 +712,7 @@ const Home = () => {
               <div className="max-w-lg mx-auto p-4 border rounded-md">
                 <textarea
                   className="w-full h-24 p-2 border rounded-md mb-4"
-                  placeholder="Nhập văn bản hoặc tải lên tài liệu (.txt) có sẵn."
+                  placeholder="Nhập văn bản hoặc tải lên tài liệu (.txt, .pdf, .jpg, .png) có sẵn."
                   value={fileContent}
                   onChange={(e) => setFileContent(e.target.value)}
                   style={{ maxHeight: "500px", minHeight: "150px", resize: "vertical" }}
@@ -684,7 +741,7 @@ const Home = () => {
                 className="hidden"
                 ref={fileInputRef}
               /> */}
-              <div className="flex justify-between gap-2">
+              <div className="flex justify-between gap-2 pt-2">
                 {/* <button
                   className="w-12 h-12 text-black rounded-md flex items-center justify-center border border-gray-600"
                   onClick={handleUploadClick}
