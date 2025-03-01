@@ -24,6 +24,7 @@ const ProfileInfo = ({ onLogout }) => {
       <button
         className="p-2 rounded-md bg-gray-200 hover:bg-gray-300 transition duration-300 flex items-center justify-center"
         onClick={onLogout}
+        title="Đăng xuất"
       >
         <IoMdLogOut className="text-xl text-black" />
       </button>

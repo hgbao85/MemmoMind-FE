@@ -416,7 +416,6 @@ const Home = () => {
             margin-bottom: 20px;
           }
 
-          /* 📌 Thêm khung viền bao quanh */
           .flashcard-wrapper {
             padding: 20px;
             background: white;
@@ -506,9 +505,7 @@ const Home = () => {
         </style>
       </head>
       <body>
-        <h1>Flashcards</h1>
-
-        <!-- 📌 Thêm khung bao quanh -->
+        <h1>Thẻ ghi nhớ</h1>
         <div class="flashcard-wrapper">
           <div class="flashcard-container">
             <div class="flashcard" id="flashcard">
@@ -699,6 +696,7 @@ const Home = () => {
               <button
                 className="w-12 h-12 flex items-center justify-center rounded-md"
                 onClick={handleShowAllNotes}
+                title="Tất cả ghi chú"
               >
                 <MdHome className="text-[24px] text-black hover:text-white" />
               </button>
@@ -708,6 +706,7 @@ const Home = () => {
               <button
                 className="w-12 h-12 flex items-center justify-center rounded-md"
                 onClick={handleAddNote}
+                title="Tạo ghi chú"
               >
                 <MdAdd className="text-[24px] text-black hover:text-white" />
               </button>
@@ -718,6 +717,7 @@ const Home = () => {
               <button
                 className="w-12 h-12 flex items-center justify-center rounded-md"
                 onClick={handleShowPinned}
+                title="Ghi chú được đánh dấu"
               >
                 <MdFavorite
                   className={`text-[24px] ${showPinned ? "text-red-500 hover:text-red-600" : "text-black hover:text-red-600"}`}
@@ -729,6 +729,7 @@ const Home = () => {
               <button
                 className="w-12 h-12 flex items-center justify-center rounded-md"
                 onClick={handleShowDeleted}
+                title="Ghi chú đã xóa"
               >
                 <MdDelete
                   className={`text-[24px] ${showDeleted ? "text-blue-500 hover:text-blue-600" : "text-black hover:text-blue-600"}`}
@@ -739,6 +740,7 @@ const Home = () => {
             <button
               className="w-12 h-12 flex items-center justify-center rounded-md"
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+              title="Menu"
             >
               <MdOutlineMenu className="text-[24px] text-black hover:text-white" />
             </button>
@@ -839,7 +841,7 @@ const Home = () => {
                   <MdClose className="text-xl" />
                 </button>
 
-                <h2 className="text-xl font-bold text-center text-gray-800 mb-3">Mindmap</h2>
+                <h2 className="text-xl font-bold text-center text-gray-800 mb-3">Sơ đồ tư duy</h2>
 
                 <iframe
                   srcDoc={mindmapHtml}
@@ -878,7 +880,7 @@ const Home = () => {
                   <MdClose className="text-2xl" />
                 </button>
 
-                <h2 className="text-2xl font-bold text-gray-800 mb-4 text-center">Flashcards</h2>
+                <h2 className="text-2xl font-bold text-gray-800 mb-4 text-center">Thẻ ghi nhớ</h2>
 
                 <div className="flashcard-container w-full max-w-2xl">
                   <div
@@ -938,6 +940,7 @@ const Home = () => {
             <button
               className="w-12 h-12 flex items-center justify-center rounded-md"
               onClick={() => setIsRightSidebarOpen(!isRightSidebarOpen)}
+              title="Menu"
             >
               <MdOutlineMenu className="text-[24px] text-black" />
             </button>
@@ -973,24 +976,30 @@ const Home = () => {
 
               <div className="flex justify-between gap-2 pt-2">
                 <button
-                  className="flex-1 h-12 text-black rounded-md flex items-center justify-center border border-gray-600"
+                  className="flex-1 h-12 text-xs font-medium text-white bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 rounded-2xl flex items-center justify-center shadow-lg transition-transform transform hover:scale-105"
                   onClick={handleSummarize}
+                  title="Tạo tóm tắt"
                 >
-                  Tóm tắt
+                  Tạo tóm tắt
                 </button>
                 <button
-                  className="flex-1 h-12 text-black rounded-md flex items-center justify-center border border-gray-600"
+                  className="flex-1 h-12 text-xs font-medium text-white bg-gradient-to-r from-purple-500 to-purple-700 hover:from-purple-600 hover:to-purple-800 rounded-2xl flex items-center justify-center shadow-lg transition-transform transform hover:scale-105"
                   onClick={handleGenerateMindmap}
+                  title="Tạo sơ đồ tư duy"
                 >
-                  MindMap
+                  Tạo MindMap
                 </button>
                 <button
-                  className="flex-1 h-12 text-black rounded-md flex items-center justify-center border border-gray-600"
+                  className="flex-1 h-12 text-xs font-medium text-white bg-gradient-to-r from-orange-500 to-orange-700 hover:from-orange-600 hover:to-orange-800 rounded-2xl flex items-center justify-center shadow-lg transition-transform transform hover:scale-105"
                   onClick={handleGenerateFlashCard}
+                  title="Tạo thẻ ghi nhớ"
                 >
-                  FlashCards
+                  Tạo FlashCards
                 </button>
               </div>
+
+
+
             </>
           )}
         </aside>
