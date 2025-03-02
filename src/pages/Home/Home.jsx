@@ -331,29 +331,22 @@ const Home = () => {
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
     if (!file) return;
-  
+
     const reader = new FileReader();
     setUploadedFile(file); // Lưu file để gửi API
-  
-    // Reset các trạng thái liên quan đến các loại file khác
-    setFileContent(null); // Đặt nội dung textarea về null
-    setImageSrc(null);    // Đặt hình ảnh về null
-    setPdfUrl(null);      // Đặt PDF về null
-  
+
     if (file.type === "text/plain") {
-      // Nếu là file .txt, đọc nội dung và cập nhật vào textarea
       reader.onload = (e) => setFileContent(e.target.result);
       reader.readAsText(file);
     } else if (file.type.startsWith("image/")) {
-      // Nếu là ảnh, tạo URL cho ảnh và đặt imageSrc
       const imageUrl = URL.createObjectURL(file);
       setImageSrc(imageUrl);
+      setPdfUrl(null);
     } else if (file.type === "application/pdf") {
-      // Nếu là PDF, tạo URL cho PDF và đặt pdfUrl
       const pdfUrl = URL.createObjectURL(file);
       setPdfUrl(pdfUrl);
+      setImageSrc(null);
     } else {
-      // Hiển thị thông báo nếu định dạng file không được hỗ trợ
       alert("Chỉ hỗ trợ các định dạng file: .txt, .pdf, .jpg, .png");
     }
   };
