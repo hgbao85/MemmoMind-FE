@@ -31,7 +31,7 @@ const Home = () => {
   const [mindmapHtml, setMindmapHtml] = useState("");
   const [summary, setSummary] = useState("");
   const [flashcard, setFlashCard] = useState("");
-  const [showAllNotes, setShowAllNotes] = useState(true);
+  const [setShowAllNotes] = useState(true);
   // const [selectedNote, setSelectedNote] = useState(null);
   const [imageSrc, setImageSrc] = useState(null);
   const [pdfUrl, setPdfUrl] = useState(null);
@@ -957,20 +957,35 @@ const Home = () => {
                   onChange={(e) => setFileContent(e.target.value)}
                   style={{ maxHeight: "500px", minHeight: "150px", resize: "vertical" }}
                 ></textarea>
-
-                <input type="file" accept=".txt,.pdf,image/*" onChange={handleFileUpload} className="mb-4" />
-
-                {imageSrc && <img src={imageSrc} alt="Uploaded" className="w-1/2 h-auto mt-2 border rounded-md" />}
+                <label className="cursor-pointer bg-blue-500 text-white px-[17px] py-2 rounded-lg hover:bg-blue-600 transition">
+                  Chọn tệp
+                  <input
+                    type="file"
+                    accept=".txt,.pdf,image/*"
+                    onChange={handleFileUpload}
+                    className="hidden"
+                  />
+                </label>
+                {imageSrc && <img src={imageSrc} alt="Uploaded" className="w-1/2 h-auto my-4 border rounded-md" />}
 
                 {pdfUrl && (
-                  <a href={pdfUrl} target="_blank" rel="noopener noreferrer" className="text-blue-500 underline mt-2 block">
-                    Xem PDF
-                  </a>
+                  <div className="w-full my-4">
+                    <a
+                      href={pdfUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="cursor-pointer bg-blue-500 text-white px-[15px] py-1 rounded-lg hover:bg-blue-600 transition inline-block"
+                    >
+                      Xem PDF
+                    </a>
+                  </div>
                 )}
                 {imageSrc && (
-                  <a href={imageSrc} target="_blank" rel="noopener noreferrer" className="text-blue-500 underline mt-2 block">
-                    Xem ảnh
-                  </a>
+                  <div className="w-full my-4">
+                    <a href={imageSrc} target="_blank" rel="noopener noreferrer" className="cursor-pointer bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition">
+                      Xem ảnh
+                    </a>
+                  </div>
                 )}
               </div>
 
