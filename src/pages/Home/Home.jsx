@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import NoteCard from "../../components/Cards/NoteCard";
-import { MdClose, MdAdd, MdOutlineMenu, MdFavorite, MdDelete, MdHome, MdArrowBack, MdArrowForward, MdSave } from "react-icons/md";
+import { MdClose, MdAdd, MdOutlineMenu, MdFavorite, MdDelete, MdHome, MdArrowBack, MdArrowForward, MdSave, MdOutlineFileUpload, MdOpenInNew } from "react-icons/md";
 import AddEditNotes from "./AddEditNotes";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -31,7 +31,7 @@ const Home = () => {
   const [mindmapHtml, setMindmapHtml] = useState("");
   const [summary, setSummary] = useState("");
   const [flashcard, setFlashCard] = useState("");
-  const [setShowAllNotes] = useState(true);
+  const [showAllNotes, setShowAllNotes] = useState(true);
   // const [selectedNote, setSelectedNote] = useState(null);
   const [imageSrc, setImageSrc] = useState(null);
   const [pdfUrl, setPdfUrl] = useState(null);
@@ -369,6 +369,11 @@ const Home = () => {
       setIsFlipped(false);
       setIsTransitioning(false);
     }, 100);
+  };
+
+  const handleRemoveFile = () => {
+    setPdfUrl(null);
+    setImageSrc(null);
   };
 
   const saveMindmapAsHTML = () => {
@@ -942,7 +947,7 @@ const Home = () => {
               onClick={() => setIsRightSidebarOpen(!isRightSidebarOpen)}
               title="Menu"
             >
-              <MdOutlineMenu className="text-[24px] text-black" />
+              <MdOutlineMenu className="text-[24px] text-black hover:text-white" />
             </button>
           </div>
 
@@ -957,36 +962,60 @@ const Home = () => {
                   onChange={(e) => setFileContent(e.target.value)}
                   style={{ maxHeight: "500px", minHeight: "150px", resize: "vertical" }}
                 ></textarea>
-                <label className="cursor-pointer bg-blue-500 text-white px-[17px] py-2 rounded-lg hover:bg-blue-600 transition">
-                  Chọn tệp
-                  <input
-                    type="file"
-                    accept=".txt,.pdf,image/*"
-                    onChange={handleFileUpload}
-                    className="hidden"
-                  />
-                </label>
-                {imageSrc && <img src={imageSrc} alt="Uploaded" className="w-1/2 h-auto my-4 border rounded-md" />}
+                <div className="flex justify-between items-center w-full">
+                  <label className="cursor-pointer bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition flex items-center gap-2">
+                    <MdOutlineFileUpload className="text-lg" />
+                    Chọn tệp
+                    <input
+                      type="file"
+                      accept=".txt,.pdf,image/*"
+                      onChange={handleFileUpload}
+                      className="hidden"
+                    />
+                  </label>
 
-                {pdfUrl && (
-                  <div className="w-full my-4">
-                    <a
-                      href={pdfUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="cursor-pointer bg-blue-500 text-white px-[15px] py-1 rounded-lg hover:bg-blue-600 transition inline-block"
-                    >
-                      Xem PDF
-                    </a>
+                  <div className="flex items-center space-x-4 ml-auto">
+                    {pdfUrl && (
+                      <a
+                        href={pdfUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="cursor-pointer bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition flex items-center gap-2"
+                        title="Xem PDF đã upload"
+                      >
+                        <MdOpenInNew className="text-lg" />
+                        Xem PDF
+                      </a>
+                    )}
+
+                    {imageSrc && (
+                      <a
+                        href={imageSrc}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="cursor-pointer bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition flex items-center gap-2"
+                        title="Xem ảnh đã upload"
+                      >
+                        <MdOpenInNew className="text-lg" />
+                        Xem ảnh
+                      </a>
+                    )}
+
+                    {(pdfUrl || imageSrc) && (
+                      <button
+                        onClick={handleRemoveFile}
+                        className="bg-red-500 cursor-pointer text-white px-2 py-2 rounded-lg transition"
+                        title="Xóa tài liệu đã upload"
+                      >
+                        <MdClose className="text-2xl" />
+                      </button>
+                    )}
                   </div>
-                )}
-                {imageSrc && (
-                  <div className="w-full my-4">
-                    <a href={imageSrc} target="_blank" rel="noopener noreferrer" className="cursor-pointer bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition">
-                      Xem ảnh
-                    </a>
-                  </div>
-                )}
+                </div>
+                {imageSrc && <img src={imageSrc} alt="Uploaded" className="w-1/2 h-auto my-4 border rounded-md" />}
+                {pdfUrl && <iframe src={pdfUrl} title="PDF Viewer" className="w-full mt-4 h-auto border rounded-md shadow-lg" />}
+
+
               </div>
 
               <div className="flex justify-between gap-2 pt-2">
