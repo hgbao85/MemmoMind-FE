@@ -46,6 +46,12 @@ const Home = () => {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const navigate = useNavigate();
 
+  //State loading
+  const [isSummarizing, setIsSummarizing] = useState(false);
+  const [isGeneratingMindmap, setIsGeneratingMindmap] = useState(false);
+  const [isGeneratingFlashcard, setIsGeneratingFlashcard] = useState(false);
+  const [isSolving, setIsSolving] = useState(false);
+
   useEffect(() => {
     if (!initialUserCheck.current) {
       initialUserCheck.current = true;
@@ -579,6 +585,7 @@ const Home = () => {
       return;
     }
 
+    setIsSummarizing(true);
     try {
       let payload = { userId: currentUser.user._id };
 
@@ -604,6 +611,8 @@ const Home = () => {
     } catch (error) {
       console.error("Error summarizing:", error.message);
       toast.error("Có lỗi xảy ra khi tóm tắt!");
+    } finally {
+      setIsSummarizing(false);
     }
   };
 
@@ -614,6 +623,7 @@ const Home = () => {
       return;
     }
 
+    setIsGeneratingMindmap(true);
     try {
       let payload = { userId: currentUser.user._id };
 
@@ -639,6 +649,8 @@ const Home = () => {
     } catch (error) {
       console.error("Error generating mindmap:", error);
       toast.error("Có lỗi xảy ra khi tạo mindmap!");
+    } finally {
+      setIsGeneratingMindmap(false);
     }
   };
 
@@ -648,6 +660,7 @@ const Home = () => {
       return;
     }
 
+    setIsGeneratingFlashcard(true);
     try {
       let payload = { userId: currentUser.user._id };
 
@@ -679,6 +692,8 @@ const Home = () => {
     } catch (error) {
       console.error("Error generating flashcard:", error);
       toast.error("Có lỗi xảy ra khi tạo flashcard!");
+    } finally {
+      setIsGeneratingFlashcard(false);
     }
   };
 
@@ -688,6 +703,7 @@ const Home = () => {
       return;
     }
 
+    setIsSolving(true);
     try {
       let payload = { userId: currentUser.user._id };
 
@@ -713,6 +729,8 @@ const Home = () => {
     } catch (error) {
       console.error("Error solving:", error.message);
       toast.error("Có lỗi xảy ra khi giải bài tập!");
+    } finally {
+      setIsSolving(false);
     }
   };
 
@@ -863,8 +881,12 @@ const Home = () => {
               >
                 <MdClose className="text-xl" />
               </button>
-              <h3 className="text-lg font-semibold">Tóm tắt:</h3>
-              <p className="break-words whitespace-pre-wrap">{summary}</p>
+              <div 
+                className="prose"
+                dangerouslySetInnerHTML={{ 
+                  __html: marked(summary)
+                }}
+              />
             </div>
           )}
 
@@ -1080,37 +1102,72 @@ const Home = () => {
               </div>
 
               <div className="flex justify-between gap-2 pt-2">
-
                 <button
-                  className="flex-1 h-12 text-xs font-medium text-white bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 rounded-2xl flex items-center justify-center shadow-lg transition-transform transform hover:scale-105"
+                  className={`flex-1 h-12 text-xs font-medium text-white bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 rounded-2xl flex items-center justify-center shadow-lg transition-transform transform hover:scale-105 ${isSummarizing ? 'opacity-75 cursor-wait' : ''}`}
                   onClick={handleSummarize}
+                  disabled={isSummarizing}
                   title="Tạo tóm tắt"
                 >
-                  Tạo tóm tắt
+                  {isSummarizing ? (
+                    <>
+                      <svg className="animate-spin h-2 w-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      <span className="ml-1">Đang xử lý...</span>
+                    </>
+                  ) : 'Tạo tóm tắt'}
                 </button>
                 
                 <button
-                  className="flex-1 h-12 text-xs font-medium text-white bg-gradient-to-r from-purple-500 to-purple-700 hover:from-purple-600 hover:to-purple-800 rounded-2xl flex items-center justify-center shadow-lg transition-transform transform hover:scale-105"
+                  className={`flex-1 h-12 text-xs font-medium text-white bg-gradient-to-r from-purple-500 to-purple-700 hover:from-purple-600 hover:to-purple-800 rounded-2xl flex items-center justify-center shadow-lg transition-transform transform hover:scale-105 ${isGeneratingMindmap ? 'opacity-75 cursor-wait' : ''}`}
                   onClick={handleGenerateMindmap}
+                  disabled={isGeneratingMindmap}
                   title="Tạo sơ đồ tư duy"
                 >
-                  Tạo MindMap
+                  {isGeneratingMindmap ? (
+                    <>
+                      <svg className="animate-spin h-2 w-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      <span className="ml-1">Đang xử lý...</span>
+                    </>
+                  ) : 'Tạo MindMap'}
                 </button>
 
                 <button
-                  className="flex-1 h-12 text-xs font-medium text-white bg-gradient-to-r from-orange-500 to-orange-700 hover:from-orange-600 hover:to-orange-800 rounded-2xl flex items-center justify-center shadow-lg transition-transform transform hover:scale-105"
+                  className={`flex-1 h-12 text-xs font-medium text-white bg-gradient-to-r from-orange-500 to-orange-700 hover:from-orange-600 hover:to-orange-800 rounded-2xl flex items-center justify-center shadow-lg transition-transform transform hover:scale-105 ${isGeneratingFlashcard ? 'opacity-75 cursor-wait' : ''}`}
                   onClick={handleGenerateFlashCard}
+                  disabled={isGeneratingFlashcard}
                   title="Tạo thẻ ghi nhớ"
                 >
-                  Tạo FlashCards
+                  {isGeneratingFlashcard ? (
+                    <>
+                      <svg className="animate-spin h-2 w-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      <span className="ml-1">Đang xử lý...</span>
+                    </>
+                  ) : 'Tạo FlashCards'}
                 </button>
 
                 <button
-                  className="flex-1 h-12 text-xs font-medium text-white bg-gradient-to-r from-green-500 to-green-700 hover:from-green-600 hover:to-green-800 rounded-2xl flex items-center justify-center shadow-lg transition-transform transform hover:scale-105"
+                  className={`flex-1 h-12 text-xs font-medium text-white bg-gradient-to-r from-green-500 to-green-700 hover:from-green-600 hover:to-green-800 rounded-2xl flex items-center justify-center shadow-lg transition-transform transform hover:scale-105 ${isSolving ? 'opacity-75 cursor-wait' : ''}`}
                   onClick={handleGenerateSolve}
+                  disabled={isSolving}
                   title="Giải bài tập"
                 >
-                  Giải bài tập
+                  {isSolving ? (
+                    <>
+                      <svg className="animate-spin h-2 w-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      <span className="ml-1">Đang xử lý...</span>
+                    </>
+                  ) : 'Giải bài tập'}
                 </button>
 
               </div>
