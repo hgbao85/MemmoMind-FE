@@ -10,6 +10,7 @@ import { toast } from "react-toastify";
 import api from "../../services/api";
 import axios from "axios";
 import "./flashcard.css";
+import { marked } from 'marked';
 
 const Home = () => {
   const { currentUser } = useSelector((state) => state.user);
@@ -31,6 +32,7 @@ const Home = () => {
   const [mindmapHtml, setMindmapHtml] = useState("");
   const [summary, setSummary] = useState("");
   const [flashcard, setFlashCard] = useState("");
+  const [solve, setSolve] = useState("");
   const [showAllNotes, setShowAllNotes] = useState(true);
   // const [selectedNote, setSelectedNote] = useState(null);
   const [imageSrc, setImageSrc] = useState(null);
@@ -680,7 +682,39 @@ const Home = () => {
     }
   };
 
+  const handleGenerateSolve = async () => {
+    if (!fileContent.trim() && !uploadedFile) {
+      toast.error("Vui lòng nhập văn bản hoặc tải lên tệp trước khi tạo solve!");
+      return;
+    }
 
+    try {
+      let payload = { userId: currentUser.user._id };
+
+      if (uploadedFile) {
+        if (uploadedFile.type === "text/plain") {
+          const text = await uploadedFile.text();
+          payload.text = text;
+        } else {
+          const base64String = await convertFileToBase64(uploadedFile);
+          payload.file = base64String;
+          payload.fileType = uploadedFile.type;
+          payload.fileName = uploadedFile.name;
+        }
+      } else {
+        payload.text = fileContent;
+      }
+
+      const response = await axios.post("http://vietserver.ddns.net:6082/ommi-solver", payload, {
+        headers: { "Content-Type": "application/json" },
+      });
+
+      setSolve(response.data.response || "Không thể giải bài tập.");
+    } catch (error) {
+      console.error("Error solving:", error.message);
+      toast.error("Có lỗi xảy ra khi giải bài tập!");
+    }
+  };
 
   return (
     <>
@@ -819,6 +853,7 @@ const Home = () => {
               type={addEditType}
               getAllNotes={getAllNotes}
             />)}
+          
           {summary && (
             <div className="relative mt-4 p-2 border rounded-md bg-gray-200">
               <button
@@ -832,6 +867,7 @@ const Home = () => {
               <p className="break-words whitespace-pre-wrap">{summary}</p>
             </div>
           )}
+
           {mindmapHtml && (
             <div
               className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 p-4"
@@ -930,6 +966,31 @@ const Home = () => {
               </div>
             </div>
           )}
+
+          {solve && (
+            <div className="relative mt-4 p-2 border rounded-md bg-gray-200">
+              <button
+                onClick={() => setSolve(null)} 
+                className="absolute top-2 right-2 text-gray-600 hover:text-black"
+                aria-label="Close Solve"
+              >
+                <MdClose className="text-xl" />
+              </button>
+              <div className="markdown-preview">
+                <h3 className="text-lg font-semibold">Giải pháp:</h3>
+                <div 
+                  className="break-words whitespace-pre-wrap markdown-content"
+                  dangerouslySetInnerHTML={{ 
+                    __html: marked(solve || '', {
+                      breaks: true,
+                      gfm: true,
+                      sanitize: true
+                    })
+                  }}
+                />
+              </div>
+            </div>
+          )}
         </main>
 
         {/* Right Sidebar */}
@@ -1019,6 +1080,7 @@ const Home = () => {
               </div>
 
               <div className="flex justify-between gap-2 pt-2">
+
                 <button
                   className="flex-1 h-12 text-xs font-medium text-white bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 rounded-2xl flex items-center justify-center shadow-lg transition-transform transform hover:scale-105"
                   onClick={handleSummarize}
@@ -1026,6 +1088,7 @@ const Home = () => {
                 >
                   Tạo tóm tắt
                 </button>
+                
                 <button
                   className="flex-1 h-12 text-xs font-medium text-white bg-gradient-to-r from-purple-500 to-purple-700 hover:from-purple-600 hover:to-purple-800 rounded-2xl flex items-center justify-center shadow-lg transition-transform transform hover:scale-105"
                   onClick={handleGenerateMindmap}
@@ -1033,6 +1096,7 @@ const Home = () => {
                 >
                   Tạo MindMap
                 </button>
+
                 <button
                   className="flex-1 h-12 text-xs font-medium text-white bg-gradient-to-r from-orange-500 to-orange-700 hover:from-orange-600 hover:to-orange-800 rounded-2xl flex items-center justify-center shadow-lg transition-transform transform hover:scale-105"
                   onClick={handleGenerateFlashCard}
@@ -1040,10 +1104,16 @@ const Home = () => {
                 >
                   Tạo FlashCards
                 </button>
+
+                <button
+                  className="flex-1 h-12 text-xs font-medium text-white bg-gradient-to-r from-green-500 to-green-700 hover:from-green-600 hover:to-green-800 rounded-2xl flex items-center justify-center shadow-lg transition-transform transform hover:scale-105"
+                  onClick={handleGenerateSolve}
+                  title="Giải bài tập"
+                >
+                  Giải bài tập
+                </button>
+
               </div>
-
-
-
             </>
           )}
         </aside>
