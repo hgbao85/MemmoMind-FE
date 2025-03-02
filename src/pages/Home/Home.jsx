@@ -200,14 +200,14 @@ const Home = () => {
 
       console.log("Search Response:", res.data);
 
-      if (!res.data.notes || res.data.notes.length === 0) {
+      const filteredNotes = res.data.notes.filter((note) => !note.isDeleted);
+      if (!res.data.notes || res.data.notes.length === 0 && filteredNotes.length === 0) {
         toast.info("Không tìm thấy ghi chú nào!");
         setIsSearch(false);
         return;
       }
-
       setIsSearch(true);
-      setAllNotes(res.data.notes);
+      setAllNotes(filteredNotes);
     } catch (error) {
       console.error("Error searching notes:", error);
       toast.error(error.response?.data?.message || "Lỗi khi tìm kiếm!");
