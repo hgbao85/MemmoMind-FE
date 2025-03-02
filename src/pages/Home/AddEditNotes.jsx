@@ -100,7 +100,7 @@ const AddEditNotes = ({ onClose, noteData, type, getAllNotes }) => {
 
       {/* Title */}
       <h2 className="text-xl font-bold text-gray-800 mb-4">
-        {type === "edit" ? "Chỉnh sửa ghi chú" : "Thêm ghi chú mới"}
+        {type === "edit" ? "Chỉnh sửa ghi chú" : "Tạo ghi chú mới"}
       </h2>
 
       {/* Input: Title */}
@@ -136,12 +136,14 @@ const AddEditNotes = ({ onClose, noteData, type, getAllNotes }) => {
       {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
 
       {/* Action Button */}
-      <button
-        className="w-full py-2 bg-[#E9A5A5] text-white font-semibold rounded hover:bg-[#C8BBBB] transition-all"
-        onClick={handleAddNote}
-      >
-        {type === "edit" ? "Cập nhật" : "Thêm"}
-      </button>
+      <div className="flex justify-end">
+        <button
+          className="px-4 py-2 bg-[#E9A5A5] text-white font-semibold rounded hover:bg-[#C8BBBB] transition-all"
+          onClick={handleAddNote}
+        >
+          {type === "edit" ? "Cập nhật" : "Tạo"}
+        </button>
+      </div>
     </div>
   );
 };
