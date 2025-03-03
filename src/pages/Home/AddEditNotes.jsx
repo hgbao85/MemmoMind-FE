@@ -100,7 +100,7 @@ const AddEditNotes = ({ onClose, noteData, type, getAllNotes }) => {
 
       {/* Title */}
       <h2 className="text-xl font-bold text-gray-800 mb-4">
-        {type === "edit" ? "Chỉnh sửa ghi chú" : "Thêm ghi chú mới"}
+        {type === "edit" ? "Chỉnh sửa ghi chú" : "Tạo ghi chú mới"}
       </h2>
 
       {/* Input: Title */}
@@ -119,10 +119,11 @@ const AddEditNotes = ({ onClose, noteData, type, getAllNotes }) => {
       <div className="mb-4">
         <label className="block text-sm font-medium text-gray-700">Nội dung</label>
         <textarea
-          className="mt-1 p-2 border border-gray-300 rounded w-full h-32 resize-none focus:ring-2 focus:ring-[#C8BBBB] focus:outline-none"
+          className="mt-1 p-2 border border-gray-300 rounded w-full h-64 resize-vertical focus:ring-2 focus:ring-[#C8BBBB] focus:outline-none" 
           placeholder="Nhập nội dung..."
           value={content}
           onChange={({ target }) => setContent(target.value)}
+          style={{ minHeight: "200px", maxHeight: "500px" }}
         />
       </div>
 
@@ -136,12 +137,14 @@ const AddEditNotes = ({ onClose, noteData, type, getAllNotes }) => {
       {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
 
       {/* Action Button */}
-      <button
-        className="w-full py-2 bg-[#E9A5A5] text-white font-semibold rounded hover:bg-[#C8BBBB] transition-all"
-        onClick={handleAddNote}
-      >
-        {type === "edit" ? "Cập nhật" : "Thêm"}
-      </button>
+      <div className="flex justify-end">
+        <button
+          className="px-4 py-2 bg-[#E9A5A5] text-white font-semibold rounded hover:bg-[#C8BBBB] transition-all"
+          onClick={handleAddNote}
+        >
+          {type === "edit" ? "Cập nhật" : "Tạo"}
+        </button>
+      </div>
     </div>
   );
 };
