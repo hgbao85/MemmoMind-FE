@@ -112,7 +112,7 @@ const Home = () => {
   //   setSelectedNote(note);
   // };
 
-  const handleAddNote = (note) => {
+  const handleAddNote = (note = { title: "", content: "" }) => {
     setIsManuallyClosed(false);
     setNoteData(note);
     setAddEditType("add");
@@ -881,14 +881,23 @@ const Home = () => {
               >
                 <MdClose className="text-xl" />
               </button>
-              <div 
+              <h2 className="text-lg font-bold text-gray-800 mb-3">Tóm tắt</h2>
+              <div
                 className="prose"
-                dangerouslySetInnerHTML={{ 
+                dangerouslySetInnerHTML={{
                   __html: marked(summary)
                 }}
               />
+              <button
+                onClick={() => handleAddNote({ title: "Tóm tắt mới", content: summary })}
+                className="mt-2 px-2 py-0.5 bg-green-500 text-white rounded-md hover:bg-green-600 flex items-center shadow-sm text-xs ml-auto"
+              >
+                <MdAdd className="inline-block mr-1 text-sm" />
+                Thêm vào ghi chú mới
+              </button>
             </div>
           )}
+
 
           {mindmapHtml && (
             <div
@@ -992,7 +1001,7 @@ const Home = () => {
           {solve && (
             <div className="relative mt-4 p-2 border rounded-md bg-gray-200">
               <button
-                onClick={() => setSolve(null)} 
+                onClick={() => setSolve(null)}
                 className="absolute top-2 right-2 text-gray-600 hover:text-black"
                 aria-label="Close Solve"
               >
@@ -1000,9 +1009,9 @@ const Home = () => {
               </button>
               <div className="markdown-preview">
                 <h3 className="text-lg font-semibold">Giải pháp:</h3>
-                <div 
+                <div
                   className="break-words whitespace-pre-wrap markdown-content"
-                  dangerouslySetInnerHTML={{ 
+                  dangerouslySetInnerHTML={{
                     __html: marked(solve || '', {
                       breaks: true,
                       gfm: true,
@@ -1011,6 +1020,13 @@ const Home = () => {
                   }}
                 />
               </div>
+              <button
+                onClick={() => handleAddNote({ title: "Giải pháp mới", content: solve })}
+                className="mt-2 px-2 py-0.5 bg-green-500 text-white rounded-md hover:bg-green-600 flex items-center shadow-sm text-xs ml-auto"
+              >
+                <MdAdd className="inline-block mr-1 text-sm" />
+                Thêm vào ghi chú mới
+              </button>
             </div>
           )}
         </main>
@@ -1157,7 +1173,7 @@ const Home = () => {
                   className={`flex-1 h-12 text-xs font-medium text-white bg-gradient-to-r from-green-500 to-green-700 hover:from-green-600 hover:to-green-800 rounded-2xl flex items-center justify-center shadow-lg transition-transform transform hover:scale-105 ${isSolving ? 'opacity-75 cursor-wait' : ''}`}
                   onClick={handleGenerateSolve}
                   disabled={isSolving}
-                  title="Giải bài tập"
+                  title="Hỗ trợ làm bài"
                 >
                   {isSolving ? (
                     <>
@@ -1167,7 +1183,7 @@ const Home = () => {
                       </svg>
                       <span className="ml-1">Đang xử lý...</span>
                     </>
-                  ) : 'Giải bài tập'}
+                  ) : 'Hỗ trợ làm bài'}
                 </button>
 
               </div>
