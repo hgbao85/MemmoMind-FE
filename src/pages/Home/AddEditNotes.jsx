@@ -119,10 +119,11 @@ const AddEditNotes = ({ onClose, noteData, type, getAllNotes }) => {
       <div className="mb-4">
         <label className="block text-sm font-medium text-gray-700">Nội dung</label>
         <textarea
-          className="mt-1 p-2 border border-gray-300 rounded w-full h-32 resize-none focus:ring-2 focus:ring-[#C8BBBB] focus:outline-none"
+          className="mt-1 p-2 border border-gray-300 rounded w-full h-64 resize-vertical focus:ring-2 focus:ring-[#C8BBBB] focus:outline-none" 
           placeholder="Nhập nội dung..."
           value={content}
           onChange={({ target }) => setContent(target.value)}
+          style={{ minHeight: "200px", maxHeight: "500px" }}
         />
       </div>
 
