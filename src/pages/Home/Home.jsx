@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import NoteCard from "../../components/Cards/NoteCard";
-import { MdClose, MdAdd, MdOutlineMenu, MdFavorite, MdDelete, MdHome, MdArrowBack, MdArrowForward, MdSave, MdOutlineFileUpload, MdOpenInNew } from "react-icons/md";
+import { MdClose, MdAdd, MdOutlineMenu, MdFavorite, MdDelete, MdHome, MdArrowBack, MdArrowForward, MdSave, MdOutlineFileUpload, MdOpenInNew, MdFileDownload } from "react-icons/md";
 import AddEditNotes from "./AddEditNotes";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -33,6 +33,7 @@ const Home = () => {
   const [summary, setSummary] = useState("");
   const [flashcard, setFlashCard] = useState("");
   const [solve, setSolve] = useState("");
+  const [powerpoint, setPowerpoint] = useState("");
   const [showAllNotes, setShowAllNotes] = useState(true);
   // const [selectedNote, setSelectedNote] = useState(null);
   const [imageSrc, setImageSrc] = useState(null);
@@ -46,11 +47,10 @@ const Home = () => {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const navigate = useNavigate();
 
-  //State loading
-  const [isSummarizing, setIsSummarizing] = useState(false);
-  const [isGeneratingMindmap, setIsGeneratingMindmap] = useState(false);
-  const [isGeneratingFlashcard, setIsGeneratingFlashcard] = useState(false);
-  const [isSolving, setIsSolving] = useState(false);
+  const [loadingState, setLoadingState] = useState({
+    isLoading: false,
+    action: ''
+  });
 
   useEffect(() => {
     if (!initialUserCheck.current) {
@@ -585,7 +585,7 @@ const Home = () => {
       return;
     }
 
-    setIsSummarizing(true);
+    setLoadingState({ isLoading: true, action: 'summarize' });
     try {
       let payload = { userId: currentUser.user._id };
 
@@ -603,7 +603,7 @@ const Home = () => {
         payload.text = fileContent;
       }
 
-      const response = await axios.post("http://vietserver.ddns.net:6082/summarize", payload, {
+      const response = await axios.post("http://localhost:6082/summarize", payload, {
         headers: { "Content-Type": "application/json" },
       });
 
@@ -612,7 +612,7 @@ const Home = () => {
       console.error("Error summarizing:", error.message);
       toast.error("Có lỗi xảy ra khi tóm tắt!");
     } finally {
-      setIsSummarizing(false);
+      setLoadingState({ isLoading: false, action: '' });
     }
   };
 
@@ -623,7 +623,7 @@ const Home = () => {
       return;
     }
 
-    setIsGeneratingMindmap(true);
+    setLoadingState({ isLoading: true, action: 'mindmap' });
     try {
       let payload = { userId: currentUser.user._id };
 
@@ -641,7 +641,7 @@ const Home = () => {
         payload.text = fileContent;
       }
 
-      const response = await axios.post("http://vietserver.ddns.net:6082/mindmap", payload, {
+      const response = await axios.post("http://localhost:6082/mindmap", payload, {
         headers: { "Content-Type": "application/json" },
       });
 
@@ -650,7 +650,7 @@ const Home = () => {
       console.error("Error generating mindmap:", error);
       toast.error("Có lỗi xảy ra khi tạo mindmap!");
     } finally {
-      setIsGeneratingMindmap(false);
+      setLoadingState({ isLoading: false, action: '' });
     }
   };
 
@@ -660,7 +660,7 @@ const Home = () => {
       return;
     }
 
-    setIsGeneratingFlashcard(true);
+    setLoadingState({ isLoading: true, action: 'flashcard' });
     try {
       let payload = { userId: currentUser.user._id };
 
@@ -678,7 +678,7 @@ const Home = () => {
         payload.text = fileContent;
       }
 
-      const response = await axios.post("http://vietserver.ddns.net:6082/flashcard", payload, {
+      const response = await axios.post("http://localhost:6082/flashcard", payload, {
         headers: { "Content-Type": "application/json" },
       });
       console.log("Flashcard Data:", response.data);
@@ -693,7 +693,7 @@ const Home = () => {
       console.error("Error generating flashcard:", error);
       toast.error("Có lỗi xảy ra khi tạo flashcard!");
     } finally {
-      setIsGeneratingFlashcard(false);
+      setLoadingState({ isLoading: false, action: '' });
     }
   };
 
@@ -703,7 +703,7 @@ const Home = () => {
       return;
     }
 
-    setIsSolving(true);
+    setLoadingState({ isLoading: true, action: 'solve' });
     try {
       let payload = { userId: currentUser.user._id };
 
@@ -721,7 +721,7 @@ const Home = () => {
         payload.text = fileContent;
       }
 
-      const response = await axios.post("http://vietserver.ddns.net:6082/ommi-solver", payload, {
+      const response = await axios.post("http://localhost:6082/ommi-solver", payload, {
         headers: { "Content-Type": "application/json" },
       });
 
@@ -730,8 +730,62 @@ const Home = () => {
       console.error("Error solving:", error.message);
       toast.error("Có lỗi xảy ra khi giải bài tập!");
     } finally {
-      setIsSolving(false);
+      setLoadingState({ isLoading: false, action: '' });
     }
+  };
+
+  const handleGeneratePowerpoint = async () => {
+    if (!fileContent.trim() && !uploadedFile) {
+      toast.error("Vui lòng nhập văn bản hoặc tải lên tệp trước khi tạo PowerPoint!");
+      return;
+    }
+
+    setLoadingState({ isLoading: true, action: 'powerpoint' });
+    try {
+      let payload = { userId: currentUser.user._id };
+
+      if (uploadedFile) {
+        if (uploadedFile.type === "text/plain") {
+          const text = await uploadedFile.text();
+          payload.text = text;
+        } else {
+          const base64String = await convertFileToBase64(uploadedFile);
+          payload.file = base64String;
+          payload.fileType = uploadedFile.type;
+          payload.fileName = uploadedFile.name;
+        }
+      } else {
+        payload.text = fileContent;
+      }
+
+      const response = await axios.post("http://localhost:6082/powpoint", payload, {
+        headers: { "Content-Type": "application/json" },
+        responseType: "blob",
+      });
+
+      const blob = new Blob([response.data], {
+        type: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+      });
+
+      const fileUrl = URL.createObjectURL(blob);
+      setPowerpoint(fileUrl);
+    } catch (error) {
+      console.error("Error generating PowerPoint:", error);
+      toast.error("Có lỗi xảy ra khi tạo PowerPoint!");
+    } finally {
+      setLoadingState({ isLoading: false, action: '' });
+    }
+  };
+
+  const handleDownloadPowerpoint = () => {
+    if (!powerpoint) return;
+
+    const link = document.createElement("a");
+    link.href = powerpoint;
+    link.download = "presentation.pptx";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   return (
@@ -1010,7 +1064,7 @@ const Home = () => {
               <div className="markdown-preview">
                 <h3 className="text-lg font-semibold">Giải pháp:</h3>
                 <div
-                  className="break-words whitespace-pre-wrap markdown-content"
+                  className="break-words markdown-content"
                   dangerouslySetInnerHTML={{
                     __html: marked(solve || '', {
                       breaks: true,
@@ -1029,6 +1083,73 @@ const Home = () => {
               </button>
             </div>
           )}
+          {powerpoint && (
+            <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 p-4 z-50">
+              <div className="relative w-full max-w-md bg-white rounded-xl shadow-2xl p-8 transform transition-all">
+                <button
+                  onClick={() => setPowerpoint("")}
+                  className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors duration-200"
+                  aria-label="Close Preview"
+                >
+                  <MdClose className="text-2xl" />
+                </button>
+
+                <div className="text-center">
+                  <div className="mb-6">
+                    <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <svg 
+                        className="w-8 h-8 text-blue-500" 
+                        fill="none" 
+                        stroke="currentColor" 
+                        viewBox="0 0 24 24"
+                      >
+                        <path 
+                          strokeLinecap="round" 
+                          strokeLinejoin="round" 
+                          strokeWidth="2" 
+                          d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                      </svg>
+                    </div>
+                    <h2 className="text-2xl font-bold text-gray-800 mb-2">Tạo PowerPoint thành công!</h2>
+                    <p className="text-gray-600">File PowerPoint của bạn đã sẵn sàng để tải xuống</p>
+                  </div>
+
+                  <div className="p-4 bg-blue-50 rounded-lg mb-6">
+                    <div className="flex items-center justify-center space-x-2 text-blue-700">
+                      <svg 
+                        className="w-5 h-5" 
+                        fill="none" 
+                        stroke="currentColor" 
+                        viewBox="0 0 24 24"
+                      >
+                        <path 
+                          strokeLinecap="round" 
+                          strokeLinejoin="round" 
+                          strokeWidth="2" 
+                          d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                      </svg>
+                      <span className="text-sm">File sẽ được tải xuống ở định dạng .pptx</span>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={handleDownloadPowerpoint}
+                    className="w-full px-6 py-4 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-lg flex items-center justify-center space-x-3 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-1"
+                  >
+                    <MdFileDownload className="text-2xl" />
+                    <span className="font-semibold">Tải xuống PowerPoint</span>
+                  </button>
+
+                  <p className="mt-4 text-sm text-gray-500">
+                    Nhấn nút tải xuống để lưu file về máy của bạn
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
         </main>
 
         {/* Right Sidebar */}
@@ -1116,76 +1237,91 @@ const Home = () => {
 
 
               </div>
-
               <div className="flex justify-between gap-2 pt-2">
                 <button
-                  className={`flex-1 h-12 text-xs font-medium text-white bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 rounded-2xl flex items-center justify-center shadow-lg transition-transform transform hover:scale-105 ${isSummarizing ? 'opacity-75 cursor-wait' : ''}`}
+                  className={`flex-1 h-12 text-xs font-medium text-white bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 rounded-2xl flex items-center justify-center shadow-lg transition-transform transform hover:scale-105 ${loadingState.isLoading && loadingState.action === 'summarize' ? 'opacity-75 cursor-wait' : ''}`}
                   onClick={handleSummarize}
-                  disabled={isSummarizing}
+                  disabled={loadingState.isLoading}
                   title="Tạo tóm tắt"
                 >
-                  {isSummarizing ? (
-                    <>
+                  {loadingState.isLoading && loadingState.action === 'summarize' ? (
+                    <div className="flex items-center space-x-2">
                       <svg className="animate-spin h-2 w-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                       </svg>
-                      <span className="ml-1">Đang xử lý...</span>
-                    </>
+                      <span>Loading</span>
+                    </div>
                   ) : 'Tạo tóm tắt'}
                 </button>
                 
                 <button
-                  className={`flex-1 h-12 text-xs font-medium text-white bg-gradient-to-r from-purple-500 to-purple-700 hover:from-purple-600 hover:to-purple-800 rounded-2xl flex items-center justify-center shadow-lg transition-transform transform hover:scale-105 ${isGeneratingMindmap ? 'opacity-75 cursor-wait' : ''}`}
+                  className={`flex-1 h-12 text-xs font-medium text-white bg-gradient-to-r from-purple-500 to-purple-700 hover:from-purple-600 hover:to-purple-800 rounded-2xl flex items-center justify-center shadow-lg transition-transform transform hover:scale-105 ${loadingState.isLoading && loadingState.action === 'mindmap' ? 'opacity-75 cursor-wait' : ''}`}
                   onClick={handleGenerateMindmap}
-                  disabled={isGeneratingMindmap}
+                  disabled={loadingState.isLoading}
                   title="Tạo sơ đồ tư duy"
                 >
-                  {isGeneratingMindmap ? (
-                    <>
+                  {loadingState.isLoading && loadingState.action === 'mindmap' ? (
+                    <div className="flex items-center space-x-2">
                       <svg className="animate-spin h-2 w-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                       </svg>
-                      <span className="ml-1">Đang xử lý...</span>
-                    </>
+                      <span>Loading</span>
+                    </div>
                   ) : 'Tạo MindMap'}
                 </button>
 
                 <button
-                  className={`flex-1 h-12 text-xs font-medium text-white bg-gradient-to-r from-orange-500 to-orange-700 hover:from-orange-600 hover:to-orange-800 rounded-2xl flex items-center justify-center shadow-lg transition-transform transform hover:scale-105 ${isGeneratingFlashcard ? 'opacity-75 cursor-wait' : ''}`}
+                  className={`flex-1 h-12 text-xs font-medium text-white bg-gradient-to-r from-orange-500 to-orange-700 hover:from-orange-600 hover:to-orange-800 rounded-2xl flex items-center justify-center shadow-lg transition-transform transform hover:scale-105 ${loadingState.isLoading && loadingState.action === 'flashcard' ? 'opacity-75 cursor-wait' : ''}`}
                   onClick={handleGenerateFlashCard}
-                  disabled={isGeneratingFlashcard}
+                  disabled={loadingState.isLoading}
                   title="Tạo thẻ ghi nhớ"
                 >
-                  {isGeneratingFlashcard ? (
-                    <>
+                  {loadingState.isLoading && loadingState.action === 'flashcard' ? (
+                    <div className="flex items-center space-x-2">
                       <svg className="animate-spin h-2 w-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                       </svg>
-                      <span className="ml-1">Đang xử lý...</span>
-                    </>
+                      <span>Loading</span>
+                    </div>
                   ) : 'Tạo FlashCards'}
                 </button>
 
                 <button
-                  className={`flex-1 h-12 text-xs font-medium text-white bg-gradient-to-r from-green-500 to-green-700 hover:from-green-600 hover:to-green-800 rounded-2xl flex items-center justify-center shadow-lg transition-transform transform hover:scale-105 ${isSolving ? 'opacity-75 cursor-wait' : ''}`}
+                  className={`flex-1 h-12 text-xs font-medium text-white bg-gradient-to-r from-green-500 to-green-700 hover:from-green-600 hover:to-green-800 rounded-2xl flex items-center justify-center shadow-lg transition-transform transform hover:scale-105 ${loadingState.isLoading && loadingState.action === 'solve' ? 'opacity-75 cursor-wait' : ''}`}
                   onClick={handleGenerateSolve}
-                  disabled={isSolving}
+                  disabled={loadingState.isLoading}
                   title="Hỗ trợ làm bài"
                 >
-                  {isSolving ? (
-                    <>
+                  {loadingState.isLoading && loadingState.action === 'solve' ? (
+                    <div className="flex items-center space-x-2">
                       <svg className="animate-spin h-2 w-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                       </svg>
-                      <span className="ml-1">Đang xử lý...</span>
-                    </>
+                      <span>Loading</span>
+                    </div>
                   ) : 'Hỗ trợ làm bài'}
                 </button>
 
+                <button
+                  className={`flex-1 h-12 text-xs font-medium text-white bg-gradient-to-r from-purple-500 to-purple-700 hover:from-purple-600 hover:to-purple-800 rounded-2xl flex items-center justify-center shadow-lg transition-transform transform hover:scale-105 ${loadingState.isLoading && loadingState.action === 'powerpoint' ? 'opacity-75 cursor-wait' : ''}`}
+                  onClick={handleGeneratePowerpoint}
+                  disabled={loadingState.isLoading}
+                  title="Tạo PowerPoint"
+                >
+                  {loadingState.isLoading && loadingState.action === 'powerpoint' ? (
+                    <div className="flex items-center space-x-2">
+                      <svg className="animate-spin h-2 w-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      <span>Loading</span>
+                    </div>
+                  ) : 'Tạo PowerPoint'}
+                </button>
               </div>
             </>
           )}
