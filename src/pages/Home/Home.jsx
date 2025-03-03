@@ -31,7 +31,7 @@ const Home = () => {
   const [mindmapHtml, setMindmapHtml] = useState("");
   const [summary, setSummary] = useState("");
   const [flashcard, setFlashCard] = useState("");
-  const [setShowAllNotes] = useState(true);
+  const [showAllNotes, setShowAllNotes] = useState(true);
   // const [selectedNote, setSelectedNote] = useState(null);
   const [imageSrc, setImageSrc] = useState(null);
   const [pdfUrl, setPdfUrl] = useState(null);
@@ -720,7 +720,7 @@ const Home = () => {
                 title="Ghi chú được đánh dấu"
               >
                 <MdFavorite
-                  className={`text-[24px] ${showPinned ? "text-red-500 hover:text-red-600" : "text-black hover:text-red-600"}`}
+                  className={`text-[24px] ${showPinned ? "text-red-500 hover:text-white" : "text-black hover:text-red-600"}`}
                 />
               </button>
             )}
