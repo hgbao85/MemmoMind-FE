@@ -13,7 +13,8 @@ import {
 } from "../redux/user/userSlice";
 import api from "../services/api";
 
-const Navbar = ({ userInfo, onSearchNote, handleClearSearch }) => {
+const Navbar = ({ userInfo = { name: "Guest" }, onSearchNote, handleClearSearch }) => {
+
   const [searchQuery, setSearchQuery] = useState("");
 
   const navigate = useNavigate();
@@ -66,7 +67,7 @@ const Navbar = ({ userInfo, onSearchNote, handleClearSearch }) => {
         onClearSearch={onClearSearch}
       />
 
-      <ProfileInfo userInfo={userInfo} onLogout={onLogout} />
+      {userInfo && <ProfileInfo userInfo={userInfo} onLogout={onLogout} />}
     </div>
   );
 };

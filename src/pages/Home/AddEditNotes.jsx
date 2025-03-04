@@ -1,16 +1,19 @@
 import { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import { MdClose } from "react-icons/md";
-import TagInput from "../../components/Input/TagInput ";
 import { toast } from "react-toastify";
 import api from "../../services/api";
 
-const AddEditNotes = ({ onClose, noteData, type, getAllNotes }) => {
+const AddEditNotes = ({
+  onClose,
+  noteData = { title: "", content: "", tags: [] },
+  type,
+  getAllNotes
+}) => {
   const [title, setTitle] = useState(noteData?.title || "");
   const [content, setContent] = useState(noteData?.content || "");
   const [tags, setTags] = useState(noteData?.tags || []);
   const [error, setError] = useState(null);
-
 
   useEffect(() => {
     setTitle(noteData?.title || "");
@@ -59,7 +62,6 @@ const AddEditNotes = ({ onClose, noteData, type, getAllNotes }) => {
         return;
       }
 
-      // toast.success(res.data.message);
       getAllNotes();
       onClose();
     } catch (error) {
@@ -99,52 +101,62 @@ const AddEditNotes = ({ onClose, noteData, type, getAllNotes }) => {
       </button>
 
       {/* Title */}
-      <h2 className="text-xl font-bold text-gray-800 mb-4">
-        {type === "edit" ? "Chỉnh sửa ghi chú" : "Tạo ghi chú mới"}
+      <h2 className="text-xl font-bold text-gray-800 mb-4 text-center">
+        {type === "edit"
+          ? "Chỉnh sửa ghi chú"
+          : type === "view"
+            ? "Xem ghi chú"
+            : "Tạo ghi chú mới"}
       </h2>
 
       {/* Input: Title */}
       <div className="mb-4">
         <label className="block text-sm font-medium text-gray-700">Tiêu đề</label>
-        <input
-          type="text"
-          className="mt-1 p-2 border border-gray-300 rounded w-full focus:ring-2 focus:ring-[#C8BBBB] focus:outline-none"
-          placeholder="Nhập tiêu đề..."
-          value={title}
-          onChange={({ target }) => setTitle(target.value)}
-        />
+        {type === "view" ? (
+          <p className="mt-1 p-2 border border-gray-300 rounded w-full focus:ring-2 focus:ring-[#C8BBBB] focus:outline-none">{title}</p>
+        ) : (
+          <input
+            type="text"
+            className="mt-1 p-2 border border-gray-300 rounded w-full focus:ring-2 focus:ring-[#C8BBBB] focus:outline-none"
+            placeholder="Nhập tiêu đề..."
+            value={title}
+            onChange={({ target }) => setTitle(target.value)}
+            disabled={type === "view"}
+          />
+        )}
       </div>
 
       {/* Textarea: Content */}
       <div className="mb-4">
         <label className="block text-sm font-medium text-gray-700">Nội dung</label>
-        <textarea
-          className="mt-1 p-2 border border-gray-300 rounded w-full h-64 resize-vertical focus:ring-2 focus:ring-[#C8BBBB] focus:outline-none" 
-          placeholder="Nhập nội dung..."
-          value={content}
-          onChange={({ target }) => setContent(target.value)}
-          style={{ minHeight: "200px", maxHeight: "500px" }}
-        />
-      </div>
-
-      {/* Tag Input */}
-      <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700">Thẻ</label>
-        <TagInput tags={tags} setTags={setTags} />
+        {type === "view" ? (
+          <p className="mt-1 p-2 border border-gray-300 rounded w-full resize-vertical focus:ring-2 focus:ring-[#C8BBBB] focus:outline-none">{content}</p>
+        ) : (
+          <textarea
+            className="mt-1 p-2 border border-gray-300 rounded w-full h-64 resize-vertical focus:ring-2 focus:ring-[#C8BBBB] focus:outline-none"
+            placeholder="Nhập nội dung..."
+            value={content}
+            onChange={({ target }) => setContent(target.value)}
+            style={{ minHeight: "200px", maxHeight: "500px" }}
+            disabled={type === "view"}
+          />
+        )}
       </div>
 
       {/* Error Message */}
-      {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
+      {error && type !== "view" && <p className="text-red-500 text-sm mb-4">{error}</p>}
 
       {/* Action Button */}
-      <div className="flex justify-end">
-        <button
-          className="px-4 py-2 bg-[#E9A5A5] text-white font-semibold rounded hover:bg-[#C8BBBB] transition-all"
-          onClick={handleAddNote}
-        >
-          {type === "edit" ? "Cập nhật" : "Tạo"}
-        </button>
-      </div>
+      {type !== "view" && (
+        <div className="flex justify-end">
+          <button
+            className="px-4 py-2 bg-[#E9A5A5] text-white font-semibold rounded hover:bg-[#C8BBBB] transition-all"
+            onClick={handleAddNote}
+          >
+            {type === "edit" ? "Cập nhật" : "Tạo"}
+          </button>
+        </div>
+      )}
     </div>
   );
 };
@@ -158,13 +170,8 @@ AddEditNotes.propTypes = {
     tags: PropTypes.arrayOf(PropTypes.string),
     _id: PropTypes.string,
   }),
-  type: PropTypes.oneOf(["add", "edit"]).isRequired,
+  type: PropTypes.oneOf(["add", "edit", "view"]).isRequired,
   getAllNotes: PropTypes.func.isRequired,
-};
-
-// Define default props
-AddEditNotes.defaultProps = {
-  noteData: { title: "", content: "", tags: [] }, // Default values for optional note data
 };
 
 export default AddEditNotes;

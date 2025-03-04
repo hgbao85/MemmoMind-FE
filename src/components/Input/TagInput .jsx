@@ -2,7 +2,7 @@ import { useState } from "react";
 import PropTypes from "prop-types";
 import { MdAdd, MdClose } from "react-icons/md";
 
-const TagInput = ({ tags, setTags }) => {
+const TagInput = ({ tags = [], setTags }) => {
   const [inputValue, setInputValue] = useState("");
 
   const handleInputChange = (e) => {
@@ -73,13 +73,8 @@ const TagInput = ({ tags, setTags }) => {
 
 // Add prop types validation
 TagInput.propTypes = {
-  tags: PropTypes.arrayOf(PropTypes.string).isRequired,
+  tags: PropTypes.arrayOf(PropTypes.string),
   setTags: PropTypes.func.isRequired,
-};
-
-// Define default props
-TagInput.defaultProps = {
-  tags: [], // Default empty array if no tags provided
 };
 
 export default TagInput;
