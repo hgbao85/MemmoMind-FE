@@ -41,6 +41,7 @@ const Home = () => {
   const [isManuallyClosed, setIsManuallyClosed] = useState(false);
   const [uploadedFile, setUploadedFile] = useState(null);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [charCount, setCharCount] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
   const topic = flashcard.length > 0 && currentIndex < flashcard.length ? Object.keys(flashcard[currentIndex])[0] : "";
   const content = flashcard.length > 0 && currentIndex < flashcard.length ? flashcard[currentIndex][topic] : null;
@@ -331,12 +332,35 @@ const Home = () => {
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
     if (!file) return;
-
+  
+    // Validate file size (< 30MB)
+    const maxSize = 30 * 1024 * 1024; // 30MB in bytes
+    if (file.size > maxSize) {
+      toast.error("Kích thước file vượt quá 30MB!");
+      return;
+    }
+  
     const reader = new FileReader();
     setUploadedFile(file); // Lưu file để gửi API
-
+  
     if (file.type === "text/plain") {
-      reader.onload = (e) => setFileContent(e.target.result);
+      reader.onload = (e) => {
+        let content = e.target.result;
+        
+        // Loại bỏ các ký tự xuống dòng
+        content = content.replace(/\r?\n/g, '');
+
+        // Log số ký tự
+        console.log(`Số ký tự trong file (không bao gồm xuống dòng): ${content.length}`);
+        
+        // Validate text length (< 40000 characters)
+        if (content.length > 40000) {
+          toast.error("Nội dung văn bản vượt quá 40000 ký tự!");
+          return;
+        }
+        setFileContent(content);
+        setCharCount(content.length);
+      };
       reader.readAsText(file);
     } else if (file.type.startsWith("image/")) {
       const imageUrl = URL.createObjectURL(file);
@@ -350,6 +374,13 @@ const Home = () => {
       alert("Chỉ hỗ trợ các định dạng file: .txt, .pdf, .jpg, .png");
     }
   };
+
+  const handleChange = (e) => {
+    const content = e.target.value;
+    setFileContent(content);
+    setCharCount(content.length);
+  };
+
 
   // Chuyển file thành base64
   const convertFileToBase64 = (file) => {
@@ -1179,9 +1210,13 @@ const Home = () => {
                   className="w-full h-24 p-2 border rounded-md mb-4"
                   placeholder="Nhập văn bản hoặc tải lên tài liệu (.txt, .pdf, .jpg, .png) có sẵn."
                   value={fileContent}
-                  onChange={(e) => setFileContent(e.target.value)}
+                  onChange={handleChange}
                   style={{ maxHeight: "500px", minHeight: "150px", resize: "vertical" }}
+                  maxLength={40000}
                 ></textarea>
+                <div className="text-right">
+                    {charCount}/{40000}
+                </div>
                 <div className="flex justify-between items-center w-full">
                   <label className="cursor-pointer bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition flex items-center gap-2">
                     <MdOutlineFileUpload className="text-lg" />
