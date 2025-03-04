@@ -36,7 +36,6 @@ const Home = () => {
   const [solve, setSolve] = useState("");
   const [powerpoint, setPowerpoint] = useState("");
   const [showAllNotes, setShowAllNotes] = useState(true);
-  // const [selectedNote, setSelectedNote] = useState(null);
   const [imageSrc, setImageSrc] = useState(null);
   const [pdfUrl, setPdfUrl] = useState(null);
   const [isManuallyClosed, setIsManuallyClosed] = useState(false);
@@ -110,9 +109,6 @@ const Home = () => {
     }
   };
 
-  // const handleSelectNote = (note) => {
-  //   setSelectedNote(note);
-  // };
 
   const handleAddNote = (note = { title: "", content: "" }) => {
     setIsManuallyClosed(false);
@@ -125,23 +121,6 @@ const Home = () => {
     setShowPinned(false);
     setShowDeleted(false);
   };
-
-  // 📌 Lấy danh sách ghi chú đã ghim (isPinned=true)
-  // const getPinnedNotes = async () => {
-  //   try {
-  //     const res = await api.get(`https://memmomind-be-ycwv.onrender.com/api/note/all?isPinned=true`, {
-  //       withCredentials: true
-  //     });
-
-  //     if (!res.data.notes) return;
-
-  //     const filteredNotes = res.data.notes.filter((note) => !note.isDeleted);
-  //     setPinnedNotes(filteredNotes);
-  //   } catch (error) {
-  //     console.error("Error fetching pinned notes:", error);
-  //     toast.error("Lỗi khi tải danh sách ghi chú đã ghim!");
-  //   }
-  // };
 
   const updateIsPinned = async (noteData) => {
     const noteId = noteData._id;
@@ -192,6 +171,13 @@ const Home = () => {
     setIsManuallyClosed(false);
     setNoteData(note);
     setAddEditType("edit");
+  };
+
+  const handleShowNote = (note) => {
+    setNoteData(note);
+    setAddEditType("view");
+    setIsManuallyClosed(false);
+    setFormKey((prev) => prev + 1);
   };
 
   const onSearchNote = async (query) => {
@@ -333,27 +319,27 @@ const Home = () => {
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
     if (!file) return;
-  
+
     // Validate file size (< 30MB)
     const maxSize = 30 * 1024 * 1024; // 30MB in bytes
     if (file.size > maxSize) {
       toast.error("Kích thước file vượt quá 30MB!");
       return;
     }
-  
+
     const reader = new FileReader();
     setUploadedFile(file); // Lưu file để gửi API
-  
+
     if (file.type === "text/plain") {
       reader.onload = (e) => {
         let content = e.target.result;
-        
+
         // Loại bỏ các ký tự xuống dòng
         content = content.replace(/\r?\n/g, '');
 
         // Log số ký tự
         console.log(`Số ký tự trong file (không bao gồm xuống dòng): ${content.length}`);
-        
+
         // Validate text length (< 40000 characters)
         if (content.length > 40000) {
           toast.error("Nội dung văn bản vượt quá 40000 ký tự!");
@@ -822,11 +808,16 @@ const Home = () => {
 
   return (
     <>
-      <Navbar
-        userInfo={userInfo}
-        onSearchNote={onSearchNote}
-        handleClearSearch={handleClearSearch}
-      />
+      {userInfo ? (
+        <Navbar
+          userInfo={userInfo}
+          onSearchNote={onSearchNote}
+          handleClearSearch={handleClearSearch}
+        />
+      ) : (
+        <p>Loading...</p>
+      )}
+
 
       <div className="flex h-screen" style={{ overflow: "hidden" }}>
         {/* Left Sidebar */}
@@ -841,7 +832,7 @@ const Home = () => {
                 onClick={handleShowAllNotes}
                 title="Tất cả ghi chú"
               >
-                <MdHome className="text-[24px] text-black hover:text-white" />
+                <MdHome className={`text-[24px] ${showAllNotes ? "text-white" : "text-black hover:text-white"}`} />
               </button>
             )}
 
@@ -863,7 +854,7 @@ const Home = () => {
                 title="Ghi chú được đánh dấu"
               >
                 <MdFavorite
-                  className={`text-[24px] ${showPinned ? "text-red-500 hover:text-white" : "text-black hover:text-red-600"}`}
+                  className={`text-[24px] ${showPinned ? "text-red-500" : "text-black hover:text-white"}`}
                 />
               </button>
             )}
@@ -875,7 +866,7 @@ const Home = () => {
                 title="Ghi chú đã xóa"
               >
                 <MdDelete
-                  className={`text-[24px] ${showDeleted ? "text-blue-500 hover:text-blue-600" : "text-black hover:text-blue-600"}`}
+                  className={`text-[24px] ${showDeleted ? "text-blue-500" : "text-black hover:text-white"}`}
                 />
               </button>
             )}
@@ -915,9 +906,11 @@ const Home = () => {
                       title={note.title}
                       date={note.createdAt}
                       isDeleted={true}
+                      onShow={() => handleShowNote(note)}
                       onRestore={() => restoreNote(note._id)}
                       onPermanentlyDelete={() => permanentlyDeleteNote(note._id)}
                     />
+
                   ))
                 ) : (
                   allNotes.map((note) => (
@@ -1206,9 +1199,9 @@ const Home = () => {
           {isRightSidebarOpen && (
             <>
               <h2 className="text-l mb-6 text-center">Chào bạn, {userInfo?.name}!</h2>
-              <div className="max-w-lg mx-auto p-4 border rounded-md">
+              <div className="max-w-lg mx-auto p-4 mb-2 border rounded-md">
                 <textarea
-                  className="w-full h-24 p-2 border rounded-md mb-4"
+                  className="w-full h-24 p-2 border rounded-md mb-2"
                   placeholder="Nhập văn bản hoặc tải lên tài liệu (.txt, .pdf, .jpg, .png) có sẵn."
                   value={fileContent}
                   onChange={handleChange}
@@ -1216,10 +1209,10 @@ const Home = () => {
                   maxLength={40000}
                 ></textarea>
                 <div className="text-right">
-                    {charCount}/{40000}
+                  {charCount}/{40000}
                 </div>
                 <div className="flex justify-between items-center w-full">
-                  <label className="cursor-pointer bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition flex items-center gap-2">
+                  <label className="cursor-pointer text-[13px] bg-blue-500 text-white px-2 py-2 mb-3 mt-3 rounded-lg hover:bg-blue-600 transition flex items-center gap-1">
                     <MdOutlineFileUpload className="text-lg" />
                     Chọn tệp
                     <input
@@ -1230,13 +1223,13 @@ const Home = () => {
                     />
                   </label>
 
-                  <div className="flex items-center space-x-4 ml-auto">
+                  <div className="flex items-center space-x-3 ml-auto">
                     {pdfUrl && (
                       <a
                         href={pdfUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="cursor-pointer bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition flex items-center gap-2"
+                        className="cursor-pointer text-[13px] bg-blue-500 text-white px-2 py-2 ml-2 rounded-lg hover:bg-blue-600 transition flex items-center gap-1"
                         title="Xem PDF đã upload"
                       >
                         <MdOpenInNew className="text-lg" />
@@ -1249,7 +1242,7 @@ const Home = () => {
                         href={imageSrc}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="cursor-pointer bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition flex items-center gap-2"
+                        className="cursor-pointer text-[13px] bg-blue-500 text-white ml-2 px-2 py-2 rounded-lg hover:bg-blue-600 transition flex items-center gap-1"
                         title="Xem ảnh đã upload"
                       >
                         <MdOpenInNew className="text-lg" />
@@ -1263,19 +1256,18 @@ const Home = () => {
                         className="bg-red-500 cursor-pointer text-white px-2 py-2 rounded-lg transition"
                         title="Xóa tài liệu đã upload"
                       >
-                        <MdClose className="text-2xl" />
+                        <MdClose className="text-md" />
                       </button>
                     )}
                   </div>
                 </div>
                 {imageSrc && <img src={imageSrc} alt="Uploaded" className="w-1/2 h-auto my-4 border rounded-md" />}
                 {pdfUrl && <iframe src={pdfUrl} title="PDF Viewer" className="w-full mt-4 h-auto border rounded-md shadow-lg" />}
-
-
               </div>
+
               <div className="flex justify-between gap-2 pt-2">
                 <button
-                  className={`flex-1 h-12 text-xs font-medium text-white bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 rounded-2xl flex items-center justify-center shadow-lg transition-transform transform hover:scale-105 ${loadingState.isLoading && loadingState.action === 'summarize' ? 'opacity-75 cursor-wait' : ''}`}
+                  className={`flex-1 h-12 w-6 text-[10px] font-medium text-white bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 rounded-2xl flex items-center justify-center shadow-lg transition-transform transform hover:scale-105 ${loadingState.isLoading && loadingState.action === 'summarize' ? 'opacity-75 cursor-wait' : ''}`}
                   onClick={handleSummarize}
                   disabled={loadingState.isLoading}
                   title="Tạo tóm tắt"
@@ -1288,11 +1280,11 @@ const Home = () => {
                       </svg>
                       <span>Loading</span>
                     </div>
-                  ) : 'Tạo tóm tắt'}
+                  ) : 'Tóm Tắt'}
                 </button>
 
                 <button
-                  className={`flex-1 h-12 text-xs font-medium text-white bg-gradient-to-r from-purple-500 to-purple-700 hover:from-purple-600 hover:to-purple-800 rounded-2xl flex items-center justify-center shadow-lg transition-transform transform hover:scale-105 ${loadingState.isLoading && loadingState.action === 'mindmap' ? 'opacity-75 cursor-wait' : ''}`}
+                  className={`flex-1 h-12 w-6 text-[10px] font-medium text-white bg-gradient-to-r from-purple-500 to-purple-700 hover:from-purple-600 hover:to-purple-800 rounded-2xl flex items-center justify-center shadow-lg transition-transform transform hover:scale-105 ${loadingState.isLoading && loadingState.action === 'mindmap' ? 'opacity-75 cursor-wait' : ''}`}
                   onClick={handleGenerateMindmap}
                   disabled={loadingState.isLoading}
                   title="Tạo sơ đồ tư duy"
@@ -1305,11 +1297,11 @@ const Home = () => {
                       </svg>
                       <span>Loading</span>
                     </div>
-                  ) : 'Tạo MindMap'}
+                  ) : 'Mindmap'}
                 </button>
 
                 <button
-                  className={`flex-1 h-12 text-xs font-medium text-white bg-gradient-to-r from-orange-500 to-orange-700 hover:from-orange-600 hover:to-orange-800 rounded-2xl flex items-center justify-center shadow-lg transition-transform transform hover:scale-105 ${loadingState.isLoading && loadingState.action === 'flashcard' ? 'opacity-75 cursor-wait' : ''}`}
+                  className={`flex-1 h-12 w-6 text-[10px] font-medium text-white bg-gradient-to-r from-orange-500 to-orange-700 hover:from-orange-600 hover:to-orange-800 rounded-2xl flex items-center justify-center shadow-lg transition-transform transform hover:scale-105 ${loadingState.isLoading && loadingState.action === 'flashcard' ? 'opacity-75 cursor-wait' : ''}`}
                   onClick={handleGenerateFlashCard}
                   disabled={loadingState.isLoading}
                   title="Tạo thẻ ghi nhớ"
@@ -1322,11 +1314,11 @@ const Home = () => {
                       </svg>
                       <span>Loading</span>
                     </div>
-                  ) : 'Tạo FlashCards'}
+                  ) : 'FlashCards'}
                 </button>
 
                 <button
-                  className={`flex-1 h-12 text-xs font-medium text-white bg-gradient-to-r from-green-500 to-green-700 hover:from-green-600 hover:to-green-800 rounded-2xl flex items-center justify-center shadow-lg transition-transform transform hover:scale-105 ${loadingState.isLoading && loadingState.action === 'solve' ? 'opacity-75 cursor-wait' : ''}`}
+                  className={`flex-1 h-12 w-6 text-[10px] font-medium text-white bg-gradient-to-r from-green-500 to-green-700 hover:from-green-600 hover:to-green-800 rounded-2xl flex items-center justify-center shadow-lg transition-transform transform hover:scale-105 ${loadingState.isLoading && loadingState.action === 'solve' ? 'opacity-75 cursor-wait' : ''}`}
                   onClick={handleGenerateSolve}
                   disabled={loadingState.isLoading}
                   title="Hỗ trợ làm bài"
@@ -1343,7 +1335,7 @@ const Home = () => {
                 </button>
 
                 <button
-                  className={`flex-1 h-12 text-xs font-medium text-white bg-gradient-to-r from-purple-500 to-purple-700 hover:from-purple-600 hover:to-purple-800 rounded-2xl flex items-center justify-center shadow-lg transition-transform transform hover:scale-105 ${loadingState.isLoading && loadingState.action === 'powerpoint' ? 'opacity-75 cursor-wait' : ''}`}
+                  className={`flex-1 h-12 w-6 text-[10px] font-medium text-white bg-gradient-to-r from-red-500 to-red-700 hover:from-red-600 hover:to-red-800 rounded-2xl flex items-center justify-center shadow-lg transition-transform transform hover:scale-105 ${loadingState.isLoading && loadingState.action === 'powerpoint' ? 'opacity-75 cursor-wait' : ''}`}
                   onClick={handleGeneratePowerpoint}
                   disabled={loadingState.isLoading}
                   title="Tạo PowerPoint"
@@ -1356,7 +1348,7 @@ const Home = () => {
                       </svg>
                       <span>Loading</span>
                     </div>
-                  ) : 'Tạo PowerPoint'}
+                  ) : 'PowerPoint'}
                 </button>
               </div>
             </>
