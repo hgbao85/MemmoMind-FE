@@ -34,7 +34,9 @@ const Home = () => {
   const [summary, setSummary] = useState("");
   const [flashcard, setFlashCard] = useState("");
   const [solve, setSolve] = useState("");
-  const [powerpoint, setPowerpoint] = useState("");
+  const [powerpointPreview, setPowerpointPreview] = useState("");
+  const [pptxFilename, setPptxFilename] = useState(null);
+  const [loading, setLoading] = useState(false);
   const [showAllNotes, setShowAllNotes] = useState(true);
   const [imageSrc, setImageSrc] = useState(null);
   const [pdfUrl, setPdfUrl] = useState(null);
@@ -68,7 +70,7 @@ const Home = () => {
     }
   }, [currentUser, navigate]);
 
-  // 📌 Hàm lấy thông tin User hiện tại
+  // Hàm lấy thông tin User hiện tại
   const getUserInfo = async () => {
     try {
       const res = await api.get("https://memmomind-be-ycwv.onrender.com/api/user/current", {
@@ -299,7 +301,7 @@ const Home = () => {
 
   const rightSidebarWidth = isRightSidebarOpen ? "20%" : "4rem";
 
-  // 📌 Hiển thị ghi chú ghim
+  // Hiển thị ghi chú ghim
   const handleShowPinned = () => {
     setShowAllNotes(false);
     setShowPinned(!showPinned);
@@ -621,7 +623,7 @@ const Home = () => {
         payload.text = fileContent;
       }
 
-      const response = await axios.post("http://localhost:6082/summarize", payload, {
+      const response = await axios.post("http://vietserver.ddns.net:6082/summarize", payload, {
         headers: { "Content-Type": "application/json" },
       });
 
@@ -659,7 +661,7 @@ const Home = () => {
         payload.text = fileContent;
       }
 
-      const response = await axios.post("http://localhost:6082/mindmap", payload, {
+      const response = await axios.post("http://vietserver.ddns.net:6082/mindmap", payload, {
         headers: { "Content-Type": "application/json" },
       });
 
@@ -696,7 +698,7 @@ const Home = () => {
         payload.text = fileContent;
       }
 
-      const response = await axios.post("http://localhost:6082/flashcard", payload, {
+      const response = await axios.post("http://vietserver.ddns.net:6082/flashcard", payload, {
         headers: { "Content-Type": "application/json" },
       });
       console.log("Flashcard Data:", response.data);
@@ -739,7 +741,7 @@ const Home = () => {
         payload.text = fileContent;
       }
 
-      const response = await axios.post("http://localhost:6082/ommi-solver", payload, {
+      const response = await axios.post("http://vietserver.ddns.net:6082/ommi-solver", payload, {
         headers: { "Content-Type": "application/json" },
       });
 
@@ -760,51 +762,86 @@ const Home = () => {
 
     setLoadingState({ isLoading: true, action: 'powerpoint' });
     try {
-      let payload = { userId: currentUser.user._id };
+      let payload = { userId: currentUser.user._id, text: fileContent };
 
       if (uploadedFile) {
-        if (uploadedFile.type === "text/plain") {
-          const text = await uploadedFile.text();
-          payload.text = text;
-        } else {
-          const base64String = await convertFileToBase64(uploadedFile);
-          payload.file = base64String;
-          payload.fileType = uploadedFile.type;
-          payload.fileName = uploadedFile.name;
-        }
-      } else {
-        payload.text = fileContent;
+        const base64String = await convertFileToBase64(uploadedFile);
+        payload.file = base64String;
+        payload.fileType = uploadedFile.type;
+        payload.fileName = uploadedFile.name;
       }
 
-      const response = await axios.post("http://localhost:6082/powpoint", payload, {
+      const response = await axios.post("http://vietserver.ddns.net:6082/powpoint-create", payload, {
         headers: { "Content-Type": "application/json" },
-        responseType: "blob",
+        responseType: "blob", // Nhận dữ liệu file từ backend
       });
 
-      const blob = new Blob([response.data], {
-        type: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+      console.log("Headers response:", response.headers);
+
+      // Lấy Content-Disposition để lấy filename
+      const contentDisposition = response.headers["content-disposition"];
+      let filename = "unknown.pdf"; // Default filename
+
+      if (contentDisposition) {
+        const match = contentDisposition.match(/filename="?(.+)"?/);
+        if (match) {
+          filename = match[1]; // Lấy tên file từ header
+        }
+      }
+
+      // Lấy đường dẫn file PowerPoint từ header
+      const powpointPath = response.headers["powpointpath"] || response.headers["Powpointpath"];
+      console.log("PowerPoint Path:", powpointPath);
+
+      if (!powpointPath) {
+        toast.error("Không tìm thấy đường dẫn PowerPoint!");
+        return;
+      }
+
+      setPptxFilename(powpointPath); // Lưu đường dẫn để gửi khi tải xuống
+
+      // Hiển thị PDF preview
+      const pdfBlob = new Blob([response.data], { type: "application/pdf" });
+      const pdfUrl = URL.createObjectURL(pdfBlob);
+      setPowerpointPreview({
+        url: pdfUrl,
+        filename: filename,
       });
 
-      const fileUrl = URL.createObjectURL(blob);
-      setPowerpoint(fileUrl);
     } catch (error) {
-      console.error("Error generating PowerPoint:", error);
       toast.error("Có lỗi xảy ra khi tạo PowerPoint!");
     } finally {
       setLoadingState({ isLoading: false, action: '' });
     }
   };
 
-  const handleDownloadPowerpoint = () => {
-    if (!powerpoint) return;
+  const handleDownloadPowerpoint = async () => {
+    if (!pptxFilename) {
+      toast.error("Không tìm thấy đường dẫn PowerPoint!");
+      return;
+    }
 
-    const link = document.createElement("a");
-    link.href = powerpoint;
-    link.download = "presentation.pptx";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    try {
+      const response = await axios.post(
+        "http://vietserver.ddns.net:6082/powpoint-download",
+        { powpointPath: pptxFilename },
+        { headers: { "Content-Type": "application/json" }, responseType: "blob" }
+      );
+
+      // Lưu file PowerPoint xuống máy người dùng
+      const blob = new Blob([response.data], { type: "application/vnd.openxmlformats-officedocument.presentationml.presentation" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "presentation.pptx";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      toast.error("Lỗi khi tải xuống PowerPoint!");
+    }
   };
+
+
 
   return (
     <>
@@ -1108,67 +1145,54 @@ const Home = () => {
               </button>
             </div>
           )}
-          {powerpoint && (
-            <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 p-4 z-50">
-              <div className="relative w-full max-w-md bg-white rounded-xl shadow-2xl p-8 transform transition-all">
+          {powerpointPreview && (
+            <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-60 p-6 z-50 animate-fade-in">
+              <div className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl p-8">
+
+                {/* Nút đóng */}
                 <button
-                  onClick={() => setPowerpoint("")}
-                  className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors duration-200"
-                  aria-label="Close Preview"
+                  onClick={() => {
+                    URL.revokeObjectURL(powerpointPreview.url);
+                    setPowerpointPreview("");
+                  }}
+                  className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 transition-transform transform hover:scale-110"
+                  aria-label="Đóng"
                 >
                   <MdClose className="text-2xl" />
                 </button>
 
+                {/* Tiêu đề */}
                 <div className="text-center">
                   <div className="mb-6">
                     <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <svg
-                        className="w-8 h-8 text-blue-500"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                        />
+                      <svg className="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
                     </div>
-                    <h2 className="text-2xl font-bold text-gray-800 mb-2">Tạo PowerPoint thành công!</h2>
-                    <p className="text-gray-600">File PowerPoint của bạn đã sẵn sàng để tải xuống</p>
+                    <h2 className="text-3xl font-bold text-gray-800">Tạo PowerPoint thành công! 🎉</h2>
+                    <p className="text-gray-600 mt-1">File PowerPoint đã sẵn sàng để tải xuống</p>
                   </div>
 
-                  <div className="p-4 bg-blue-50 rounded-lg mb-6">
-                    <div className="flex items-center justify-center space-x-2 text-blue-700">
-                      <svg
-                        className="w-5 h-5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                        />
-                      </svg>
-                      <span className="text-sm">File sẽ được tải xuống ở định dạng .pptx</span>
-                    </div>
+                  {/* Hiển thị PDF */}
+                  <div className="relative border border-gray-300 rounded-lg overflow-hidden shadow-md bg-gray-50">
+                    <iframe
+                      src={`${powerpointPreview.url}#toolbar=0`}
+                      title="PDF Preview"
+                      className="w-full h-[500px] border-none rounded-md"
+                    />
                   </div>
 
+                  {/* Nút tải xuống */}
                   <button
                     onClick={handleDownloadPowerpoint}
-                    className="w-full px-6 py-4 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-lg flex items-center justify-center space-x-3 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-1"
+                    className="w-full mt-6 px-6 py-4 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-lg flex items-center justify-center space-x-3 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-1"
                   >
                     <MdFileDownload className="text-2xl" />
-                    <span className="font-semibold">Tải xuống PowerPoint</span>
+                    <span className="text-lg font-semibold">Tải xuống PowerPoint</span>
                   </button>
 
-                  <p className="mt-4 text-sm text-gray-500">
-                    Nhấn nút tải xuống để lưu file về máy của bạn
+                  <p className="mt-3 text-sm text-gray-500">
+                    Nhấn vào nút trên để tải về file PowerPoint của bạn 📂
                   </p>
                 </div>
               </div>
