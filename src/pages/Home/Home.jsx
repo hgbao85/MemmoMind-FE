@@ -216,25 +216,32 @@ const Home = () => {
   };
 
   // Di chuyển ghi chú vào thùng rác
-  const moveToTrash = async (noteId) => {
-    try {
-      const res = await api.put(
-        `https://memmomind-be-ycwv.onrender.com/api/note/trash/${noteId}`,
-        {},
-        { withCredentials: true }
-      );
+const moveToTrash = async (noteId) => {
+  try {
+    const res = await api.put(
+      `https://memmomind-be-ycwv.onrender.com/api/note/trash/${noteId}`,
+      {},
+      { withCredentials: true }
+    );
 
-      if (!res.data.success) {
-        toast.error(res.data.message);
-        return;
-      }
-
-      toast.success(res.data.message);
-      getAllNotes();
-    } catch (error) {
-      toast.error(error.message);
+    if (!res.data.success) {
+      toast.error(res.data.message);
+      return;
     }
-  };
+
+    // Kiểm tra nếu note đang hiển thị trong main, thì xóa nó khỏi main
+    if (noteData && noteData._id === noteId) {
+      setNoteData(null); // Làm trống giao diện chính
+      setAddEditType("add"); // Chuyển về chế độ thêm ghi chú mới
+    }
+
+    toast.success(res.data.message);
+    getAllNotes(); // Cập nhật danh sách notes
+  } catch (error) {
+    toast.error(error.message);
+  }
+};
+  
 
   // Khôi phục ghi chú từ thùng rác
   const restoreNote = async (noteId) => {
@@ -267,32 +274,38 @@ const Home = () => {
 
 
   // Xóa ghi chú vĩnh viễn từ thùng rác
-  const permanentlyDeleteNote = async (noteId) => {
-    try {
-      if (!noteId) {
-        toast.error("ID ghi chú không hợp lệ!");
-        return;
-      }
-
-      const res = await api.delete(
-        `https://memmomind-be-ycwv.onrender.com/api/note/delete-restore/${noteId}?actionType=delete`,
-        { withCredentials: true }
-      );
-
-      console.log("Delete Response:", res.data);
-
-      if (!res.data || res.data.message !== "Operation performed successfully") {
-        toast.error(res.data.message || "Lỗi khi xóa ghi chú!");
-        return;
-      }
-
-      toast.success("Xóa ghi chú vĩnh viễn thành công!");
-      getTrashedNotes();
-    } catch (error) {
-      console.error("Error deleting note:", error);
-      toast.error(error.response?.data?.message || "Lỗi khi xóa ghi chú!");
+const permanentlyDeleteNote = async (noteId) => {
+  try {
+    if (!noteId) {
+      toast.error("ID ghi chú không hợp lệ!");
+      return;
     }
-  };
+
+    const res = await api.delete(
+      `https://memmomind-be-ycwv.onrender.com/api/note/delete-restore/${noteId}?actionType=delete`,
+      { withCredentials: true }
+    );
+
+    console.log("Delete Response:", res.data);
+
+    if (!res.data || res.data.message !== "Operation performed successfully") {
+      toast.error(res.data.message || "Lỗi khi xóa ghi chú!");
+      return;
+    }
+
+    // Kiểm tra nếu note đang hiển thị trong main, thì xóa nó khỏi main
+    if (noteData && noteData._id === noteId) {
+      setNoteData(null); // Làm trống giao diện chính
+      setAddEditType("add"); // Chuyển về chế độ thêm ghi chú mới
+    }
+
+    toast.success("Xóa ghi chú vĩnh viễn thành công!");
+    getTrashedNotes();
+  } catch (error) {
+    console.error("Error deleting note:", error);
+    toast.error(error.response?.data?.message || "Lỗi khi xóa ghi chú!");
+  }
+};
 
 
   const handleAddNoteSuccess = () => {
