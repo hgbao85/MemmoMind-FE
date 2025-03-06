@@ -71,7 +71,7 @@ const Home = () => {
   // 📌 Hàm lấy thông tin User hiện tại
   const getUserInfo = async () => {
     try {
-      const res = await api.get("https://memmomind-be-ycwv.onrender.com/api/user/current", {
+      const res = await api.get("https://memmomindbe-test-jgcl.onrender.com/api/user/current", {
         withCredentials: true,
       });
 
@@ -91,7 +91,7 @@ const Home = () => {
   // 📝 Lấy tất cả ghi chú
   const getAllNotes = async () => {
     try {
-      const res = await api.get("https://memmomind-be-ycwv.onrender.com/api/note/all", {
+      const res = await api.get("https://memmomindbe-test-jgcl.onrender.com/api/note/all", {
         withCredentials: true,
       });
 
@@ -127,7 +127,7 @@ const Home = () => {
 
     try {
       const res = await api.put(
-        `https://memmomind-be-ycwv.onrender.com/api/note/update-note-pinned/${noteId}`,
+        `https://memmomindbe-test-jgcl.onrender.com/api/note/update-note-pinned/${noteId}`,
         {},
         { withCredentials: true }
       );
@@ -157,7 +157,7 @@ const Home = () => {
   // 🗑 Lấy danh sách ghi chú trong thùng rác (isDeleted=true)
   const getTrashedNotes = async () => {
     try {
-      const res = await api.get(`https://memmomind-be-ycwv.onrender.com/api/note/all?isDeleted=true`, { withCredentials: true });
+      const res = await api.get(`https://memmomindbe-test-jgcl.onrender.com/api/note/all?isDeleted=true`, { withCredentials: true });
       if (!res.data.notes) return;
       setDeletedNotes(res.data.notes);
     } catch (error) {
@@ -187,7 +187,7 @@ const Home = () => {
         return;
       }
 
-      const res = await api.get(`https://memmomind-be-ycwv.onrender.com/api/note/search`, {
+      const res = await api.get(`https://memmomindbe-test-jgcl.onrender.com/api/note/search`, {
         params: { keyword: query },
         withCredentials: true,
       });
@@ -217,7 +217,7 @@ const Home = () => {
   const moveToTrash = async (noteId) => {
     try {
       const res = await api.put(
-        `https://memmomind-be-ycwv.onrender.com/api/note/trash/${noteId}`,
+        `https://memmomindbe-test-jgcl.onrender.com/api/note/trash/${noteId}`,
         {},
         { withCredentials: true }
       );
@@ -225,6 +225,11 @@ const Home = () => {
       if (!res.data.success) {
         toast.error(res.data.message);
         return;
+      }
+      // Kiểm tra nếu note đang hiển thị trong main, thì xóa nó khỏi main
+      if (noteData && noteData._id === noteId) {
+        setNoteData(null);
+        setAddEditType("add");
       }
 
       toast.success(res.data.message);
@@ -243,7 +248,7 @@ const Home = () => {
       }
 
       const res = await api.delete(
-        `https://memmomind-be-ycwv.onrender.com/api/note/delete-restore/${noteId}?actionType=restore`,
+        `https://memmomindbe-test-jgcl.onrender.com/api/note/delete-restore/${noteId}?actionType=restore`,
         { withCredentials: true }
       );
 
@@ -273,7 +278,7 @@ const Home = () => {
       }
 
       const res = await api.delete(
-        `https://memmomind-be-ycwv.onrender.com/api/note/delete-restore/${noteId}?actionType=delete`,
+        `https://memmomindbe-test-jgcl.onrender.com/api/note/delete-restore/${noteId}?actionType=delete`,
         { withCredentials: true }
       );
 
@@ -282,6 +287,12 @@ const Home = () => {
       if (!res.data || res.data.message !== "Operation performed successfully") {
         toast.error(res.data.message || "Lỗi khi xóa ghi chú!");
         return;
+      }
+
+      // Kiểm tra nếu note đang hiển thị trong main, thì xóa nó khỏi main
+      if (noteData && noteData._id === noteId) {
+        setNoteData(null);
+        setAddEditType("add");
       }
 
       toast.success("Xóa ghi chú vĩnh viễn thành công!");
