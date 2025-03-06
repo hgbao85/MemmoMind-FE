@@ -88,6 +88,15 @@ const Login = () => {
                 Đăng ký ngay!!
               </Link>
             </p>
+            {/* <p className="text-sm text-center mt-2">
+              Bạn đã quên mật khẩu?{" "}
+              <Link
+                to={"/resetpassword"}
+                className="font-medium text-[#000000] underline"
+              >
+                Khôi phục mật khẩu nè!!!
+              </Link>
+            </p> */}
           </form>
         </div>
       </div>
