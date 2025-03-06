@@ -14,6 +14,8 @@ const AddEditNotes = ({
   const [content, setContent] = useState(noteData?.content || "");
   const [tags, setTags] = useState(noteData?.tags || []);
   const [error, setError] = useState(null);
+  const [isProcessing, setIsProcessing] = useState(false); // Thêm trạng thái xử lý
+
 
   useEffect(() => {
     setTitle(noteData?.title || "");
@@ -44,6 +46,8 @@ const AddEditNotes = ({
     } catch (error) {
       toast.error(error.message);
       setError(error.message);
+    } finally {
+      setIsProcessing(false); // Đặt lại trạng thái xử lý
     }
   };
 
@@ -67,10 +71,14 @@ const AddEditNotes = ({
     } catch (error) {
       toast.error(error.message);
       setError(error.message);
+    } finally {
+      setIsProcessing(false); // Đặt lại trạng thái xử lý
     }
   };
 
   const handleAddNote = () => {
+    if (isProcessing) return; // Nếu đang xử lý, không làm gì cả
+
     if (!title) {
       setError("Vui lòng nhập tiêu đề!");
       return;
@@ -82,6 +90,7 @@ const AddEditNotes = ({
     }
 
     setError("");
+    setIsProcessing(true); // Bắt đầu xử lý
 
     if (type === "edit") {
       editNote();
@@ -150,8 +159,13 @@ const AddEditNotes = ({
       {type !== "view" && (
         <div className="flex justify-end">
           <button
-            className="px-4 py-2 bg-[#E9A5A5] text-white font-semibold rounded hover:bg-[#C8BBBB] transition-all"
+            className={`px-4 py-2 font-semibold rounded transition-all ${
+              isProcessing
+                ? "bg-gray-300 cursor-not-allowed"
+                : "bg-[#E9A5A5] hover:bg-[#C8BBBB] text-white"
+            }`}
             onClick={handleAddNote}
+            disabled={isProcessing}
           >
             {type === "edit" ? "Cập nhật" : "Tạo"}
           </button>
