@@ -84,11 +84,7 @@ const Home = () => {
   const contentMulchoice = currentQuestionData
     ? currentQuestionData[topicMulchoice]
     : null;
-  console.log("Current Question Data:", currentQuestionData);
-  console.log("Topic:", topicMulchoice);
-  console.log("Content:", contentMulchoice);
   const [shuffledAnswers, setShuffledAnswers] = useState([]);
-  const [shouldShuffle, setShouldShuffle] = useState(true);
 
   const [loadingState, setLoadingState] = useState({
     isLoading: false,
@@ -1153,6 +1149,15 @@ const Home = () => {
                   margin-top: 10px;
                   font-weight: bold;
                   font-size: 16px;
+                  padding: 10px;
+                  border-radius: 5px;
+                  display: inline-block;
+              }
+              .correct-msg {
+                  color: black;
+              }
+              .incorrect-msg {
+                  color: black;
               }
           </style>
       </head>
@@ -1174,15 +1179,7 @@ const Home = () => {
           <script>
               let questions = ${questions};
               let currentQuestionIndex = 0;
-              let userAnswers = {}; // Lưu nội dung đáp án thay vì chỉ vị trí
-
-              function shuffle(array) {
-                  for (let i = array.length - 1; i > 0; i--) {
-                      const j = Math.floor(Math.random() * (i + 1));
-                      [array[i], array[j]] = [array[j], array[i]];
-                  }
-                  return array;
-              }
+              let userAnswers = {}; // Lưu nội dung đáp án người dùng chọn
 
               function loadQuestion() {
                   let questionData = questions[currentQuestionIndex];
@@ -1190,8 +1187,10 @@ const Home = () => {
                   let content = questionData[topic];
                   let correctAnswer = content.Answer[0];
                   let wrongAnswers = content["Wrong Answer"] || [];
-                  let answers = shuffle([...wrongAnswers.slice(0, 3), correctAnswer]);
-                  
+
+                  // Đảm bảo danh sách đáp án hiển thị theo thứ tự gốc
+                  let answers = [...wrongAnswers.slice(0, 3), correctAnswer];
+
                   let labels = ["A", "B", "C", "D"];
                   let correctIndex = answers.indexOf(correctAnswer);
 
@@ -1206,6 +1205,7 @@ const Home = () => {
 
                   document.getElementById("counter").innerText = (currentQuestionIndex + 1) + " / " + questions.length;
                   document.getElementById("resultMessage").innerText = "";
+                  document.getElementById("resultMessage").className = "";
 
                   // Nếu người dùng đã trả lời trước đó, giữ lại trạng thái theo nội dung
                   if (userAnswers[currentQuestionIndex] !== undefined) {
@@ -1217,8 +1217,8 @@ const Home = () => {
                           if (btn.innerText.includes(selectedAnswer)) {
                               if (selectedAnswer === correctAnswer) {
                                   btn.classList.add("correct");
-                                  document.getElementById("resultMessage").innerText = "✅ Chính xác!";
-                                  document.getElementById("resultMessage").style.color = "green";
+                                  document.getElementById("resultMessage").innerText = "✅ Đáp án đúng!";
+                                  document.getElementById("resultMessage").classList.add("correct-msg");
                               } else {
                                   btn.classList.add("incorrect");
                                   buttons.forEach(b => {
@@ -1227,7 +1227,7 @@ const Home = () => {
                                       }
                                   });
                                   document.getElementById("resultMessage").innerText = "❌ Đáp án đúng là: " + correctAnswer;
-                                  document.getElementById("resultMessage").style.color = "red";
+                                  document.getElementById("resultMessage").classList.add("incorrect-msg");
                               }
                           }
                       });
@@ -1243,8 +1243,8 @@ const Home = () => {
 
                   if (selectedAnswer === correctAnswer) {
                       button.classList.add("correct");
-                      document.getElementById("resultMessage").innerText = "✅ Chính xác!";
-                      document.getElementById("resultMessage").style.color = "green";
+                      document.getElementById("resultMessage").innerText = "✅ Đáp án đúng!";
+                      document.getElementById("resultMessage").classList.add("correct-msg");
                   } else {
                       button.classList.add("incorrect");
                       buttons.forEach(b => {
@@ -1253,7 +1253,7 @@ const Home = () => {
                           }
                       });
                       document.getElementById("resultMessage").innerText = "❌ Đáp án đúng là: " + correctAnswer;
-                      document.getElementById("resultMessage").style.color = "red";
+                      document.getElementById("resultMessage").classList.add("incorrect-msg");
                   }
               }
 
@@ -1287,6 +1287,7 @@ const Home = () => {
     a.click();
     document.body.removeChild(a);
   };
+
 
 
   return (
