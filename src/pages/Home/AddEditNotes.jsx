@@ -1,8 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import PropTypes from "prop-types";
-import { MdClose } from "react-icons/md";
+import { MdClose, MdFormatBold, MdFormatItalic, MdCode, MdLink, MdFormatListBulleted, MdFormatListNumbered, MdHorizontalRule } from "react-icons/md";
 import { toast } from "react-toastify";
 import api from "../../services/api";
+import ReactMarkdown from "react-markdown";
+import "./markdown-preview.css";
 
 const AddEditNotes = ({
   onClose,
@@ -15,6 +17,8 @@ const AddEditNotes = ({
   const [tags, setTags] = useState(noteData?.tags || []);
   const [error, setError] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false); // Thêm trạng thái xử lý
+  const [viewMode, setViewMode] = useState("write");
+  const textareaRef = useRef(null);
 
 
   useEffect(() => {
@@ -23,6 +27,41 @@ const AddEditNotes = ({
     setTags(noteData?.tags || []);
   }, [noteData]);
 
+  const handleFormat = (tag) => {
+    let formattedText = "";
+  
+    switch (tag) {
+      case "bold":
+        formattedText = "**Nhập chữ in đậm tại đây**";
+        break;
+      case "italic":
+        formattedText = "_Nhập chữ in nghiêng tại đây_";
+        break;
+      case "code":
+        formattedText = "`code`";
+        break;
+      case "link":
+        formattedText = "[Nhập tên liên kết](nhập liên kết)";
+        break;
+      case "unorderedList":
+        formattedText = "- Item 1\n- Item 2\n- Item 3";
+        break;
+      case "orderedList":
+        formattedText = "1. Item 1\n2. Item 2\n3. Item 3";
+        break;
+      case "horizontalRule":
+        formattedText = "\n---\n";
+        break;
+      default:
+        break;
+    }
+  
+    setContent((prevContent) => `${prevContent} ${formattedText}`);
+    if (textareaRef.current) {
+      textareaRef.current.focus();
+    }
+  };
+  
   // Edit Note
   const editNote = async () => {
     const noteId = noteData._id;
@@ -136,34 +175,52 @@ const AddEditNotes = ({
       </div>
 
       {/* Textarea: Content */}
-      <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700">Nội dung</label>
-        {type === "view" ? (
-          <p className="mt-1 p-2 border border-gray-300 rounded w-full resize-vertical focus:ring-2 focus:ring-[#C8BBBB] focus:outline-none">{content}</p>
-        ) : (
+      <div className="flex border-b mb-4">
+        <button className={`px-4 py-2 ${viewMode === "write" ? "border-b-2 border-gray-800" : "text-gray-500"}`} onClick={() => setViewMode("write")}>
+          Write
+        </button>
+        <button className={`px-4 py-2 ${viewMode === "preview" ? "border-b-2 border-gray-800" : "text-gray-500"}`} onClick={() => setViewMode("preview")}>
+          Preview
+        </button>
+      </div>
+      
+      {viewMode === "write" ? (
+        <div>
+          <div className="flex gap-2 mb-2 border-b pb-2">
+            <button className="p-1 border rounded hover:bg-gray-200" onClick={() => handleFormat("bold")}><MdFormatBold /></button>
+            <button className="p-1 border rounded hover:bg-gray-200" onClick={() => handleFormat("italic")}><MdFormatItalic /></button>
+            <button className="p-1 border rounded hover:bg-gray-200" onClick={() => handleFormat("code")}><MdCode /></button>
+            <button className="p-1 border rounded hover:bg-gray-200" onClick={() => handleFormat("link")}><MdLink /></button>
+            {/* button mới */}
+            <button className="p-1 border rounded hover:bg-gray-200" onClick={() => handleFormat("unorderedList")}><MdFormatListBulleted /></button>
+            <button className="p-1 border rounded hover:bg-gray-200" onClick={() => handleFormat("orderedList")}><MdFormatListNumbered /></button>
+            <button className="p-1 border rounded hover:bg-gray-200" onClick={() => handleFormat("horizontalRule")}><MdHorizontalRule /></button>
+          </div>
           <textarea
+            ref={textareaRef}
             className="mt-1 p-2 border border-gray-300 rounded w-full h-64 resize-vertical focus:ring-2 focus:ring-[#C8BBBB] focus:outline-none"
             placeholder="Nhập nội dung..."
             value={content}
             onChange={({ target }) => setContent(target.value)}
             style={{ minHeight: "200px", maxHeight: "500px" }}
-            disabled={type === "view"}
           />
-        )}
-      </div>
+        </div>
+      ) : (
+        <div className="p-2 border border-gray-300 rounded bg-gray-100 whitespace-pre-wrap mb-2 overflow-auto preview">
+          <ReactMarkdown>{content}</ReactMarkdown>
+        </div>
+      )}
 
-      {/* Error Message */}
       {error && type !== "view" && <p className="text-red-500 text-sm mb-4">{error}</p>}
 
       {/* Action Button */}
       {type !== "view" && (
         <div className="flex justify-end">
           <button
-            className={`px-4 py-2 font-semibold rounded transition-all ${
-              isProcessing
-                ? "bg-gray-300 cursor-not-allowed"
-                : "bg-[#E9A5A5] hover:bg-[#C8BBBB] text-white"
-            }`}
+            className={`px-4 py-2 font-semibold rounded transition-all ${isProcessing
+              ? "bg-gray-300 cursor-not-allowed"
+              : "bg-[#E9A5A5] hover:bg-[#C8BBBB] text-white"
+              }`}
             onClick={handleAddNote}
             disabled={isProcessing}
           >
