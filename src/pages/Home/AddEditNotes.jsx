@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from "react";
 import PropTypes from "prop-types";
-import { MdClose, MdFormatBold, MdFormatItalic, MdCode, MdLink, MdFormatListBulleted, MdFormatListNumbered, MdFormatQuote, MdHorizontalRule, MdCheckBox } from "react-icons/md";
+import { MdClose, MdFormatBold, MdFormatItalic, MdCode, MdLink, MdFormatListBulleted, MdFormatListNumbered, MdHorizontalRule } from "react-icons/md";
 import { toast } from "react-toastify";
 import api from "../../services/api";
 import ReactMarkdown from "react-markdown";
+import "./markdown-preview.css";
 
 const AddEditNotes = ({
   onClose,
@@ -48,14 +49,8 @@ const AddEditNotes = ({
       case "orderedList":
         formattedText = "1. Item 1\n2. Item 2\n3. Item 3";
         break;
-      case "quote":
-        formattedText = "> Nhập trích dẫn tại đây";
-        break;
       case "horizontalRule":
         formattedText = "\n---\n";
-        break;
-      case "taskList":
-          formattedText = "- Nhiệm vụ 1 [x] Nhiệm vụ đã hoàn thành";
         break;
       default:
         break;
@@ -199,9 +194,7 @@ const AddEditNotes = ({
             {/* button mới */}
             <button className="p-1 border rounded hover:bg-gray-200" onClick={() => handleFormat("unorderedList")}><MdFormatListBulleted /></button>
             <button className="p-1 border rounded hover:bg-gray-200" onClick={() => handleFormat("orderedList")}><MdFormatListNumbered /></button>
-            <button className="p-1 border rounded hover:bg-gray-200" onClick={() => handleFormat("quote")}><MdFormatQuote /></button>
             <button className="p-1 border rounded hover:bg-gray-200" onClick={() => handleFormat("horizontalRule")}><MdHorizontalRule /></button>
-            <button className="p-1 border rounded hover:bg-gray-200" onClick={() => handleFormat("taskList")}><MdCheckBox /></button>
           </div>
           <textarea
             ref={textareaRef}
@@ -213,7 +206,7 @@ const AddEditNotes = ({
           />
         </div>
       ) : (
-        <div className="p-2 border border-gray-300 rounded bg-gray-100 whitespace-pre-wrap mb-2">
+        <div className="p-2 border border-gray-300 rounded bg-gray-100 whitespace-pre-wrap mb-2 overflow-auto preview">
           <ReactMarkdown>{content}</ReactMarkdown>
         </div>
       )}
