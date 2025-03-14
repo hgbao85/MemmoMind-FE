@@ -56,6 +56,17 @@ export const registerUser = async (name, email, password) => {
     }
 };
 
+// API xác thực email
+export const verifyEmail = async (token) => {
+    try {
+        const response = await api.get(`/auth/verify-email?token=${token}`);
+        return response.data;
+    } catch (error) {
+        throw error.response?.data?.message || "Xác thực thất bại!";
+    }
+};
+
+
 // 🔹 API Reset Password
 export const resetPassword = async (token, newPassword) => {
     try {
