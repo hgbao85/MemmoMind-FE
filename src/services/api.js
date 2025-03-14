@@ -56,5 +56,25 @@ export const registerUser = async (name, email, password) => {
     }
 };
 
-// ✅ Xuất API để sử dụng trong toàn bộ ứng dụng
+// 🔹 API Reset Password
+export const resetPassword = async (token, newPassword) => {
+    try {
+        const response = await api.post("/auth/reset-password", { token, newPassword });
+        return response.data;
+    } catch (error) {
+        throw error.response?.data?.message || "Lỗi khi đặt lại mật khẩu!";
+    }
+};
+
+
+// 🔹 API Forgot Password
+export const forgotPassword = async (email) => {
+    try {
+        const response = await api.post("/auth/forgot-password", { email });
+        return response.data;
+    } catch (error) {
+        throw error.response?.data?.message || "Lỗi khi gửi yêu cầu khôi phục mật khẩu!";
+    }
+};
+
 export default api;

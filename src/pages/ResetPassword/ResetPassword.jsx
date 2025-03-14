@@ -1,47 +1,37 @@
 import { useState, useEffect } from "react";
-import PasswordInput from "../../components/Input/PasswordInput";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import { resetPassword } from "../../services/api";
 import { toast } from "react-toastify";
-import logo from "./../../assets/images/logomoi4m.png";
-import axios from "axios";
+import logo from './../../assets/images/logomoi4m.png';
 
 const ResetPassword = () => {
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
-  const { token } = useParams(); // Lấy token từ URL
+  const location = useLocation();
+  const urlParams = new URLSearchParams(location.search);
+  const token = urlParams.get("token");
 
   useEffect(() => {
     if (!token) {
-      toast.error("Mã token không hợp lệ!");
+      toast.error("Mã xác thực không hợp lệ!");
       navigate("/login");
     }
   }, [token, navigate]);
 
   const handleResetPassword = async (e) => {
     e.preventDefault();
-
-    if (!password || !confirmPassword) {
-      setError("Vui lòng nhập đầy đủ thông tin.");
+    if (!newPassword) {
+      setError("Vui lòng nhập mật khẩu mới!");
       return;
     }
-
-    if (password !== confirmPassword) {
-      setError("Mật khẩu xác nhận không khớp.");
-      return;
-    }
-
+    setError("");
     try {
-      const response = await axios.post("/api/auth/reset-password", {
-        token,
-        password,
-      });
-
-      toast.success(response.data.message || "Đặt lại mật khẩu thành công!");
-      navigate("/login");
-    } catch (error) {
-      toast.error(error.response?.data?.message || "Có lỗi xảy ra!");
+      await resetPassword(token, newPassword);
+      toast.success("Mật khẩu đã được khôi phục!");
+      navigate("/login"); // Sau khi thành công, chuyển về trang đăng nhập
+    } catch (errorMessage) {
+      toast.error(errorMessage);
     }
   };
 
@@ -51,29 +41,24 @@ const ResetPassword = () => {
         <img src={logo} alt="MemmoMind Logo" className="w-96" />
       </div>
       <div className="flex items-center justify-center">
-        <div className="w-96 rounded-2xl bg-customRedGray px-7 py-10 shadow-lg">
+        <div className="w-96 rounded-2xl bg-customRedGray px-7 py-10">
           <form onSubmit={handleResetPassword}>
-            <h4 className="text-xl mb-5 text-left">Khôi phục mật khẩu</h4>
-            <PasswordInput
-              placeholder="Nhập mật khẩu mới"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-            <PasswordInput
-              placeholder="Xác nhận mật khẩu"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
+            <h4 className="text-xl mb-5 text-left">Đặt lại mật khẩu</h4>
+            <input
+              type="password"
+              placeholder="Mật khẩu mới"
+              className="input-box p-3 w-full flex items-center rounded-full mb-3"
+              style={{ backgroundColor: '#D9D9D9', color: 'black' }}
+              onChange={(e) => setNewPassword(e.target.value)}
+              value={newPassword}
             />
             {error && <p className="text-red-500 text-sm pb-1">{error}</p>}
-            <button type="submit" className="w-full py-2 mb-4 bg-bgsubmit text-white rounded-full hover:bg-gray-500">
+            <button
+              type="submit"
+              className="w-full py-2 mb-4 bg-bgsubmit text-white rounded-full hover:bg-gray-500"
+            >
               Xác nhận
             </button>
-            <p className="text-sm text-center mt-2">
-              Bạn chưa đăng ký?{" "}
-              <Link to="/signup" className="font-medium text-[#000000] underline">
-                Đăng ký ngay!!
-              </Link>
-            </p>
           </form>
         </div>
       </div>
