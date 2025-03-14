@@ -126,7 +126,7 @@ const Home = () => {
   // Hàm lấy thông tin User hiện tại
   const getUserInfo = async () => {
     try {
-      const res = await api.get("https://memmomind-be-ycwv.onrender.com/api/user/current", {
+      const res = await api.get("https://memmomindbe-test-jgcl.onrender.com/api/user/current", {
         withCredentials: true,
       });
 
@@ -146,7 +146,7 @@ const Home = () => {
   // 📝 Lấy tất cả ghi chú
   const getAllNotes = async () => {
     try {
-      const res = await api.get("https://memmomind-be-ycwv.onrender.com/api/note/all", {
+      const res = await api.get("https://memmomindbe-test-jgcl.onrender.com/api/note/all", {
         withCredentials: true,
       });
 
@@ -212,7 +212,7 @@ const Home = () => {
   // 🗑 Lấy danh sách ghi chú trong thùng rác (isDeleted=true)
   const getTrashedNotes = async () => {
     try {
-      const res = await api.get(`https://memmomind-be-ycwv.onrender.com/api/note/all?isDeleted=true`, { withCredentials: true });
+      const res = await api.get(`https://memmomindbe-test-jgcl.onrender.com/api/note/all?isDeleted=true`, { withCredentials: true });
       if (!res.data.notes) return;
       setDeletedNotes(res.data.notes);
     } catch (error) {
@@ -241,7 +241,7 @@ const Home = () => {
         return;
       }
 
-      const res = await api.get(`https://memmomind-be-ycwv.onrender.com/api/note/search`, {
+      const res = await api.get(`https://memmomindbe-test-jgcl.onrender.com/api/note/search`, {
         params: { keyword: query },
         withCredentials: true,
       });
