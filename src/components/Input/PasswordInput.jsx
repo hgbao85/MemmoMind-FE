@@ -1,5 +1,5 @@
 import { useState } from "react";
-import PropTypes from "prop-types"; // Import PropTypes
+import PropTypes from "prop-types";
 import { FaRegEye, FaRegEyeSlash } from "react-icons/fa6";
 
 const PasswordInput = ({ value, onChange, placeholder }) => {

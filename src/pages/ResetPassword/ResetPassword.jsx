@@ -3,9 +3,11 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { resetPassword } from "../../services/api";
 import { toast } from "react-toastify";
 import logo from './../../assets/images/logomoi4m.png';
+import PasswordInput from "../../components/Input/PasswordInput"; // Đảm bảo import đúng
 
 const ResetPassword = () => {
   const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");  // Thêm state cho xác nhận mật khẩu
   const [error, setError] = useState("");
   const navigate = useNavigate();
   const location = useLocation();
@@ -21,8 +23,12 @@ const ResetPassword = () => {
 
   const handleResetPassword = async (e) => {
     e.preventDefault();
-    if (!newPassword) {
-      setError("Vui lòng nhập mật khẩu mới!");
+    if (!newPassword || !confirmPassword) {
+      setError("Vui lòng nhập mật khẩu và xác nhận mật khẩu!");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setError("Mật khẩu và xác nhận mật khẩu không khớp!");
       return;
     }
     setError("");
@@ -44,13 +50,15 @@ const ResetPassword = () => {
         <div className="w-96 rounded-2xl bg-customRedGray px-7 py-10">
           <form onSubmit={handleResetPassword}>
             <h4 className="text-xl mb-5 text-left">Đặt lại mật khẩu</h4>
-            <input
-              type="password"
-              placeholder="Mật khẩu mới"
-              className="input-box p-3 w-full flex items-center rounded-full mb-3"
-              style={{ backgroundColor: '#D9D9D9', color: 'black' }}
-              onChange={(e) => setNewPassword(e.target.value)}
+            <PasswordInput
               value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              placeholder="Mật khẩu mới"
+            />
+            <PasswordInput
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              placeholder="Xác nhận mật khẩu"
             />
             {error && <p className="text-red-500 text-sm pb-1">{error}</p>}
             <button

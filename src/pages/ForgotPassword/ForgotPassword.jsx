@@ -37,7 +37,7 @@ const ForgotPassword = () => {
                         <h4 className="text-xl mb-5 text-left">Quên mật khẩu</h4>
                         <input
                             type="text"
-                            placeholder="Email"
+                            placeholder="Vui lòng nhập email"
                             className="input-box p-3 w-full flex items-center rounded-full mb-3"
                             style={{ backgroundColor: '#D9D9D9', color: 'black' }}
                             onChange={(e) => setEmail(e.target.value)}
