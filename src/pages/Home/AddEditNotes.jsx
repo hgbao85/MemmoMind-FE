@@ -85,7 +85,7 @@ const AddEditNotes = ({
       toast.error(error.message);
       setError(error.message);
     } finally {
-      setIsProcessing(false); // Đặt lại trạng thái xử lý
+      setIsProcessing(false);
     }
   };
 
@@ -110,12 +110,12 @@ const AddEditNotes = ({
       toast.error(error.message);
       setError(error.message);
     } finally {
-      setIsProcessing(false); // Đặt lại trạng thái xử lý
+      setIsProcessing(false);
     }
   };
 
   const handleAddNote = () => {
-    if (isProcessing) return; // Nếu đang xử lý, không làm gì cả
+    if (isProcessing) return;
     if (!title) {
       setError("Vui lòng nhập tiêu đề!");
       return;
@@ -127,7 +127,7 @@ const AddEditNotes = ({
     }
 
     setError("");
-    setIsProcessing(true); // Bắt đầu xử lý
+    setIsProcessing(true);
 
     if (type === "edit") {
       editNote();

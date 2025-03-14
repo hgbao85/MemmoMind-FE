@@ -3,11 +3,11 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { resetPassword } from "../../services/api";
 import { toast } from "react-toastify";
 import logo from './../../assets/images/logomoi4m.png';
-import PasswordInput from "../../components/Input/PasswordInput"; // Đảm bảo import đúng
+import PasswordInput from "../../components/Input/PasswordInput";
 
 const ResetPassword = () => {
   const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");  // Thêm state cho xác nhận mật khẩu
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
   const location = useLocation();
@@ -35,7 +35,7 @@ const ResetPassword = () => {
     try {
       await resetPassword(token, newPassword);
       toast.success("Mật khẩu đã được khôi phục!");
-      navigate("/login"); // Sau khi thành công, chuyển về trang đăng nhập
+      navigate("/login");
     } catch (errorMessage) {
       toast.error(errorMessage);
     }
