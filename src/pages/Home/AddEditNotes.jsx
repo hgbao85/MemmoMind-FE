@@ -205,7 +205,17 @@ const AddEditNotes = ({
         </div>
       ) : (
         <div className="p-2 border border-gray-300 rounded bg-gray-100 whitespace-pre-wrap mb-2 overflow-auto preview">
-          <ReactMarkdown>{content}</ReactMarkdown>
+          <ReactMarkdown
+            components={{
+              a: ({ href, children }) => (
+                <a href={href} target="_blank" rel="noopener noreferrer">
+                  {children}
+                </a>
+              ),
+            }}
+          >
+            {content}
+          </ReactMarkdown>
         </div>
       )}
 
