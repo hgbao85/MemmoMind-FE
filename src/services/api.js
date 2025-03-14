@@ -1,7 +1,7 @@
 import axios from "axios";
 
 // 🔹 Base URL của API
-const API_BASE_URL = "https://memmomind-be-ycwv.onrender.com/api";
+const API_BASE_URL = "https://memmomindbe-test-jgcl.onrender.com/api";
 
 const api = axios.create({
     baseURL: API_BASE_URL,
@@ -56,5 +56,25 @@ export const registerUser = async (name, email, password) => {
     }
 };
 
-// ✅ Xuất API để sử dụng trong toàn bộ ứng dụng
+// 🔹 API Reset Password
+export const resetPassword = async (token, newPassword) => {
+    try {
+        const response = await api.post("/auth/reset-password", { token, newPassword });
+        return response.data;
+    } catch (error) {
+        throw error.response?.data?.message || "Lỗi khi đặt lại mật khẩu!";
+    }
+};
+
+
+// 🔹 API Forgot Password
+export const forgotPassword = async (email) => {
+    try {
+        const response = await api.post("/auth/forgot-password", { email });
+        return response.data;
+    } catch (error) {
+        throw error.response?.data?.message || "Lỗi khi gửi yêu cầu khôi phục mật khẩu!";
+    }
+};
+
 export default api;

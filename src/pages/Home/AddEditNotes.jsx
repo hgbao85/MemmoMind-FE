@@ -20,7 +20,6 @@ const AddEditNotes = ({
   const [viewMode, setViewMode] = useState("write");
   const textareaRef = useRef(null);
 
-
   useEffect(() => {
     setTitle(noteData?.title || "");
     setContent(noteData?.content || "");
@@ -29,7 +28,7 @@ const AddEditNotes = ({
 
   const handleFormat = (tag) => {
     let formattedText = "";
-  
+
     switch (tag) {
       case "bold":
         formattedText = "**Nhập chữ in đậm tại đây**";
@@ -55,20 +54,20 @@ const AddEditNotes = ({
       default:
         break;
     }
-  
+
     setContent((prevContent) => `${prevContent} ${formattedText}`);
     if (textareaRef.current) {
       textareaRef.current.focus();
     }
   };
-  
+
   // Edit Note
   const editNote = async () => {
     const noteId = noteData._id;
 
     try {
       const res = await api.post(
-        `https://memmomind-be-ycwv.onrender.com/api/note/edit/` + noteId,
+        `https://memmomindbe-test-jgcl.onrender.com/api/note/edit/` + noteId,
         { title, content, tags },
         { withCredentials: true }
       );
@@ -86,7 +85,7 @@ const AddEditNotes = ({
       toast.error(error.message);
       setError(error.message);
     } finally {
-      setIsProcessing(false); // Đặt lại trạng thái xử lý
+      setIsProcessing(false);
     }
   };
 
@@ -94,7 +93,7 @@ const AddEditNotes = ({
   const addNewNote = async () => {
     try {
       const res = await api.post(
-        "https://memmomind-be-ycwv.onrender.com/api/note/add",
+        "https://memmomindbe-test-jgcl.onrender.com/api/note/add",
         { title, content, tags },
         { withCredentials: true }
       );
@@ -111,13 +110,12 @@ const AddEditNotes = ({
       toast.error(error.message);
       setError(error.message);
     } finally {
-      setIsProcessing(false); // Đặt lại trạng thái xử lý
+      setIsProcessing(false);
     }
   };
 
   const handleAddNote = () => {
-    if (isProcessing) return; // Nếu đang xử lý, không làm gì cả
-
+    if (isProcessing) return;
     if (!title) {
       setError("Vui lòng nhập tiêu đề!");
       return;
@@ -129,7 +127,7 @@ const AddEditNotes = ({
     }
 
     setError("");
-    setIsProcessing(true); // Bắt đầu xử lý
+    setIsProcessing(true);
 
     if (type === "edit") {
       editNote();
@@ -183,7 +181,7 @@ const AddEditNotes = ({
           Preview
         </button>
       </div>
-      
+
       {viewMode === "write" ? (
         <div>
           <div className="flex gap-2 mb-2 border-b pb-2">

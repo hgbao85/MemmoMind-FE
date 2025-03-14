@@ -6,7 +6,7 @@ import { useDispatch } from "react-redux";
 import { signInFailure, signInStart, signInSuccess } from "../../redux/user/userSlice";
 import { toast } from "react-toastify";
 import logo from './../../assets/images/logomoi4m.png';
-import { loginUser } from "../../services/api"; // ✅ Import hàm đăng nhập từ api.js
+import { loginUser } from "../../services/api";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -86,6 +86,14 @@ const Login = () => {
                 className="font-medium text-[#000000] underline"
               >
                 Đăng ký ngay!!
+              </Link>
+            </p>
+            <p className="text-sm text-center mt-2">
+              <Link
+                to={"/forgot-password"}
+                className="font-medium text-[#000000] underline"
+              >
+                Quên mật khẩu?
               </Link>
             </p>
           </form>
