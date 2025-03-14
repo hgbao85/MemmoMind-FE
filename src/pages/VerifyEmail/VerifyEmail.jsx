@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { verifyEmail } from "../../services/api";
 import { toast } from "react-toastify";
-import logo from './../../assets/images/logomoi4m.png'; // Your logo image
+import logo from './../../assets/images/logomoi4m.png';
 
 const VerifyEmail = () => {
     const navigate = useNavigate();
