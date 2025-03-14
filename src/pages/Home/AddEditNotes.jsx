@@ -205,8 +205,18 @@ const AddEditNotes = ({
         </div>
       ) : (
         <div className="p-2 border border-gray-300 rounded bg-gray-100 whitespace-pre-wrap mb-2 overflow-auto preview">
-          <ReactMarkdown>{content}</ReactMarkdown>
-        </div>
+    <ReactMarkdown
+      components={{
+        a: ({ href, children }) => (
+          <a href={href} target="_blank" rel="noopener noreferrer">
+            {children}
+          </a>
+        ),
+      }}
+    >
+      {content}
+    </ReactMarkdown>
+  </div>
       )}
 
       {error && type !== "view" && <p className="text-red-500 text-sm mb-4">{error}</p>}
