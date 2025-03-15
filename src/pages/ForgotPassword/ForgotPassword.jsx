@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { toast } from "react-toastify";
 import { forgotPassword } from "../../services/api";
 import { useNavigate } from "react-router-dom";
 import logo from './../../assets/images/logomoi4m.png';
@@ -7,6 +6,8 @@ import logo from './../../assets/images/logomoi4m.png';
 const ForgotPassword = () => {
     const [email, setEmail] = useState("");
     const [error, setError] = useState("");
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
     const navigate = useNavigate();
 
     const handleForgotPassword = async (e) => {
@@ -17,13 +18,16 @@ const ForgotPassword = () => {
         }
         setError("");
         try {
-            // Gọi API để yêu cầu gửi email
             await forgotPassword(email);
-            toast.success("Kiểm tra mail để xác thực tài khoản");
-            navigate("/login"); // Chuyển hướng về trang login sau khi yêu cầu khôi phục mật khẩu
+            setIsModalOpen(true);
         } catch (errorMessage) {
-            toast.error(errorMessage);
+            setError(errorMessage);
         }
+    };
+
+    const closeModal = () => {
+        setIsModalOpen(false);
+        navigate("/login");
     };
 
     return (
@@ -35,6 +39,7 @@ const ForgotPassword = () => {
                 <div className="w-96 rounded-2xl bg-customRedGray px-7 py-10">
                     <form onSubmit={handleForgotPassword}>
                         <h4 className="text-xl mb-5 text-left">Quên mật khẩu</h4>
+
                         <input
                             type="text"
                             placeholder="Vui lòng nhập email"
@@ -43,7 +48,9 @@ const ForgotPassword = () => {
                             onChange={(e) => setEmail(e.target.value)}
                             value={email}
                         />
+
                         {error && <p className="text-red-500 text-sm pb-1">{error}</p>}
+
                         <button
                             type="submit"
                             className="w-full py-2 mb-4 bg-bgsubmit text-white rounded-full hover:bg-gray-500"
@@ -53,6 +60,23 @@ const ForgotPassword = () => {
                     </form>
                 </div>
             </div>
+
+            {isModalOpen && (
+                <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 p-4">
+                    <div className="bg-white rounded-lg shadow-lg p-6 w-96 text-center">
+                        <h2 className="text-xl font-bold text-gray-800">📧 Kiểm tra email của bạn!</h2>
+                        <p className="text-gray-700 mt-2">
+                            Vui lòng kiểm tra email để khôi phục mật khẩu. Nếu không thấy email, vui lòng kiểm tra hòm thư rác.
+                        </p>
+                        <button
+                            onClick={closeModal}
+                            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                        >
+                            Xác nhận
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
