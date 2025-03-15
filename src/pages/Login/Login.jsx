@@ -47,7 +47,7 @@ const Login = () => {
       dispatch(signInSuccess(data));
       navigate("/homepage");
     } catch (errorMessage) {
-      toast.error("Bạn chưa đăng ký tài khoản");
+      toast.error("Tài khoản hoặc mật khẩu không đúng!");
       dispatch(signInFailure(errorMessage));
     }
   };
