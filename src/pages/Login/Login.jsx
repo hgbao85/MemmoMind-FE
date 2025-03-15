@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"; // Thêm useEffect
+import { useState } from "react"; // Thêm useEffect
 import PasswordInput from "../../components/Input/PasswordInput";
 import { Link, useNavigate } from "react-router-dom";
 import { validateEmail } from "../../utils/helper";
@@ -16,14 +16,14 @@ const Login = () => {
   const navigate = useNavigate();
 
   // ✅ Kiểm tra token trong localStorage khi component được mount
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      console.log("✅ Token hiện tại trong localStorage:", token);
-    } else {
-      console.warn("❌ Không có token trong localStorage!");
-    }
-  }, []);
+  // useEffect(() => {
+  //   const token = localStorage.getItem("token");
+  //   if (token) {
+  //     console.log("🔑 Tìm thấy token trong localStorage!");
+  //   } else {
+  //     console.warn("❌ Không có token trong localStorage!");
+  //   }
+  // }, []);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -41,15 +41,13 @@ const Login = () => {
       const data = await loginUser(email, password);
       if (data?.token) {
         localStorage.setItem("token", data.token);
-        console.log("✅ Token đã được lưu vào localStorage:", data.token);
       } else {
         console.warn("❌ Không nhận được token từ server!");
       }
-      // toast.success(data.message || "Đăng nhập thành công!");
       dispatch(signInSuccess(data));
       navigate("/homepage");
     } catch (errorMessage) {
-      toast.error(errorMessage);
+      toast.error("Bạn chưa đăng ký tài khoản");
       dispatch(signInFailure(errorMessage));
     }
   };

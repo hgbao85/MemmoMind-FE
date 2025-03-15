@@ -135,7 +135,6 @@ const Home = () => {
         return;
       }
 
-      console.log("User Info:", res.data.user);
       setUserInfo(res.data.user);
     } catch (error) {
       console.error("Error fetching user info:", error);
@@ -246,8 +245,6 @@ const Home = () => {
         withCredentials: true,
       });
 
-      console.log("Search Response:", res.data);
-
       const filteredNotes = res.data.notes.filter((note) => !note.isDeleted);
       if (
         !res.data.notes ||
@@ -284,6 +281,11 @@ const Home = () => {
         return;
       }
 
+      if (noteData && noteData._id === noteId) {
+        setNoteData(null); // Làm trống giao diện chính
+        setAddEditType("add"); // Chuyển về chế độ thêm ghi chú mới
+      }
+
       toast.success(res.data.message);
       getAllNotes(); // Cập nhật danh sách notes
     } catch (error) {
@@ -303,8 +305,6 @@ const Home = () => {
         `https://memmomind-be-ycwv.onrender.com/api/note/delete-restore/${noteId}?actionType=restore`,
         { withCredentials: true }
       );
-
-      console.log("Restore Response:", res.data);
 
       if (
         !res.data ||
@@ -338,14 +338,17 @@ const Home = () => {
         { withCredentials: true }
       );
 
-      console.log("Delete Response:", res.data);
-
       if (
         !res.data ||
         res.data.message !== "Operation performed successfully"
       ) {
         toast.error(res.data.message || "Lỗi khi xóa ghi chú!");
         return;
+      }
+
+      if (noteData && noteData._id === noteId) {
+        setNoteData(null); // Làm trống giao diện chính
+        setAddEditType("add"); // Chuyển về chế độ thêm ghi chú mới
       }
 
       toast.success("Xóa ghi chú vĩnh viễn thành công!");
@@ -399,11 +402,6 @@ const Home = () => {
 
         // Loại bỏ các ký tự xuống dòng
         content = content.replace(/\r?\n/g, "");
-
-        // Log số ký tự
-        console.log(
-          `Số ký tự trong file (không bao gồm xuống dòng): ${content.length}`
-        );
 
         // Validate text length (< 40000 characters)
         if (content.length > 40000) {
@@ -797,7 +795,6 @@ const Home = () => {
           headers: { "Content-Type": "application/json" },
         }
       );
-      console.log("Flashcard Data:", response.data);
       if (Array.isArray(response.data) && response.data.length > 0) {
         setFlashCard(response.data);
         setCurrentIndex(0);
@@ -884,8 +881,6 @@ const Home = () => {
         }
       );
 
-      console.log("Headers response:", response.headers);
-
       // Lấy Content-Disposition để lấy filename
       const contentDisposition = response.headers["content-disposition"];
       let filename = "unknown.pdf"; // Default filename
@@ -900,7 +895,6 @@ const Home = () => {
       // Lấy đường dẫn file PowerPoint từ header
       const powpointPath =
         response.headers["powpointpath"] || response.headers["Powpointpath"];
-      console.log("PowerPoint Path:", powpointPath);
 
       if (!powpointPath) {
         toast.error("Không tìm thấy đường dẫn PowerPoint!");
@@ -987,8 +981,6 @@ const Home = () => {
           headers: { "Content-Type": "application/json" },
         }
       );
-
-      console.log("API Response:", response.data); // Add this to inspect the response
 
       if (Array.isArray(response.data) && response.data.length > 0) {
         setMultipleChoice(response.data);

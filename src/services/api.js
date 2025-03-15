@@ -18,7 +18,6 @@ api.interceptors.request.use((config) => {
     const token = localStorage.getItem("token");
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;
-        console.log("✅ Token gửi đi:", config.headers.Authorization);
     } else {
         console.warn("❌ Không có token, có thể yêu cầu sẽ bị lỗi 401!");
     }
@@ -35,7 +34,6 @@ export const loginUser = async (email, password) => {
         // ✅ Lưu token vào localStorage sau khi đăng nhập thành công
         if (response.data?.token) {
             localStorage.setItem("token", response.data.token);
-            console.log("✅ Token đã được lưu vào localStorage:", response.data.token);
         } else {
             console.warn("❌ Không nhận được token từ server!");
         }
