@@ -25,12 +25,13 @@ import api from "../../services/api";
 import axios from "axios";
 import "./flashcard.css";
 import { marked } from "marked";
+import * as msgpack from "@msgpack/msgpack";
+import { useMemo } from "react";
 
 const Home = () => {
   const { currentUser } = useSelector((state) => state.user);
   const initialUserCheck = useRef(false);
   const [formKey, setFormKey] = useState(0);
-
   const [userInfo, setUserInfo] = useState(null);
   const [allNotes, setAllNotes] = useState([]);
   const [pinnedNotes, setPinnedNotes] = useState([]);
@@ -58,6 +59,8 @@ const Home = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [charCount, setCharCount] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
+  const [topicMulchoice, setTopicMulchoice] = useState("");
+  const [userAnswers, setUserAnswers] = useState({});
   const topic =
     flashcard.length > 0 && currentIndex < flashcard.length
       ? Object.keys(flashcard[currentIndex])[0]
@@ -77,14 +80,39 @@ const Home = () => {
       ? multipleChoice[currentChoiceIndex]
       : null;
 
-  const topicMulchoice = currentQuestionData
-    ? Object.keys(currentQuestionData)[0]
-    : "Không có dữ liệu";
+  const contentMulchoice = useMemo(() => {
+    if (!currentQuestionData) {
+      return {
+        question: "Không có dữ liệu",
+        correctAnswer: "Không có dữ liệu",
+        wrongAnswers: [],
+      };
+    }
 
-  const contentMulchoice = currentQuestionData
-    ? currentQuestionData[topicMulchoice]
-    : null;
+    const topicKey = Object.keys(currentQuestionData)[0]; // Lấy chủ đề hiện tại
+    const questionData = currentQuestionData[topicKey] || {}; // Lấy dữ liệu câu hỏi
+
+    return {
+      question: questionData.Question?.[0] || "Không có dữ liệu",
+      correctAnswer: questionData.Answer?.[0] || "Không có dữ liệu",
+      wrongAnswers: questionData["Wrong Answer"] || [],
+    };
+  }, [currentQuestionData]);
+
+
   const [shuffledAnswers, setShuffledAnswers] = useState([]);
+
+  useEffect(() => {
+    if (contentMulchoice.correctAnswer !== "Không có dữ liệu") {
+      setShuffledAnswers(shuffleAnswers(contentMulchoice.correctAnswer, contentMulchoice.wrongAnswers));
+    }
+  }, [contentMulchoice]);
+
+  useEffect(() => {
+    const previousAnswer = userAnswers[currentChoiceIndex] || null;
+    setSelectedAnswer(previousAnswer);
+    setIsAnswerCorrect(previousAnswer === contentMulchoice.correctAnswer);
+  }, [currentChoiceIndex, contentMulchoice, userAnswers]);
 
   const [loadingState, setLoadingState] = useState({
     isLoading: false,
@@ -107,22 +135,24 @@ const Home = () => {
   }, [currentUser, navigate]);
 
   useEffect(() => {
-    if (contentMulchoice) {
-      const correctAnswer = contentMulchoice?.Answer?.[0] || "";
-      const wrongAnswers = contentMulchoice?.["Wrong Answer"] || [];
-
-      setShuffledAnswers(shuffleAnswers(correctAnswer, wrongAnswers));
+    if (multipleChoice.length > 0 && currentChoiceIndex < multipleChoice.length) {
+      const currentQuestionObj = multipleChoice[currentChoiceIndex];
+      const topicKey = Object.keys(currentQuestionObj)[0]; // Lấy chủ đề của câu hỏi hiện tại
+      setTopicMulchoice(topicKey || "Không có dữ liệu");
+    } else {
+      setTopicMulchoice("Không có dữ liệu");
     }
-  }, [contentMulchoice]);
+  }, [multipleChoice, currentChoiceIndex]);
 
   const shuffleAnswers = (correctAnswer, wrongAnswers) => {
-    let options = [...wrongAnswers.slice(0, 3), correctAnswer]; // Chỉ lấy tối đa 3 câu sai
+    let options = [...wrongAnswers, correctAnswer]; // Thêm cả câu đúng
     for (let i = options.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
-      [options[i], options[j]] = [options[j], options[i]]; // Hoán đổi vị trí
+      [options[i], options[j]] = [options[j], options[i]]; // Hoán đổi ngẫu nhiên
     }
     return options;
   };
+
   // Hàm lấy thông tin User hiện tại
   const getUserInfo = async () => {
     try {
@@ -461,21 +491,29 @@ const Home = () => {
     }, 100);
   };
 
+
+
   const handleNextmulchoice = () => {
-    setCurrentChoiceIndex((prevIndex) =>
-      prevIndex < multipleChoice.length - 1 ? prevIndex + 1 : 0
-    );
-    setSelectedAnswer(null);
-    setIsAnswerCorrect(null);
+    setIsTransitioning(true); // Bắt đầu hiệu ứng chuyển câu
+    setTimeout(() => {
+      setCurrentChoiceIndex((prevIndex) =>
+        prevIndex < multipleChoice.length - 1 ? prevIndex + 1 : 0
+      );
+      setIsTransitioning(false); // Kết thúc hiệu ứng sau khi cập nhật
+    }, 100); // Thời gian ngắn để tạo hiệu ứng mượt mà
   };
 
   const handlePrevmulchoice = () => {
-    setCurrentChoiceIndex((prevIndex) =>
-      prevIndex > 0 ? prevIndex - 1 : multipleChoice.length - 1
-    );
-    setSelectedAnswer(null);
-    setIsAnswerCorrect(null);
+    setIsTransitioning(true);
+    setTimeout(() => {
+      setCurrentChoiceIndex((prevIndex) =>
+        prevIndex > 0 ? prevIndex - 1 : multipleChoice.length - 1
+      );
+      setIsTransitioning(false);
+    }, 100);
   };
+
+
 
 
   const handleRemoveFile = () => {
@@ -685,6 +723,7 @@ const Home = () => {
     }
 
     setLoadingState({ isLoading: true, action: "summarize" });
+
     try {
       let payload = { userId: currentUser.user._id };
 
@@ -707,10 +746,19 @@ const Home = () => {
         payload,
         {
           headers: { "Content-Type": "application/json" },
+          responseType: "blob", // Nhận phản hồi dưới dạng blob
         }
       );
 
-      setSummary(response.data.response || "Không thể tạo tóm tắt.");
+      const arrayBuffer = await response.data.arrayBuffer();
+      const decodedData = msgpack.decode(new Uint8Array(arrayBuffer));
+
+      console.log("Decoded Data:", decodedData);
+
+      // Lấy dữ liệu từ `decodedData.json`
+      const summaryText = decodedData?.json?.summarize || "Không thể tạo tóm tắt.";
+      setSummary(summaryText);
+
     } catch (error) {
       console.error("Error summarizing:", error.message);
       toast.error("Có lỗi xảy ra khi tóm tắt!");
@@ -721,13 +769,12 @@ const Home = () => {
 
   const handleGenerateMindmap = async () => {
     if (!fileContent.trim() && !uploadedFile) {
-      toast.error(
-        "Vui lòng nhập văn bản hoặc tải lên tệp trước khi tạo mindmap!"
-      );
+      toast.error("Vui lòng nhập văn bản hoặc tải lên tệp trước khi tạo mindmap!");
       return;
     }
 
     setLoadingState({ isLoading: true, action: "mindmap" });
+
     try {
       let payload = { userId: currentUser.user._id };
 
@@ -745,15 +792,23 @@ const Home = () => {
         payload.text = fileContent;
       }
 
-      const response = await axios.post(
-        "http://vietserver.ddns.net:6082/mindmap",
-        payload,
-        {
-          headers: { "Content-Type": "application/json" },
-        }
-      );
+      const response = await axios.post("http://vietserver.ddns.net:6082/mindmap", payload, {
+        headers: { "Content-Type": "application/json" },
+        responseType: "blob",
+      });
 
-      setMindmapHtml(response.data);
+      const arrayBuffer = await response.data.arrayBuffer();
+      const decodedData = msgpack.decode(new Uint8Array(arrayBuffer));
+
+      console.log("Decoded Data:", decodedData);
+
+      const jsonData = decodedData.json;
+
+      if (jsonData.metadata.content_type === "application/html") {
+        const htmlContent = new TextDecoder().decode(decodedData.file);
+        setMindmapHtml(htmlContent); // Cập nhật state hiển thị mindmap
+      }
+
     } catch (error) {
       console.error("Error generating mindmap:", error);
       toast.error("Có lỗi xảy ra khi tạo mindmap!");
@@ -764,13 +819,12 @@ const Home = () => {
 
   const handleGenerateFlashCard = async () => {
     if (!fileContent.trim() && !uploadedFile) {
-      toast.error(
-        "Vui lòng nhập văn bản hoặc tải lên tệp trước khi tạo flashcard!"
-      );
+      toast.error("Vui lòng nhập văn bản hoặc tải lên tệp trước khi tạo flashcard!");
       return;
     }
 
     setLoadingState({ isLoading: true, action: "flashcard" });
+
     try {
       let payload = { userId: currentUser.user._id };
 
@@ -793,15 +847,24 @@ const Home = () => {
         payload,
         {
           headers: { "Content-Type": "application/json" },
+          responseType: "blob", // Nhận dạng phản hồi dưới dạng blob
         }
       );
-      if (Array.isArray(response.data) && response.data.length > 0) {
-        setFlashCard(response.data);
+
+      const arrayBuffer = await response.data.arrayBuffer();
+      const decodedData = msgpack.decode(new Uint8Array(arrayBuffer));
+
+      console.log("Decoded Data:", decodedData);
+
+      const flashcardData = decodedData?.json?.flashcard || [];
+      if (Array.isArray(flashcardData) && flashcardData.length > 0) {
+        setFlashCard(flashcardData);
         setCurrentIndex(0);
       } else {
         toast.error("Dữ liệu flashcard không hợp lệ!");
         setFlashCard([]);
       }
+
     } catch (error) {
       console.error("Error generating flashcard:", error);
       toast.error("Có lỗi xảy ra khi tạo flashcard!");
@@ -810,15 +873,15 @@ const Home = () => {
     }
   };
 
+
   const handleGenerateSolve = async () => {
     if (!fileContent.trim() && !uploadedFile) {
-      toast.error(
-        "Vui lòng nhập văn bản hoặc tải lên tệp trước khi tạo solve!"
-      );
+      toast.error("Vui lòng nhập văn bản hoặc tải lên tệp trước khi tạo solve!");
       return;
     }
 
     setLoadingState({ isLoading: true, action: "solve" });
+
     try {
       let payload = { userId: currentUser.user._id };
 
@@ -841,10 +904,19 @@ const Home = () => {
         payload,
         {
           headers: { "Content-Type": "application/json" },
+          responseType: "blob", // Nhận phản hồi dưới dạng blob
         }
       );
 
-      setSolve(response.data.response || "Không thể giải bài tập.");
+      const arrayBuffer = await response.data.arrayBuffer();
+      const decodedData = msgpack.decode(new Uint8Array(arrayBuffer));
+
+      console.log("Decoded Data:", decodedData);
+
+      const solveResponse = decodedData?.json?.omniSolver || "Không thể giải bài tập.";
+
+      setSolve(solveResponse);
+
     } catch (error) {
       console.error("Error solving:", error.message);
       toast.error("Có lỗi xảy ra khi giải bài tập!");
@@ -853,15 +925,15 @@ const Home = () => {
     }
   };
 
+
   const handleGeneratePowerpoint = async () => {
     if (!fileContent.trim() && !uploadedFile) {
-      toast.error(
-        "Vui lòng nhập văn bản hoặc tải lên tệp trước khi tạo PowerPoint!"
-      );
+      toast.error("Vui lòng nhập văn bản hoặc tải lên tệp trước khi tạo PowerPoint!");
       return;
     }
 
     setLoadingState({ isLoading: true, action: "powerpoint" });
+
     try {
       let payload = { userId: currentUser.user._id, text: fileContent };
 
@@ -877,40 +949,44 @@ const Home = () => {
         payload,
         {
           headers: { "Content-Type": "application/json" },
-          responseType: "blob", // Nhận dữ liệu file từ backend
+          responseType: "blob",
         }
       );
 
-      // Lấy Content-Disposition để lấy filename
-      const contentDisposition = response.headers["content-disposition"];
-      let filename = "unknown.pdf"; // Default filename
+      const arrayBuffer = await response.data.arrayBuffer();
+      const decodedData = msgpack.decode(new Uint8Array(arrayBuffer));
 
-      if (contentDisposition) {
-        const match = contentDisposition.match(/filename="?(.+)"?/);
-        if (match) {
-          filename = match[1]; // Lấy tên file từ header
-        }
+      const jsonData = decodedData.json;
+      let contentType = jsonData?.metadata?.content_type || "application/pdf";
+      let filename = jsonData?.metadata?.filename || "unknown.pdf";
+      let pptxPath = jsonData?.powpointPath || "";
+
+      let pdfUrl = null;
+
+      if (decodedData.file) {
+        const pdfBlob = new Blob([decodedData.file], { type: contentType });
+        pdfUrl = URL.createObjectURL(pdfBlob);
       }
 
-      // Lấy đường dẫn file PowerPoint từ header
-      const powpointPath =
-        response.headers["powpointpath"] || response.headers["Powpointpath"];
-
-      if (!powpointPath) {
-        toast.error("Không tìm thấy đường dẫn PowerPoint!");
-        return;
+      if (pptxPath) {
+        setPptxFilename(pptxPath);
       }
 
-      setPptxFilename(powpointPath); // Lưu đường dẫn để gửi khi tải xuống
+      if (pdfUrl) {
+        window.open(pdfUrl, "_blank");
+      } else {
+        console.error("❌ Không thể mở PDF vì pdfUrl là null");
+      }
 
-      // Hiển thị PDF preview
-      const pdfBlob = new Blob([response.data], { type: "application/pdf" });
-      const pdfUrl = URL.createObjectURL(pdfBlob);
-      setPowerpointPreview({
+      console.log("Decoded Data:", decodedData);
+
+      setPowerpointPreview((prev) => ({
+        ...prev,
         url: pdfUrl,
         filename: filename,
-      });
+      }));
     } catch (error) {
+      console.error("Error generating PowerPoint:", error);
       toast.error("Có lỗi xảy ra khi tạo PowerPoint!");
     } finally {
       setLoadingState({ isLoading: false, action: "" });
@@ -950,13 +1026,12 @@ const Home = () => {
 
   const handleGenerateMultipleChoice = async () => {
     if (!fileContent.trim() && !uploadedFile) {
-      toast.error(
-        "Vui lòng nhập văn bản hoặc tải lên tệp trước khi tạo câu hỏi trắc nghiệm!"
-      );
+      toast.error("Vui lòng nhập văn bản hoặc tải lên tệp trước khi tạo câu hỏi trắc nghiệm!");
       return;
     }
 
     setLoadingState({ isLoading: true, action: "multiplechoice" });
+
     try {
       let payload = { userId: currentUser.user._id };
 
@@ -977,14 +1052,33 @@ const Home = () => {
       const response = await axios.post(
         "http://vietserver.ddns.net:6082/mul-choices",
         payload,
-        {
-          headers: { "Content-Type": "application/json" },
-        }
+        { headers: { "Content-Type": "application/json" }, responseType: "arraybuffer" }
       );
 
-      if (Array.isArray(response.data) && response.data.length > 0) {
-        setMultipleChoice(response.data);
-        setCurrentChoiceIndex(0); // start with the first question
+      let jsonResponse;
+      try {
+        jsonResponse = msgpack.decode(new Uint8Array(response.data));
+        console.log("Decoded Response:", jsonResponse);
+      } catch (err) {
+        console.error("Lỗi giải mã MessagePack:", err);
+        return toast.error("Lỗi dữ liệu từ API, thử lại sau!");
+      }
+
+      let questions = jsonResponse?.json?.multipleChoices;
+      let topicMulchoice =
+        questions && typeof questions === "object" && !Array.isArray(questions)
+          ? Object.keys(questions)[0]
+          : "Không có dữ liệu";
+
+      // Chuyển đổi dữ liệu thành mảng nếu nó là object
+      if (questions && typeof questions === "object" && !Array.isArray(questions)) {
+        questions = Object.values(questions);
+      }
+
+      if (Array.isArray(questions) && questions.length > 0) {
+        setMultipleChoice(questions);
+        setCurrentChoiceIndex(0);
+        setTopicMulchoice(topicMulchoice);
       } else {
         toast.error("Dữ liệu MultipleChoice không hợp lệ!");
         setMultipleChoice([]);
@@ -997,18 +1091,15 @@ const Home = () => {
     }
   };
 
-  const [userAnswers, setUserAnswers] = useState({});
-
-  const handleAnswerClick = (selectedAnswer, correctIndex) => {
-    if (userAnswers[currentChoiceIndex] !== undefined) return; // Chỉ chọn 1 lần
-
+  const handleAnswerClick = (selectedAnswer) => {
     setUserAnswers((prevAnswers) => ({
       ...prevAnswers,
-      [currentChoiceIndex]: selectedAnswer,
+      [currentChoiceIndex]: selectedAnswer, // Lưu đáp án theo index câu hỏi
     }));
-
-    setIsAnswerCorrect(selectedAnswer === shuffledAnswers[correctIndex]);
+    setSelectedAnswer(selectedAnswer);
+    setIsAnswerCorrect(selectedAnswer === contentMulchoice.correctAnswer);
   };
+
 
   const resetAllAnswers = () => {
     setCurrentChoiceIndex(0);
@@ -1024,7 +1115,25 @@ const Home = () => {
       return;
     }
 
-    const questions = JSON.stringify(multipleChoice);
+    // Định dạng lại dữ liệu câu hỏi theo đúng cấu trúc UI trên web
+    const formattedQuestions = multipleChoice.map((questionData, index) => {
+      let topic = Object.keys(questionData).find(
+        (key) => key !== "Question" && key !== "Answer" && key !== "Wrong Answer"
+      ) || "Không có dữ liệu";
+
+      let content = questionData[topic] || questionData;
+
+      return {
+        index: index, // Đánh số câu hỏi
+        topic: topic,
+        question: content.Question[0] || "Không có dữ liệu",
+        correctAnswer: content.Answer[0] || "Không có dữ liệu",
+        wrongAnswers: content["Wrong Answer"] || [],
+      };
+    });
+
+    // Convert JSON thành chuỗi để nhúng vào HTML
+    const questions = JSON.stringify(formattedQuestions);
 
     let multipleChoiceHTML = `
       <!DOCTYPE html>
@@ -1121,12 +1230,6 @@ const Home = () => {
                   border-radius: 5px;
                   display: inline-block;
               }
-              .correct-msg {
-                  color: black;
-              }
-              .incorrect-msg {
-                  color: black;
-              }
           </style>
       </head>
       <body>
@@ -1148,71 +1251,54 @@ const Home = () => {
               let questions = ${questions};
               let currentQuestionIndex = 0;
               let userAnswers = {}; // Lưu nội dung đáp án người dùng chọn
-
+  
               function loadQuestion() {
                   let questionData = questions[currentQuestionIndex];
-                  let topic = Object.keys(questionData)[0];
-                  let content = questionData[topic];
-                  let correctAnswer = content.Answer[0];
-                  let wrongAnswers = content["Wrong Answer"] || [];
-
-                  // Đảm bảo danh sách đáp án hiển thị theo thứ tự gốc
-                  let answers = [...wrongAnswers.slice(0, 3), correctAnswer];
-
+                  let { topic, question, correctAnswer, wrongAnswers } = questionData;
+  
+                  // Đảo ngẫu nhiên vị trí đáp án
+                  let answers = [...wrongAnswers, correctAnswer].sort(() => Math.random() - 0.5);
                   let labels = ["A", "B", "C", "D"];
-                  let correctIndex = answers.indexOf(correctAnswer);
-
+  
                   document.getElementById("topic").innerText = topic.toUpperCase();
-                  document.getElementById("question").innerText = content.Question[0];
-
+                  document.getElementById("question").innerText = question;
+  
                   document.getElementById("options").innerHTML = answers.map((answer, index) => 
                       \`<button onclick="checkAnswer(this, '\${answer}', '\${correctAnswer}')"
                           id="btn-\${index}">\${labels[index]}. \${answer}
                       </button>\`
                   ).join("");
-
+  
                   document.getElementById("counter").innerText = (currentQuestionIndex + 1) + " / " + questions.length;
                   document.getElementById("resultMessage").innerText = "";
-                  document.getElementById("resultMessage").className = "";
-
-                  // Nếu người dùng đã trả lời trước đó, giữ lại trạng thái theo nội dung
+  
+                  // Kiểm tra nếu người dùng đã chọn trước đó
                   if (userAnswers[currentQuestionIndex] !== undefined) {
                       let selectedAnswer = userAnswers[currentQuestionIndex];
                       let buttons = document.querySelectorAll(".options button");
-                      buttons.forEach(btn => btn.disabled = true);
-
+  
                       buttons.forEach((btn) => {
                           if (btn.innerText.includes(selectedAnswer)) {
-                              if (selectedAnswer === correctAnswer) {
-                                  btn.classList.add("correct");
-                                  document.getElementById("resultMessage").innerText = "✅ Đáp án đúng!";
-                                  document.getElementById("resultMessage").classList.add("correct-msg");
-                              } else {
-                                  btn.classList.add("incorrect");
-                                  buttons.forEach(b => {
-                                      if (b.innerText.includes(correctAnswer)) {
-                                          b.classList.add("correct");
-                                      }
-                                  });
-                                  document.getElementById("resultMessage").innerText = "❌ Đáp án đúng là: " + correctAnswer;
-                                  document.getElementById("resultMessage").classList.add("incorrect-msg");
-                              }
+                              btn.classList.add(selectedAnswer === correctAnswer ? "correct" : "incorrect");
                           }
+                          if (btn.innerText.includes(correctAnswer)) {
+                              btn.classList.add("correct");
+                          }
+                          btn.disabled = true;
                       });
                   }
               }
-
+  
               function checkAnswer(button, selectedAnswer, correctAnswer) {
                   let buttons = document.querySelectorAll(".options button");
                   if (userAnswers[currentQuestionIndex] !== undefined) return; // Chỉ chọn 1 lần
-
+  
                   userAnswers[currentQuestionIndex] = selectedAnswer;
                   buttons.forEach(btn => btn.disabled = true);
-
+  
                   if (selectedAnswer === correctAnswer) {
                       button.classList.add("correct");
                       document.getElementById("resultMessage").innerText = "✅ Đáp án đúng!";
-                      document.getElementById("resultMessage").classList.add("correct-msg");
                   } else {
                       button.classList.add("incorrect");
                       buttons.forEach(b => {
@@ -1221,20 +1307,19 @@ const Home = () => {
                           }
                       });
                       document.getElementById("resultMessage").innerText = "❌ Đáp án đúng là: " + correctAnswer;
-                      document.getElementById("resultMessage").classList.add("incorrect-msg");
                   }
               }
-
+  
               function nextQuestion() {
                   currentQuestionIndex = (currentQuestionIndex + 1) % questions.length;
                   loadQuestion();
               }
-
+  
               function prevQuestion() {
                   currentQuestionIndex = (currentQuestionIndex - 1 + questions.length) % questions.length;
                   loadQuestion();
               }
-
+  
               function resetQuiz() {
                   currentQuestionIndex = 0;
                   userAnswers = {};
@@ -1255,8 +1340,6 @@ const Home = () => {
     a.click();
     document.body.removeChild(a);
   };
-
-
 
   return (
     <>
@@ -1581,7 +1664,7 @@ const Home = () => {
           )}
           {powerpointPreview && (
             <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-60 p-6 z-50 animate-fade-in">
-              <div className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl p-8">
+              <div className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl p-4">
                 {/* Nút đóng */}
                 <button
                   onClick={() => {
@@ -1625,7 +1708,7 @@ const Home = () => {
                     <iframe
                       src={`${powerpointPreview.url}#toolbar=0`}
                       title="PDF Preview"
-                      className="w-full h-[500px] border-none rounded-md"
+                      className="w-full h-[400px] border-none rounded-md"
                     />
                   </div>
 
@@ -1655,7 +1738,13 @@ const Home = () => {
             >
               <div className="relative w-full max-w-3xl bg-white rounded-lg shadow-lg p-6 flex flex-col items-center">
                 <button
-                  onClick={() => setMultipleChoice([])}
+                  onClick={() => {
+                    setMultipleChoice([]); // Xóa danh sách câu hỏi
+                    setUserAnswers({}); // Xóa đáp án đã chọn
+                    setCurrentChoiceIndex(0); // Đặt lại về câu hỏi đầu tiên
+                    setSelectedAnswer(null); // Xóa lựa chọn hiện tại
+                    setIsAnswerCorrect(null); // Xóa trạng thái kiểm tra đúng/sai
+                  }}
                   className="absolute top-3 right-3 text-gray-600 hover:text-black"
                   aria-label="Close MultipleChoice"
                 >
@@ -1665,56 +1754,63 @@ const Home = () => {
                 <h2 className="text-2xl font-bold text-gray-800 mb-4 text-center">
                   Câu hỏi trắc nghiệm
                 </h2>
-                <h3 className="text-lg font-semibold uppercase tracking-wide text-center">
-                  {topicMulchoice}
-                </h3>
-                <div className="question text-xl font-bold text-gray-800 mt-4 text-center">
-                  {contentMulchoice?.Question?.[0] || "Không có dữ liệu"}
+                <div className={`text-center transition-opacity duration-300 ${isTransitioning ? "opacity-0" : "opacity-100"}`}>
+                  <h3 className="text-lg font-semibold uppercase tracking-wide">
+                    {topicMulchoice}
+                  </h3>
+                  <p className="question text-xl font-bold text-gray-800 mt-4">
+                    {contentMulchoice.question}
+                  </p>
                 </div>
 
+
                 {(() => {
-                  const correctAnswer = contentMulchoice?.Answer?.[0];
-                  const labels = ["A", "B", "C", "D"];
-                  const correctIndex = shuffledAnswers.indexOf(correctAnswer);
+                  const labels = ["A", "B", "C", "D"]; // Nhãn cho các đáp án
+                  const correctAnswer = contentMulchoice.correctAnswer;
 
                   return (
-                    <div className="answers mt-4">
+                    <div className="mt-4">
                       {shuffledAnswers.map((answer, index) => (
                         <button
                           key={index}
-                          disabled={userAnswers[currentChoiceIndex] !== undefined} // Chỉ được chọn 1 lần
-                          className={`block w-full text-left px-4 py-2 mt-2 rounded-md border
-                  ${userAnswers[currentChoiceIndex] === answer
-                              ? userAnswers[currentChoiceIndex] === correctAnswer
-                                ? "bg-green-500 text-white border-green-700" // Chọn đúng -> xanh đậm
-                                : "bg-red-500 text-white border-red-700" // Chọn sai -> đỏ
-                              : userAnswers[currentChoiceIndex] !== undefined &&
-                                index === correctIndex
-                                ? "bg-green-500 text-white border-green-700" // Đáp án đúng -> xanh đậm
-                                : userAnswers[currentChoiceIndex] !== undefined
-                                  ? "bg-gray-100 text-gray-400 border-gray-300 cursor-not-allowed" // Các nút còn lại -> xám nhạt
-                                  : "bg-gray-200 hover:bg-gray-300 border-gray-400"
+                          className={`block w-full text-left px-4 py-2 mt-2 rounded-md border 
+      ${selectedAnswer
+                              ? answer === contentMulchoice.correctAnswer
+                                ? "bg-green-500 text-white border-green-700"
+                                : selectedAnswer === contentMulchoice.correctAnswer
+                                  ? "bg-gray-300 text-gray-700 border-gray-500"
+                                  : answer === selectedAnswer
+                                    ? "bg-red-500 text-white border-red-700"
+                                    : "bg-gray-300 text-gray-700 border-gray-500"
+                              : "bg-gray-200 hover:bg-gray-300 border-gray-400"
                             }`}
-                          onClick={() => handleAnswerClick(answer, correctIndex)}
+                          disabled={selectedAnswer !== null}
+                          onClick={() => handleAnswerClick(answer)}
                         >
-                          {labels[index]}. {answer}
+                          <strong>{["A", "B", "C", "D"][index]}.</strong> {answer}
                         </button>
                       ))}
+
                     </div>
                   );
                 })()}
 
-                {userAnswers[currentChoiceIndex] !== undefined && (
+                {selectedAnswer !== null && (
                   <div className="mt-4">
-                    {userAnswers[currentChoiceIndex] === contentMulchoice?.Answer?.[0] ? (
+                    {selectedAnswer === contentMulchoice.correctAnswer ? (
                       <span className="text-green-600 font-bold">✅ Chính xác!</span>
                     ) : (
                       <span className="text-red-600 font-bold">
-                        ❌ Đáp án đúng là: {["A", "B", "C", "D"][shuffledAnswers.indexOf(contentMulchoice?.Answer?.[0])]}
+                        ❌ Đáp án đúng là:{" "}
+                        {shuffledAnswers.includes(contentMulchoice.correctAnswer)
+                          ? ["A", "B", "C", "D"][shuffledAnswers.indexOf(contentMulchoice.correctAnswer)]
+                          : "Không xác định"}
                       </span>
                     )}
                   </div>
                 )}
+
+
 
                 <div className="flex justify-between items-center w-full max-w-md mt-4">
                   <button onClick={handlePrevmulchoice} className="btn-arrow">
@@ -1752,7 +1848,8 @@ const Home = () => {
         {/* Right Sidebar */}
         <aside
           className={`transition-all duration-300 ${isRightSidebarOpen ? "w-1/5" : "w-16"
-            } h-full bg-[#C8BBBB] p-4 relative shadow-md`}
+            } h-full bg-[#C8BBBB] p-4 relative shadow-md`
+          }
           style={{
             position: "absolute",
             right: 0,
@@ -1770,333 +1867,335 @@ const Home = () => {
             </button>
           </div>
 
-          {isRightSidebarOpen && (
-            <>
-              <h2 className="text-l mb-6 text-center">
-                Chào bạn, {userInfo?.name}!
-              </h2>
-              <div className="max-w-lg mx-auto p-4 mb-2 border rounded-md">
-                <textarea
-                  className="w-full h-24 p-2 border rounded-md mb-2"
-                  placeholder="Nhập văn bản hoặc tải lên tài liệu (.txt, .pdf, .jpg, .png) có sẵn."
-                  value={fileContent}
-                  onChange={handleChange}
-                  style={{
-                    maxHeight: "500px",
-                    minHeight: "150px",
-                    resize: "vertical",
-                  }}
-                  maxLength={40000}
-                ></textarea>
-                <div className="text-right">
-                  {charCount}/{40000}
-                </div>
-                <div className="flex justify-between items-center w-full">
-                  <label className="cursor-pointer text-[13px] bg-blue-500 text-white px-2 py-2 mb-3 mt-3 rounded-lg hover:bg-blue-600 transition flex items-center gap-1">
-                    <MdOutlineFileUpload className="text-lg" />
-                    Chọn tệp
-                    <input
-                      type="file"
-                      accept=".txt,.pdf,image/*"
-                      onChange={handleFileUpload}
-                      className="hidden"
-                    />
-                  </label>
-
-                  <div className="flex items-center space-x-3 ml-auto">
-                    {pdfUrl && (
-                      <a
-                        href={pdfUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="cursor-pointer text-[13px] bg-blue-500 text-white px-2 py-2 ml-2 rounded-lg hover:bg-blue-600 transition flex items-center gap-1"
-                        title="Xem PDF đã upload"
-                      >
-                        <MdOpenInNew className="text-lg" />
-                        Xem PDF
-                      </a>
-                    )}
-
-                    {imageSrc && (
-                      <a
-                        href={imageSrc}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="cursor-pointer text-[13px] bg-blue-500 text-white ml-2 px-2 py-2 rounded-lg hover:bg-blue-600 transition flex items-center gap-1"
-                        title="Xem ảnh đã upload"
-                      >
-                        <MdOpenInNew className="text-lg" />
-                        Xem ảnh
-                      </a>
-                    )}
-
-                    {(pdfUrl || imageSrc) && (
-                      <button
-                        onClick={handleRemoveFile}
-                        className="bg-red-500 cursor-pointer text-white px-2 py-2 rounded-lg transition"
-                        title="Xóa tài liệu đã upload"
-                      >
-                        <MdClose className="text-md" />
-                      </button>
-                    )}
+          {
+            isRightSidebarOpen && (
+              <>
+                <h2 className="text-l mb-6 text-center">
+                  Chào bạn, {userInfo?.name}!
+                </h2>
+                <div className="max-w-lg mx-auto p-4 mb-2 border rounded-md">
+                  <textarea
+                    className="w-full h-24 p-2 border rounded-md mb-2"
+                    placeholder="Nhập văn bản hoặc tải lên tài liệu (.txt, .pdf, .jpg, .png) có sẵn."
+                    value={fileContent}
+                    onChange={handleChange}
+                    style={{
+                      maxHeight: "500px",
+                      minHeight: "150px",
+                      resize: "vertical",
+                    }}
+                    maxLength={40000}
+                  ></textarea>
+                  <div className="text-right">
+                    {charCount}/{40000}
                   </div>
+                  <div className="flex justify-between items-center w-full">
+                    <label className="cursor-pointer text-[13px] bg-blue-500 text-white px-2 py-2 mb-3 mt-3 rounded-lg hover:bg-blue-600 transition flex items-center gap-1">
+                      <MdOutlineFileUpload className="text-lg" />
+                      Chọn tệp
+                      <input
+                        type="file"
+                        accept=".txt,.pdf,image/*"
+                        onChange={handleFileUpload}
+                        className="hidden"
+                      />
+                    </label>
+
+                    <div className="flex items-center space-x-3 ml-auto">
+                      {pdfUrl && (
+                        <a
+                          href={pdfUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="cursor-pointer text-[13px] bg-blue-500 text-white px-2 py-2 ml-2 rounded-lg hover:bg-blue-600 transition flex items-center gap-1"
+                          title="Xem PDF đã upload"
+                        >
+                          <MdOpenInNew className="text-lg" />
+                          Xem PDF
+                        </a>
+                      )}
+
+                      {imageSrc && (
+                        <a
+                          href={imageSrc}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="cursor-pointer text-[13px] bg-blue-500 text-white ml-2 px-2 py-2 rounded-lg hover:bg-blue-600 transition flex items-center gap-1"
+                          title="Xem ảnh đã upload"
+                        >
+                          <MdOpenInNew className="text-lg" />
+                          Xem ảnh
+                        </a>
+                      )}
+
+                      {(pdfUrl || imageSrc) && (
+                        <button
+                          onClick={handleRemoveFile}
+                          className="bg-red-500 cursor-pointer text-white px-2 py-2 rounded-lg transition"
+                          title="Xóa tài liệu đã upload"
+                        >
+                          <MdClose className="text-md" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                  {imageSrc && (
+                    <img
+                      src={imageSrc}
+                      alt="Uploaded"
+                      className="w-1/2 h-auto my-4 border rounded-md"
+                    />
+                  )}
+                  {pdfUrl && (
+                    <iframe
+                      src={pdfUrl}
+                      title="PDF Viewer"
+                      className="w-full mt-4 h-auto border rounded-md shadow-lg"
+                    />
+                  )}
                 </div>
-                {imageSrc && (
-                  <img
-                    src={imageSrc}
-                    alt="Uploaded"
-                    className="w-1/2 h-auto my-4 border rounded-md"
-                  />
-                )}
-                {pdfUrl && (
-                  <iframe
-                    src={pdfUrl}
-                    title="PDF Viewer"
-                    className="w-full mt-4 h-auto border rounded-md shadow-lg"
-                  />
-                )}
-              </div>
 
-              <div className="flex justify-between gap-2 pt-2">
-                <button
-                  className={`flex-1 h-12 w-6 text-[10px] font-medium text-white bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 rounded-2xl flex items-center justify-center shadow-lg transition-transform transform hover:scale-105 ${loadingState.isLoading &&
-                    loadingState.action === "summarize"
-                    ? "opacity-75 cursor-wait"
-                    : ""
-                    }`}
-                  onClick={handleSummarize}
-                  disabled={loadingState.isLoading}
-                  title="Tạo tóm tắt"
-                >
-                  {loadingState.isLoading &&
-                    loadingState.action === "summarize" ? (
-                    <div className="flex items-center space-x-2">
-                      <svg
-                        className="animate-spin h-2 w-2 text-white"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                      >
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        ></circle>
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        ></path>
-                      </svg>
-                      <span>Loading</span>
-                    </div>
-                  ) : (
-                    "Tóm Tắt"
-                  )}
-                </button>
+                <div className="flex justify-between gap-2 pt-2">
+                  <button
+                    className={`flex-1 h-12 w-6 text-[10px] font-medium text-white bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 rounded-2xl flex items-center justify-center shadow-lg transition-transform transform hover:scale-105 ${loadingState.isLoading &&
+                      loadingState.action === "summarize"
+                      ? "opacity-75 cursor-wait"
+                      : ""
+                      }`}
+                    onClick={handleSummarize}
+                    disabled={loadingState.isLoading}
+                    title="Tạo tóm tắt"
+                  >
+                    {loadingState.isLoading &&
+                      loadingState.action === "summarize" ? (
+                      <div className="flex items-center space-x-2">
+                        <svg
+                          className="animate-spin h-2 w-2 text-white"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          ></circle>
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          ></path>
+                        </svg>
+                        <span>Loading</span>
+                      </div>
+                    ) : (
+                      "Tóm Tắt"
+                    )}
+                  </button>
 
-                <button
-                  className={`flex-1 h-12 w-6 text-[10px] font-medium text-white bg-gradient-to-r from-purple-500 to-purple-700 hover:from-purple-600 hover:to-purple-800 rounded-2xl flex items-center justify-center shadow-lg transition-transform transform hover:scale-105 ${loadingState.isLoading && loadingState.action === "mindmap"
-                    ? "opacity-75 cursor-wait"
-                    : ""
-                    }`}
-                  onClick={handleGenerateMindmap}
-                  disabled={loadingState.isLoading}
-                  title="Tạo sơ đồ tư duy"
-                >
-                  {loadingState.isLoading &&
-                    loadingState.action === "mindmap" ? (
-                    <div className="flex items-center space-x-2">
-                      <svg
-                        className="animate-spin h-2 w-2 text-white"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                      >
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        ></circle>
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        ></path>
-                      </svg>
-                      <span>Loading</span>
-                    </div>
-                  ) : (
-                    "Mindmap"
-                  )}
-                </button>
+                  <button
+                    className={`flex-1 h-12 w-6 text-[10px] font-medium text-white bg-gradient-to-r from-purple-500 to-purple-700 hover:from-purple-600 hover:to-purple-800 rounded-2xl flex items-center justify-center shadow-lg transition-transform transform hover:scale-105 ${loadingState.isLoading && loadingState.action === "mindmap"
+                      ? "opacity-75 cursor-wait"
+                      : ""
+                      }`}
+                    onClick={handleGenerateMindmap}
+                    disabled={loadingState.isLoading}
+                    title="Tạo sơ đồ tư duy"
+                  >
+                    {loadingState.isLoading &&
+                      loadingState.action === "mindmap" ? (
+                      <div className="flex items-center space-x-2">
+                        <svg
+                          className="animate-spin h-2 w-2 text-white"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          ></circle>
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          ></path>
+                        </svg>
+                        <span>Loading</span>
+                      </div>
+                    ) : (
+                      "Mindmap"
+                    )}
+                  </button>
 
-                <button
-                  className={`flex-1 h-12 w-6 text-[10px] font-medium text-white bg-gradient-to-r from-orange-500 to-orange-700 hover:from-orange-600 hover:to-orange-800 rounded-2xl flex items-center justify-center shadow-lg transition-transform transform hover:scale-105 ${loadingState.isLoading &&
-                    loadingState.action === "flashcard"
-                    ? "opacity-75 cursor-wait"
-                    : ""
-                    }`}
-                  onClick={handleGenerateFlashCard}
-                  disabled={loadingState.isLoading}
-                  title="Tạo thẻ ghi nhớ"
-                >
-                  {loadingState.isLoading &&
-                    loadingState.action === "flashcard" ? (
-                    <div className="flex items-center space-x-2">
-                      <svg
-                        className="animate-spin h-2 w-2 text-white"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                      >
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        ></circle>
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        ></path>
-                      </svg>
-                      <span>Loading</span>
-                    </div>
-                  ) : (
-                    "FlashCards"
-                  )}
-                </button>
-              </div>
-              <div className="flex justify-between gap-2 pt-2">
-                <button
-                  className={`flex-1 h-12 w-6 text-[10px] font-medium text-white bg-gradient-to-r from-green-500 to-green-700 hover:from-green-600 hover:to-green-800 rounded-2xl flex items-center justify-center shadow-lg transition-transform transform hover:scale-105 ${loadingState.isLoading && loadingState.action === "solve"
-                    ? "opacity-75 cursor-wait"
-                    : ""
-                    }`}
-                  onClick={handleGenerateSolve}
-                  disabled={loadingState.isLoading}
-                  title="Hỗ trợ làm bài"
-                >
-                  {loadingState.isLoading && loadingState.action === "solve" ? (
-                    <div className="flex items-center space-x-2">
-                      <svg
-                        className="animate-spin h-2 w-2 text-white"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                      >
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        ></circle>
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        ></path>
-                      </svg>
-                      <span>Loading</span>
-                    </div>
-                  ) : (
-                    "Hỗ trợ làm bài"
-                  )}
-                </button>
+                  <button
+                    className={`flex-1 h-12 w-6 text-[10px] font-medium text-white bg-gradient-to-r from-orange-500 to-orange-700 hover:from-orange-600 hover:to-orange-800 rounded-2xl flex items-center justify-center shadow-lg transition-transform transform hover:scale-105 ${loadingState.isLoading &&
+                      loadingState.action === "flashcard"
+                      ? "opacity-75 cursor-wait"
+                      : ""
+                      }`}
+                    onClick={handleGenerateFlashCard}
+                    disabled={loadingState.isLoading}
+                    title="Tạo thẻ ghi nhớ"
+                  >
+                    {loadingState.isLoading &&
+                      loadingState.action === "flashcard" ? (
+                      <div className="flex items-center space-x-2">
+                        <svg
+                          className="animate-spin h-2 w-2 text-white"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          ></circle>
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          ></path>
+                        </svg>
+                        <span>Loading</span>
+                      </div>
+                    ) : (
+                      "FlashCards"
+                    )}
+                  </button>
+                </div>
+                <div className="flex justify-between gap-2 pt-2">
+                  <button
+                    className={`flex-1 h-12 w-6 text-[10px] font-medium text-white bg-gradient-to-r from-green-500 to-green-700 hover:from-green-600 hover:to-green-800 rounded-2xl flex items-center justify-center shadow-lg transition-transform transform hover:scale-105 ${loadingState.isLoading && loadingState.action === "solve"
+                      ? "opacity-75 cursor-wait"
+                      : ""
+                      }`}
+                    onClick={handleGenerateSolve}
+                    disabled={loadingState.isLoading}
+                    title="Hỗ trợ làm bài"
+                  >
+                    {loadingState.isLoading && loadingState.action === "solve" ? (
+                      <div className="flex items-center space-x-2">
+                        <svg
+                          className="animate-spin h-2 w-2 text-white"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          ></circle>
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          ></path>
+                        </svg>
+                        <span>Loading</span>
+                      </div>
+                    ) : (
+                      "Hỗ trợ làm bài"
+                    )}
+                  </button>
 
-                <button
-                  className={`flex-1 h-12 w-6 text-[10px] font-medium text-white bg-gradient-to-r from-red-500 to-red-700 hover:from-red-600 hover:to-red-800 rounded-2xl flex items-center justify-center shadow-lg transition-transform transform hover:scale-105 ${loadingState.isLoading &&
-                    loadingState.action === "powerpoint"
-                    ? "opacity-75 cursor-wait"
-                    : ""
-                    }`}
-                  onClick={handleGeneratePowerpoint}
-                  disabled={loadingState.isLoading}
-                  title="Tạo PowerPoint"
-                >
-                  {loadingState.isLoading &&
-                    loadingState.action === "powerpoint" ? (
-                    <div className="flex items-center space-x-2">
-                      <svg
-                        className="animate-spin h-2 w-2 text-white"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                      >
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        ></circle>
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        ></path>
-                      </svg>
-                      <span>Loading</span>
-                    </div>
-                  ) : (
-                    "PowerPoint"
-                  )}
-                </button>
+                  <button
+                    className={`flex-1 h-12 w-6 text-[10px] font-medium text-white bg-gradient-to-r from-red-500 to-red-700 hover:from-red-600 hover:to-red-800 rounded-2xl flex items-center justify-center shadow-lg transition-transform transform hover:scale-105 ${loadingState.isLoading &&
+                      loadingState.action === "powerpoint"
+                      ? "opacity-75 cursor-wait"
+                      : ""
+                      }`}
+                    onClick={handleGeneratePowerpoint}
+                    disabled={loadingState.isLoading}
+                    title="Tạo PowerPoint"
+                  >
+                    {loadingState.isLoading &&
+                      loadingState.action === "powerpoint" ? (
+                      <div className="flex items-center space-x-2">
+                        <svg
+                          className="animate-spin h-2 w-2 text-white"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          ></circle>
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          ></path>
+                        </svg>
+                        <span>Loading</span>
+                      </div>
+                    ) : (
+                      "PowerPoint"
+                    )}
+                  </button>
 
-                <button
-                  className={`flex-1 h-12 w-6 text-[10px] font-medium text-white bg-gradient-to-r from-pink-500 to-pink-700 hover:from-pink-600 hover:to-pink-800 rounded-2xl flex items-center justify-center shadow-lg transition-transform transform hover:scale-105 ${loadingState.isLoading && loadingState.action === "multiplechoice"
-                    ? "opacity-75 cursor-wait"
-                    : ""
-                    }`}
-                  onClick={handleGenerateMultipleChoice}
-                  disabled={loadingState.isLoading}
-                  title="Tạo câu hỏi trắc nghiệm"
-                >
-                  {loadingState.isLoading && loadingState.action === "multiplechoice" ? (
-                    <div className="flex items-center space-x-2">
-                      <svg
-                        className="animate-spin h-2 w-2 text-white"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                      >
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        ></circle>
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        ></path>
-                      </svg>
-                      <span>Loading</span>
-                    </div>
-                  ) : (
-                    "MultipleChoice"
-                  )}
-                </button>
+                  <button
+                    className={`flex-1 h-12 w-6 text-[10px] font-medium text-white bg-gradient-to-r from-pink-500 to-pink-700 hover:from-pink-600 hover:to-pink-800 rounded-2xl flex items-center justify-center shadow-lg transition-transform transform hover:scale-105 ${loadingState.isLoading && loadingState.action === "multiplechoice"
+                      ? "opacity-75 cursor-wait"
+                      : ""
+                      }`}
+                    onClick={handleGenerateMultipleChoice}
+                    disabled={loadingState.isLoading}
+                    title="Tạo câu hỏi trắc nghiệm"
+                  >
+                    {loadingState.isLoading && loadingState.action === "multiplechoice" ? (
+                      <div className="flex items-center space-x-2">
+                        <svg
+                          className="animate-spin h-2 w-2 text-white"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          ></circle>
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          ></path>
+                        </svg>
+                        <span>Loading</span>
+                      </div>
+                    ) : (
+                      "MultipleChoice"
+                    )}
+                  </button>
 
-              </div>
-            </>
-          )}
+                </div>
+              </>
+            )
+          }
         </aside>
       </div>
     </>
