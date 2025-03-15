@@ -2,7 +2,6 @@ import { useState } from "react";
 import PasswordInput from "../../components/Input/PasswordInput";
 import { Link, useNavigate } from "react-router-dom";
 import { validateEmail } from "../../utils/helper";
-import { toast } from "react-toastify";
 import logo from './../../assets/images/logomoi4m.png';
 import { registerUser } from "../../services/api"; // ✅ Import API đăng ký
 
@@ -11,7 +10,7 @@ const Signup = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate();
 
   const handleSignUp = async (e) => {
@@ -36,13 +35,17 @@ const Signup = () => {
 
     // Gọi API đăng ký
     try {
+      // eslint-disable-next-line no-unused-vars
       const data = await registerUser(name, email, password); // ✅ Sử dụng API từ api.js
-      toast.success(data.message);
-      navigate("/login");
+      setIsModalOpen(true);
     } catch (errorMessage) {
-      toast.error(errorMessage);
       setError(errorMessage);
     }
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    navigate("/login");
   };
 
   return (
@@ -93,6 +96,21 @@ const Signup = () => {
           </form>
         </div>
       </div>
+
+      {isModalOpen && (
+        <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 p-4">
+          <div className="bg-white rounded-lg shadow-lg p-6 w-96 text-center">
+            <h2 className="text-xl font-bold text-gray-800">Đăng ký thành công!</h2>
+            <p className="text-gray-700 mt-2">Vui lòng kiểm tra email để xác thực tài khoản. Nếu không thấy email, vui lòng kiểm tra hòm thư rác.</p>
+            <button
+              onClick={closeModal}
+              className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+            >
+              Xác nhận
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
