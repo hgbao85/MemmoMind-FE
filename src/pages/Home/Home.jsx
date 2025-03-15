@@ -183,7 +183,7 @@ const Home = () => {
 
     try {
       const res = await api.put(
-        `https://memmomindbe-test-jgcl.onrender.com/api/note/update-note-pinned/${noteId}`,
+        `https://memmomind-be-ycwv.onrender.com/api/note/update-note-pinned/${noteId}`,
         {},
         { withCredentials: true }
       );
@@ -274,7 +274,7 @@ const Home = () => {
   const moveToTrash = async (noteId) => {
     try {
       const res = await api.put(
-        `https://memmomindbe-test-jgcl.onrender.com/api/note/trash/${noteId}`,
+        `https://memmomind-be-ycwv.onrender.com/api/note/trash/${noteId}`,
         {},
         { withCredentials: true }
       );
@@ -300,7 +300,7 @@ const Home = () => {
       }
 
       const res = await api.delete(
-        `https://memmomindbe-test-jgcl.onrender.com/api/note/delete-restore/${noteId}?actionType=restore`,
+        `https://memmomind-be-ycwv.onrender.com/api/note/delete-restore/${noteId}?actionType=restore`,
         { withCredentials: true }
       );
 
@@ -334,7 +334,7 @@ const Home = () => {
       }
 
       const res = await api.delete(
-        `https://memmomindbe-test-jgcl.onrender.com/api/note/delete-restore/${noteId}?actionType=delete`,
+        `https://memmomind-be-ycwv.onrender.com/api/note/delete-restore/${noteId}?actionType=delete`,
         { withCredentials: true }
       );
 
