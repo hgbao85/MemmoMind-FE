@@ -156,7 +156,7 @@ const Home = () => {
   // Hàm lấy thông tin User hiện tại
   const getUserInfo = async () => {
     try {
-      const res = await api.get("https://memmomind-be-ycwv.onrender.com/api/user/current", {
+      const res = await api.get("https://memmomindbe-test-jgcl.onrender.com/api/user/current", {
         withCredentials: true,
       });
 
@@ -175,7 +175,7 @@ const Home = () => {
   // 📝 Lấy tất cả ghi chú
   const getAllNotes = async () => {
     try {
-      const res = await api.get("https://memmomind-be-ycwv.onrender.com/api/note/all", {
+      const res = await api.get("https://memmomindbe-test-jgcl.onrender.com/api/note/all", {
         withCredentials: true,
       });
 
@@ -212,7 +212,7 @@ const Home = () => {
 
     try {
       const res = await api.put(
-        `https://memmomind-be-ycwv.onrender.com/api/note/update-note-pinned/${noteId}`,
+        `https://memmomindbe-test-jgcl.onrender.com/api/note/update-note-pinned/${noteId}`,
         {},
         { withCredentials: true }
       );
@@ -241,7 +241,7 @@ const Home = () => {
   // 🗑 Lấy danh sách ghi chú trong thùng rác (isDeleted=true)
   const getTrashedNotes = async () => {
     try {
-      const res = await api.get(`https://memmomind-be-ycwv.onrender.com/api/note/all?isDeleted=true`, { withCredentials: true });
+      const res = await api.get(`https://memmomindbe-test-jgcl.onrender.com/api/note/all?isDeleted=true`, { withCredentials: true });
       if (!res.data.notes) return;
       setDeletedNotes(res.data.notes);
     } catch (error) {
@@ -270,7 +270,7 @@ const Home = () => {
         return;
       }
 
-      const res = await api.get(`https://memmomind-be-ycwv.onrender.com/api/note/search`, {
+      const res = await api.get(`https://memmomindbe-test-jgcl.onrender.com/api/note/search`, {
         params: { keyword: query },
         withCredentials: true,
       });
@@ -301,7 +301,7 @@ const Home = () => {
   const moveToTrash = async (noteId) => {
     try {
       const res = await api.put(
-        `https://memmomind-be-ycwv.onrender.com/api/note/trash/${noteId}`,
+        `https://memmomindbe-test-jgcl.onrender.com/api/note/trash/${noteId}`,
         {},
         { withCredentials: true }
       );
@@ -332,7 +332,7 @@ const Home = () => {
       }
 
       const res = await api.delete(
-        `https://memmomind-be-ycwv.onrender.com/api/note/delete-restore/${noteId}?actionType=restore`,
+        `https://memmomindbe-test-jgcl.onrender.com/api/note/delete-restore/${noteId}?actionType=restore`,
         { withCredentials: true }
       );
 
@@ -364,7 +364,7 @@ const Home = () => {
       }
 
       const res = await api.delete(
-        `https://memmomind-be-ycwv.onrender.com/api/note/delete-restore/${noteId}?actionType=delete`,
+        `https://memmomindbe-test-jgcl.onrender.com/api/note/delete-restore/${noteId}?actionType=delete`,
         { withCredentials: true }
       );
 
@@ -741,6 +741,7 @@ const Home = () => {
         payload.text = fileContent;
       }
 
+      // Gửi request API AI để tóm tắt văn bản
       const response = await axios.post(
         "http://vietserver.ddns.net:6082/summarize",
         payload,
@@ -759,6 +760,23 @@ const Home = () => {
       const summaryText = decodedData?.json?.summarize || "Không thể tạo tóm tắt.";
       setSummary(summaryText);
 
+      // Giả sử API trả về total_cost trong response
+      const newCost = decodedData?.json?.total_cost || 0;
+
+      // Gửi total_cost về BE để lưu vào model User
+      if (newCost > 0) {
+        await axios.post("https://memmomindbe-test-jgcl.onrender.com/api/user/update-cost", {
+          userId: currentUser.user._id,
+          newCost: newCost,
+        },
+          {
+            headers: {
+              Authorization: `Bearer ${currentUser.token}`, // Thêm token vào header
+            },
+          });
+        console.log("Total cost saved:", newCost);
+      }
+
     } catch (error) {
       console.error("Error summarizing:", error.message);
       toast.error("Có lỗi xảy ra khi tóm tắt!");
@@ -766,6 +784,7 @@ const Home = () => {
       setLoadingState({ isLoading: false, action: "" });
     }
   };
+
 
   const handleGenerateMindmap = async () => {
     if (!fileContent.trim() && !uploadedFile) {
@@ -800,13 +819,31 @@ const Home = () => {
       const arrayBuffer = await response.data.arrayBuffer();
       const decodedData = msgpack.decode(new Uint8Array(arrayBuffer));
 
-      console.log("Decoded Data:", decodedData);
-
       const jsonData = decodedData.json;
 
-      if (jsonData.metadata.content_type === "application/html") {
+      if (jsonData.metadata && jsonData.metadata.content_type === "application/html") {
         const htmlContent = new TextDecoder().decode(decodedData.file);
         setMindmapHtml(htmlContent); // Cập nhật state hiển thị mindmap
+      }
+
+      // Kiểm tra xem có trường total_cost trong metadata không
+      const newCost = jsonData?.total_cost || 0;
+
+      if (newCost > 0) {
+        // Gửi yêu cầu cập nhật chi phí lên server
+        await axios.post(
+          "https://memmomindbe-test-jgcl.onrender.com/api/user/update-cost",  // Đảm bảo URL đúng
+          {
+            userId: currentUser.user._id,
+            newCost: newCost,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${currentUser.token}`,  // Xác thực bằng token nếu cần
+            },
+          }
+        );
+        console.log("Total cost saved:", newCost);  // In ra thông báo khi lưu thành công
       }
 
     } catch (error) {
@@ -816,6 +853,7 @@ const Home = () => {
       setLoadingState({ isLoading: false, action: "" });
     }
   };
+
 
   const handleGenerateFlashCard = async () => {
     if (!fileContent.trim() && !uploadedFile) {
@@ -828,6 +866,7 @@ const Home = () => {
     try {
       let payload = { userId: currentUser.user._id };
 
+      // Kiểm tra tệp được tải lên
       if (uploadedFile) {
         if (uploadedFile.type === "text/plain") {
           const text = await uploadedFile.text();
@@ -842,36 +881,63 @@ const Home = () => {
         payload.text = fileContent;
       }
 
+      // Gửi yêu cầu đến API tạo flashcard
       const response = await axios.post(
         "http://vietserver.ddns.net:6082/flashcard",
         payload,
         {
           headers: { "Content-Type": "application/json" },
-          responseType: "blob", // Nhận dạng phản hồi dưới dạng blob
+          responseType: "blob", // Nhận phản hồi dưới dạng blob
         }
       );
 
+      // Giải mã phản hồi nhận được từ server
       const arrayBuffer = await response.data.arrayBuffer();
       const decodedData = msgpack.decode(new Uint8Array(arrayBuffer));
 
-      console.log("Decoded Data:", decodedData);
+      console.log("Decoded Data:", decodedData);  // Debug: Kiểm tra dữ liệu trả về
 
+      // Lấy danh sách flashcards từ dữ liệu đã giải mã
       const flashcardData = decodedData?.json?.flashcard || [];
+
+      // Kiểm tra nếu dữ liệu hợp lệ và có flashcards
       if (Array.isArray(flashcardData) && flashcardData.length > 0) {
-        setFlashCard(flashcardData);
-        setCurrentIndex(0);
+        setFlashCard(flashcardData);  // Cập nhật trạng thái hiển thị flashcards
+        setCurrentIndex(0);  // Đặt chỉ số hiện tại về 0
       } else {
-        toast.error("Dữ liệu flashcard không hợp lệ!");
-        setFlashCard([]);
+        toast.error("Dữ liệu flashcard không hợp lệ!");  // Thông báo lỗi nếu dữ liệu không hợp lệ
+        setFlashCard([]);  // Đảm bảo không có flashcard nào hiển thị
+      }
+
+      // Lưu total_cost nếu có trong phản hồi từ server
+      const newCost = decodedData?.json?.total_cost || 0;
+      console.log("Total Cost:", newCost);  // Debug: In ra total_cost
+
+      if (newCost > 0) {
+        // Gửi yêu cầu cập nhật chi phí lên server
+        await axios.post(
+          "https://memmomindbe-test-jgcl.onrender.com/api/user/update-cost",  // Đảm bảo URL đúng
+          {
+            userId: currentUser.user._id,
+            newCost: newCost,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${currentUser.token}`,  // Xác thực bằng token nếu cần
+            },
+          }
+        );
+        console.log("Total cost saved:", newCost);  // In ra thông báo khi lưu thành công
       }
 
     } catch (error) {
       console.error("Error generating flashcard:", error);
-      toast.error("Có lỗi xảy ra khi tạo flashcard!");
+      toast.error("Có lỗi xảy ra khi tạo flashcard!");  // Thông báo lỗi
     } finally {
-      setLoadingState({ isLoading: false, action: "" });
+      setLoadingState({ isLoading: false, action: "" });  // Đặt lại trạng thái tải
     }
   };
+
 
 
   const handleGenerateSolve = async () => {
@@ -885,6 +951,7 @@ const Home = () => {
     try {
       let payload = { userId: currentUser.user._id };
 
+      // Kiểm tra tệp được tải lên
       if (uploadedFile) {
         if (uploadedFile.type === "text/plain") {
           const text = await uploadedFile.text();
@@ -899,6 +966,7 @@ const Home = () => {
         payload.text = fileContent;
       }
 
+      // Gửi yêu cầu đến API giải bài tập
       const response = await axios.post(
         "http://vietserver.ddns.net:6082/ommi-solver",
         payload,
@@ -908,22 +976,45 @@ const Home = () => {
         }
       );
 
+      // Giải mã phản hồi nhận được từ server
       const arrayBuffer = await response.data.arrayBuffer();
       const decodedData = msgpack.decode(new Uint8Array(arrayBuffer));
 
-      console.log("Decoded Data:", decodedData);
+      console.log("Decoded Data:", decodedData);  // Debug: Kiểm tra dữ liệu trả về
 
+      // Lấy dữ liệu giải bài tập từ phản hồi
       const solveResponse = decodedData?.json?.omniSolver || "Không thể giải bài tập.";
+      setSolve(solveResponse);  // Cập nhật trạng thái hiển thị giải bài tập
 
-      setSolve(solveResponse);
+      // Lưu total_cost nếu có trong phản hồi từ server
+      const newCost = decodedData?.json?.total_cost || 0;
+      console.log("Total Cost:", newCost);  // Debug: In ra total_cost
+
+      if (newCost > 0) {
+        // Gửi yêu cầu cập nhật chi phí lên server
+        await axios.post(
+          "https://memmomindbe-test-jgcl.onrender.com/api/user/update-cost",  // Đảm bảo URL đúng
+          {
+            userId: currentUser.user._id,
+            newCost: newCost,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${currentUser.token}`,  // Xác thực bằng token nếu cần
+            },
+          }
+        );
+        console.log("Total cost saved:", newCost);  // In ra thông báo khi lưu thành công
+      }
 
     } catch (error) {
       console.error("Error solving:", error.message);
-      toast.error("Có lỗi xảy ra khi giải bài tập!");
+      toast.error("Có lỗi xảy ra khi giải bài tập!");  // Thông báo lỗi
     } finally {
-      setLoadingState({ isLoading: false, action: "" });
+      setLoadingState({ isLoading: false, action: "" });  // Đặt lại trạng thái tải
     }
   };
+
 
 
   const handleGeneratePowerpoint = async () => {
@@ -944,6 +1035,7 @@ const Home = () => {
         payload.fileName = uploadedFile.name;
       }
 
+      // Gửi yêu cầu API để tạo PowerPoint
       const response = await axios.post(
         "http://vietserver.ddns.net:6082/powpoint-create",
         payload,
@@ -963,15 +1055,18 @@ const Home = () => {
 
       let pdfUrl = null;
 
+      // Nếu có dữ liệu file, tạo URL cho PDF
       if (decodedData.file) {
         const pdfBlob = new Blob([decodedData.file], { type: contentType });
         pdfUrl = URL.createObjectURL(pdfBlob);
       }
 
+      // Nếu có đường dẫn PowerPoint, lưu lại
       if (pptxPath) {
         setPptxFilename(pptxPath);
       }
 
+      // Mở PDF nếu có
       if (pdfUrl) {
         window.open(pdfUrl, "_blank");
       } else {
@@ -980,18 +1075,42 @@ const Home = () => {
 
       console.log("Decoded Data:", decodedData);
 
+      // Hiển thị preview PowerPoint
       setPowerpointPreview((prev) => ({
         ...prev,
         url: pdfUrl,
         filename: filename,
       }));
+
+      // Lưu total_cost nếu có trong phản hồi từ server
+      const newCost = decodedData?.json?.total_cost || 0;
+      console.log("Total Cost:", newCost);  // Debug: In ra total_cost
+
+      if (newCost > 0) {
+        // Gửi yêu cầu cập nhật chi phí lên server
+        await axios.post(
+          "https://memmomindbe-test-jgcl.onrender.com/api/user/update-cost",  // Đảm bảo URL đúng
+          {
+            userId: currentUser.user._id,
+            newCost: newCost,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${currentUser.token}`,  // Xác thực bằng token nếu cần
+            },
+          }
+        );
+        console.log("Total cost saved:", newCost);  // In ra thông báo khi lưu thành công
+      }
+
     } catch (error) {
       console.error("Error generating PowerPoint:", error);
-      toast.error("Có lỗi xảy ra khi tạo PowerPoint!");
+      toast.error("Có lỗi xảy ra khi tạo PowerPoint!");  // Thông báo lỗi
     } finally {
-      setLoadingState({ isLoading: false, action: "" });
+      setLoadingState({ isLoading: false, action: "" });  // Đặt lại trạng thái tải
     }
   };
+
 
   const handleDownloadPowerpoint = async () => {
     if (!pptxFilename) {
@@ -1083,13 +1202,36 @@ const Home = () => {
         toast.error("Dữ liệu MultipleChoice không hợp lệ!");
         setMultipleChoice([]);
       }
+
+      // Lưu total_cost nếu có trong phản hồi từ server
+      const newCost = jsonResponse?.json?.total_cost || 0;
+      console.log("Total Cost:", newCost);  // Debug: In ra total_cost
+
+      if (newCost > 0) {
+        // Gửi yêu cầu cập nhật chi phí lên server
+        await axios.post(
+          "https://memmomindbe-test-jgcl.onrender.com/api/user/update-cost",  // Đảm bảo URL đúng
+          {
+            userId: currentUser.user._id,
+            newCost: newCost,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${currentUser.token}`,  // Xác thực bằng token nếu cần
+            },
+          }
+        );
+        console.log("Total cost saved:", newCost);  // In ra thông báo khi lưu thành công
+      }
+
     } catch (error) {
       console.error("Error generating multiple choice:", error);
       toast.error("Có lỗi xảy ra khi tạo câu hỏi trắc nghiệm!");
     } finally {
-      setLoadingState({ isLoading: false, action: "" });
+      setLoadingState({ isLoading: false, action: "" });  // Đặt lại trạng thái tải
     }
   };
+
 
   const handleAnswerClick = (selectedAnswer) => {
     setUserAnswers((prevAnswers) => ({
