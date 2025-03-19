@@ -6,8 +6,11 @@ import Welcome from "./pages/Welcome/Welcome";
 import ResetPassword from "./pages/ResetPassword/ResetPassword"
 import ForgotPassword from "./pages/ForgotPassword/ForgotPassword";
 import VerifyEmail from "./pages/VerifyEmail/VerifyEmail";
+import PaymentCancel from "./pages/Payment/PaymentCancel";
+import PaymentSuccess from "./pages/Payment/PaymentSuccess";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/ReactToastify.css";
+
 
 const App = () => {
   return (
@@ -20,7 +23,8 @@ const App = () => {
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/verify-email" element={<VerifyEmail />} />
-
+        <Route path="/payment/cancel" element={<PaymentCancel />} />
+        <Route path="/payment/success" element={<PaymentSuccess />} />
       </Routes>
       <ToastContainer position="top-center" />
     </BrowserRouter>

@@ -67,7 +67,7 @@ const AddEditNotes = ({
 
     try {
       const res = await api.post(
-        `https://memmomind-be-ycwv.onrender.com/api/note/edit/` + noteId,
+        `https://memmomindbe-test-jgcl.onrender.com/api/note/edit/` + noteId,
         { title, content, tags },
         { withCredentials: true }
       );
@@ -93,7 +93,7 @@ const AddEditNotes = ({
   const addNewNote = async () => {
     try {
       const res = await api.post(
-        "https://memmomind-be-ycwv.onrender.com/api/note/add",
+        "https://memmomindbe-test-jgcl.onrender.com/api/note/add",
         { title, content, tags },
         { withCredentials: true }
       );
