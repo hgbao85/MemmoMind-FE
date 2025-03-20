@@ -50,7 +50,7 @@ const Navbar = ({ userInfo = { name: "Guest", totalCost: 0, totalPurchasedCost: 
     try {
       dispatch(signoutStart());
 
-      const res = await api.post(`https://memmomindbe-test-jgcl.onrender.com/api/auth/logout`, {
+      const res = await api.post(`https://memmomind-be-ycwv.onrender.com/api/auth/logout`, {
         withCredentials: true,
       });
 
