@@ -15,16 +15,6 @@ const Login = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  // ✅ Kiểm tra token trong localStorage khi component được mount
-  // useEffect(() => {
-  //   const token = localStorage.getItem("token");
-  //   if (token) {
-  //     console.log("🔑 Tìm thấy token trong localStorage!");
-  //   } else {
-  //     console.warn("❌ Không có token trong localStorage!");
-  //   }
-  // }, []);
-
   const handleLogin = async (e) => {
     e.preventDefault();
     if (!validateEmail(email)) {

@@ -156,7 +156,7 @@ const Home = () => {
   // Hàm lấy thông tin User hiện tại
   const getUserInfo = async () => {
     try {
-      const res = await api.get("https://memmomindbe-test-jgcl.onrender.com/api/user/current", {
+      const res = await api.get("http://localhost:3000/api/user/current", {
         withCredentials: true,
       });
 
@@ -175,7 +175,7 @@ const Home = () => {
   // 📝 Lấy tất cả ghi chú
   const getAllNotes = async () => {
     try {
-      const res = await api.get("https://memmomindbe-test-jgcl.onrender.com/api/note/all", {
+      const res = await api.get("http://localhost:3000/api/note/all", {
         withCredentials: true,
       });
 
@@ -212,7 +212,7 @@ const Home = () => {
 
     try {
       const res = await api.put(
-        `https://memmomindbe-test-jgcl.onrender.com/api/note/update-note-pinned/${noteId}`,
+        `http://localhost:3000/api/note/update-note-pinned/${noteId}`,
         {},
         { withCredentials: true }
       );
@@ -241,7 +241,7 @@ const Home = () => {
   // 🗑 Lấy danh sách ghi chú trong thùng rác (isDeleted=true)
   const getTrashedNotes = async () => {
     try {
-      const res = await api.get(`https://memmomindbe-test-jgcl.onrender.com/api/note/all?isDeleted=true`, { withCredentials: true });
+      const res = await api.get(`http://localhost:3000/api/note/all?isDeleted=true`, { withCredentials: true });
       if (!res.data.notes) return;
       setDeletedNotes(res.data.notes);
     } catch (error) {
@@ -270,7 +270,7 @@ const Home = () => {
         return;
       }
 
-      const res = await api.get(`https://memmomindbe-test-jgcl.onrender.com/api/note/search`, {
+      const res = await api.get(`http://localhost:3000/api/note/search`, {
         params: { keyword: query },
         withCredentials: true,
       });
@@ -301,7 +301,7 @@ const Home = () => {
   const moveToTrash = async (noteId) => {
     try {
       const res = await api.put(
-        `https://memmomindbe-test-jgcl.onrender.com/api/note/trash/${noteId}`,
+        `http://localhost:3000/api/note/trash/${noteId}`,
         {},
         { withCredentials: true }
       );
@@ -332,7 +332,7 @@ const Home = () => {
       }
 
       const res = await api.delete(
-        `https://memmomindbe-test-jgcl.onrender.com/api/note/delete-restore/${noteId}?actionType=restore`,
+        `http://localhost:3000/api/note/delete-restore/${noteId}?actionType=restore`,
         { withCredentials: true }
       );
 
@@ -364,7 +364,7 @@ const Home = () => {
       }
 
       const res = await api.delete(
-        `https://memmomindbe-test-jgcl.onrender.com/api/note/delete-restore/${noteId}?actionType=delete`,
+        `http://localhost:3000/api/note/delete-restore/${noteId}?actionType=delete`,
         { withCredentials: true }
       );
 
@@ -765,7 +765,7 @@ const Home = () => {
 
       // Gửi total_cost về BE để lưu vào model User
       if (newCost > 0) {
-        await axios.post("https://memmomindbe-test-jgcl.onrender.com/api/user/update-cost", {
+        await axios.post("http://localhost:3000/api/user/update-cost", {
           userId: currentUser.user._id,
           newCost: newCost,
         },
@@ -832,7 +832,7 @@ const Home = () => {
       if (newCost > 0) {
         // Gửi yêu cầu cập nhật chi phí lên server
         await axios.post(
-          "https://memmomindbe-test-jgcl.onrender.com/api/user/update-cost",  // Đảm bảo URL đúng
+          "http://localhost:3000/api/user/update-cost",  // Đảm bảo URL đúng
           {
             userId: currentUser.user._id,
             newCost: newCost,
@@ -916,7 +916,7 @@ const Home = () => {
       if (newCost > 0) {
         // Gửi yêu cầu cập nhật chi phí lên server
         await axios.post(
-          "https://memmomindbe-test-jgcl.onrender.com/api/user/update-cost",  // Đảm bảo URL đúng
+          "http://localhost:3000/api/user/update-cost",  // Đảm bảo URL đúng
           {
             userId: currentUser.user._id,
             newCost: newCost,
@@ -993,7 +993,7 @@ const Home = () => {
       if (newCost > 0) {
         // Gửi yêu cầu cập nhật chi phí lên server
         await axios.post(
-          "https://memmomindbe-test-jgcl.onrender.com/api/user/update-cost",  // Đảm bảo URL đúng
+          "http://localhost:3000/api/user/update-cost",  // Đảm bảo URL đúng
           {
             userId: currentUser.user._id,
             newCost: newCost,
@@ -1089,7 +1089,7 @@ const Home = () => {
       if (newCost > 0) {
         // Gửi yêu cầu cập nhật chi phí lên server
         await axios.post(
-          "https://memmomindbe-test-jgcl.onrender.com/api/user/update-cost",  // Đảm bảo URL đúng
+          "http://localhost:3000/api/user/update-cost",  // Đảm bảo URL đúng
           {
             userId: currentUser.user._id,
             newCost: newCost,
@@ -1210,7 +1210,7 @@ const Home = () => {
       if (newCost > 0) {
         // Gửi yêu cầu cập nhật chi phí lên server
         await axios.post(
-          "https://memmomindbe-test-jgcl.onrender.com/api/user/update-cost",  // Đảm bảo URL đúng
+          "http://localhost:3000/api/user/update-cost",  // Đảm bảo URL đúng
           {
             userId: currentUser.user._id,
             newCost: newCost,

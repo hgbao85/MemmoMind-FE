@@ -25,7 +25,7 @@ const ForgotPassword = () => {
         }
     };
 
-    const closeModal = () => {
+    const handleVerification = () => {
         setIsModalOpen(false);
         navigate("/login");
     };
@@ -65,15 +65,15 @@ const ForgotPassword = () => {
                 <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 p-4">
                     <div className="bg-white rounded-lg shadow-lg p-6 w-96 text-center">
                         <h2 className="text-xl font-bold text-gray-800">📧 Kiểm tra email của bạn!</h2>
-                        <p className="text-gray-700 mt-2">
-                            Vui lòng kiểm tra email để khôi phục mật khẩu. Nếu không thấy email, vui lòng kiểm tra hòm thư rác.
+                        <p className="text-red-500 mt-2 mb-6">
+                            Vui lòng kiểm tra email để khôi phục mật khẩu. Nếu không thấy email, vui lòng kiểm tra hòm <strong>Thư rác</strong>.
                         </p>
-                        <button
-                            onClick={closeModal}
-                            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
-                        >
-                            Xác nhận
-                        </button>
+                        <a
+                            className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                            href="https://mail.google.com/"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={handleVerification}>Kiểm tra email!</a>
                     </div>
                 </div>
             )}
