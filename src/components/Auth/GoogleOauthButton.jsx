@@ -2,7 +2,7 @@ import PropTypes from "prop-types";
 
 const GoogleOauthButton = ({ label }) => {
     const handleClick = () => {
-        window.location.href = `http://localhost:3000/api/auth/google`;
+        window.location.href = `https://memmomind-be-ycwv.onrender.com/api/auth/google`;
     };
 
     return (
