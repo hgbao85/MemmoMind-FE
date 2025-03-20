@@ -16,7 +16,6 @@ import {
   MdRefresh
 } from "react-icons/md";
 import AddEditNotes from "./AddEditNotes";
-import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/Navbar";
 import { toast } from "react-toastify";
@@ -27,6 +26,9 @@ import "./flashcard.css";
 import { marked } from "marked";
 import * as msgpack from "@msgpack/msgpack";
 import { useMemo } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { closePopup } from "../../redux/user/paymentSlice";
+import { updateUserCost } from "../../redux/user/userSlice";
 
 const Home = () => {
   const { currentUser } = useSelector((state) => state.user);
@@ -61,6 +63,9 @@ const Home = () => {
   const [isFlipped, setIsFlipped] = useState(false);
   const [topicMulchoice, setTopicMulchoice] = useState("");
   const [userAnswers, setUserAnswers] = useState({});
+  const isPopupOpen = useSelector((state) => state.payment.isPopupOpen);
+  const dispatch = useDispatch();
+  const [amount, setAmount] = useState(1000);
   const topic =
     flashcard.length > 0 && currentIndex < flashcard.length
       ? Object.keys(flashcard[currentIndex])[0]
@@ -491,8 +496,6 @@ const Home = () => {
     }, 100);
   };
 
-
-
   const handleNextmulchoice = () => {
     setIsTransitioning(true); // Bắt đầu hiệu ứng chuyển câu
     setTimeout(() => {
@@ -512,9 +515,6 @@ const Home = () => {
       setIsTransitioning(false);
     }, 100);
   };
-
-
-
 
   const handleRemoveFile = () => {
     setPdfUrl(null);
@@ -716,6 +716,26 @@ const Home = () => {
     document.body.removeChild(a);
   };
 
+  const handlePayment = async () => {
+    try {
+      const orderCode = Date.now();
+      const res = await api.post("/payment/create-payment", {
+        orderCode,
+        amount,
+        description: "Nap tien Memmomind",
+        cancelUrl: `${window.location.origin}/payment/cancel`,
+        returnUrl: `${window.location.origin}/payment/success?&amount=${amount}`,
+      });
+
+      if (res.data?.data?.checkoutUrl) {
+        window.location.href = res.data.data.checkoutUrl;
+      }
+    } catch (error) {
+      console.error("Lỗi thanh toán:", error);
+    }
+  };
+
+  // Hàm tạo tóm tắt
   const handleSummarize = async () => {
     if (!fileContent.trim() && !uploadedFile) {
       toast.error("Vui lòng nhập văn bản hoặc tải lên tệp trước khi tóm tắt!");
@@ -764,7 +784,7 @@ const Home = () => {
       const newCost = decodedData?.json?.total_cost || 0;
 
       // Gửi total_cost về BE để lưu vào model User
-      if (newCost > 0) {
+      if (newCost > 0 && currentUser?.user?._id && currentUser?.token) {
         await axios.post("https://memmomind-be-ycwv.onrender.com/api/user/update-cost", {
           userId: currentUser.user._id,
           newCost: newCost,
@@ -775,6 +795,13 @@ const Home = () => {
             },
           });
         console.log("Total cost saved:", newCost);
+
+        // Cập nhật cost trong Redux store để cập nhật thanh tiến trình
+        if (currentUser?.user?.role === "freeVersion") {
+          dispatch(updateUserCost((currentUser?.user?.freeCost || 0) + newCost));
+        } else if (currentUser?.user?.role === "costVersion") {
+          dispatch(updateUserCost((currentUser?.user?.totalCost || 0) + newCost));
+        }
       }
 
     } catch (error) {
@@ -785,7 +812,7 @@ const Home = () => {
     }
   };
 
-
+  // Hàm tạo mindmap
   const handleGenerateMindmap = async () => {
     if (!fileContent.trim() && !uploadedFile) {
       toast.error("Vui lòng nhập văn bản hoặc tải lên tệp trước khi tạo mindmap!");
@@ -832,18 +859,24 @@ const Home = () => {
       if (newCost > 0) {
         // Gửi yêu cầu cập nhật chi phí lên server
         await axios.post(
-          "https://memmomind-be-ycwv.onrender.com/api/user/update-cost",  // Đảm bảo URL đúng
+          "https://memmomind-be-ycwv.onrender.com/api/user/update-cost",
           {
             userId: currentUser.user._id,
             newCost: newCost,
           },
           {
             headers: {
-              Authorization: `Bearer ${currentUser.token}`,  // Xác thực bằng token nếu cần
+              Authorization: `Bearer ${currentUser.token}`,
             },
           }
         );
-        console.log("Total cost saved:", newCost);  // In ra thông báo khi lưu thành công
+        console.log("Total cost saved:", newCost);
+        // Cập nhật cost trong Redux store để cập nhật thanh tiến trình
+        if (currentUser?.user?.role === "freeVersion") {
+          dispatch(updateUserCost((currentUser?.user?.freeCost || 0) + newCost));
+        } else if (currentUser?.user?.role === "costVersion") {
+          dispatch(updateUserCost((currentUser?.user?.totalCost || 0) + newCost));
+        }
       }
 
     } catch (error) {
@@ -854,7 +887,7 @@ const Home = () => {
     }
   };
 
-
+  // Hàm tạo flashcard từ văn bản hoặc tệp tải lên
   const handleGenerateFlashCard = async () => {
     if (!fileContent.trim() && !uploadedFile) {
       toast.error("Vui lòng nhập văn bản hoặc tải lên tệp trước khi tạo flashcard!");
@@ -916,18 +949,24 @@ const Home = () => {
       if (newCost > 0) {
         // Gửi yêu cầu cập nhật chi phí lên server
         await axios.post(
-          "https://memmomind-be-ycwv.onrender.com/api/user/update-cost",  // Đảm bảo URL đúng
+          "https://memmomind-be-ycwv.onrender.com/api/user/update-cost",
           {
             userId: currentUser.user._id,
             newCost: newCost,
           },
           {
             headers: {
-              Authorization: `Bearer ${currentUser.token}`,  // Xác thực bằng token nếu cần
+              Authorization: `Bearer ${currentUser.token}`,
             },
           }
         );
-        console.log("Total cost saved:", newCost);  // In ra thông báo khi lưu thành công
+        console.log("Total cost saved:", newCost);
+        // Cập nhật cost trong Redux store để cập nhật thanh tiến trình
+        if (currentUser?.user?.role === "freeVersion") {
+          dispatch(updateUserCost((currentUser?.user?.freeCost || 0) + newCost));
+        } else if (currentUser?.user?.role === "costVersion") {
+          dispatch(updateUserCost((currentUser?.user?.totalCost || 0) + newCost));
+        }
       }
 
     } catch (error) {
@@ -938,8 +977,7 @@ const Home = () => {
     }
   };
 
-
-
+  // Hàm giải bài tập
   const handleGenerateSolve = async () => {
     if (!fileContent.trim() && !uploadedFile) {
       toast.error("Vui lòng nhập văn bản hoặc tải lên tệp trước khi tạo solve!");
@@ -993,18 +1031,24 @@ const Home = () => {
       if (newCost > 0) {
         // Gửi yêu cầu cập nhật chi phí lên server
         await axios.post(
-          "https://memmomind-be-ycwv.onrender.com/api/user/update-cost",  // Đảm bảo URL đúng
+          "https://memmomind-be-ycwv.onrender.com/api/user/update-cost",
           {
             userId: currentUser.user._id,
             newCost: newCost,
           },
           {
             headers: {
-              Authorization: `Bearer ${currentUser.token}`,  // Xác thực bằng token nếu cần
+              Authorization: `Bearer ${currentUser.token}`,
             },
           }
         );
-        console.log("Total cost saved:", newCost);  // In ra thông báo khi lưu thành công
+        console.log("Total cost saved:", newCost);
+        // Cập nhật cost trong Redux store để cập nhật thanh tiến trình
+        if (currentUser?.user?.role === "freeVersion") {
+          dispatch(updateUserCost((currentUser?.user?.freeCost || 0) + newCost));
+        } else if (currentUser?.user?.role === "costVersion") {
+          dispatch(updateUserCost((currentUser?.user?.totalCost || 0) + newCost));
+        }
       }
 
     } catch (error) {
@@ -1089,18 +1133,25 @@ const Home = () => {
       if (newCost > 0) {
         // Gửi yêu cầu cập nhật chi phí lên server
         await axios.post(
-          "https://memmomind-be-ycwv.onrender.com/api/user/update-cost",  // Đảm bảo URL đúng
+          "https://memmomind-be-ycwv.onrender.com/api/user/update-cost",
           {
             userId: currentUser.user._id,
             newCost: newCost,
           },
           {
             headers: {
-              Authorization: `Bearer ${currentUser.token}`,  // Xác thực bằng token nếu cần
+              Authorization: `Bearer ${currentUser.token}`,
             },
           }
         );
-        console.log("Total cost saved:", newCost);  // In ra thông báo khi lưu thành công
+        console.log("Total cost saved:", newCost);
+
+        // Cập nhật cost trong Redux store để cập nhật thanh tiến trình
+        if (currentUser?.user?.role === "freeVersion") {
+          dispatch(updateUserCost((currentUser?.user?.freeCost || 0) + newCost));
+        } else if (currentUser?.user?.role === "costVersion") {
+          dispatch(updateUserCost((currentUser?.user?.totalCost || 0) + newCost));
+        }
       }
 
     } catch (error) {
@@ -1210,25 +1261,32 @@ const Home = () => {
       if (newCost > 0) {
         // Gửi yêu cầu cập nhật chi phí lên server
         await axios.post(
-          "https://memmomind-be-ycwv.onrender.com/api/user/update-cost",  // Đảm bảo URL đúng
+          "https://memmomind-be-ycwv.onrender.com/api/user/update-cost",
           {
             userId: currentUser.user._id,
             newCost: newCost,
           },
           {
             headers: {
-              Authorization: `Bearer ${currentUser.token}`,  // Xác thực bằng token nếu cần
+              Authorization: `Bearer ${currentUser.token}`,
             },
           }
         );
-        console.log("Total cost saved:", newCost);  // In ra thông báo khi lưu thành công
+        console.log("Total cost saved:", newCost);
+
+        // Cập nhật cost trong Redux store để cập nhật thanh tiến trình
+        if (currentUser?.user?.role === "freeVersion") {
+          dispatch(updateUserCost((currentUser?.user?.freeCost || 0) + newCost));
+        } else if (currentUser?.user?.role === "costVersion") {
+          dispatch(updateUserCost((currentUser?.user?.totalCost || 0) + newCost));
+        }
       }
 
     } catch (error) {
       console.error("Error generating multiple choice:", error);
       toast.error("Có lỗi xảy ra khi tạo câu hỏi trắc nghiệm!");
     } finally {
-      setLoadingState({ isLoading: false, action: "" });  // Đặt lại trạng thái tải
+      setLoadingState({ isLoading: false, action: "" });
     }
   };
 
@@ -1804,6 +1862,7 @@ const Home = () => {
               </button>
             </div>
           )}
+
           {powerpointPreview && (
             <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-60 p-6 z-50 animate-fade-in">
               <div className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl p-4">
@@ -1985,6 +2044,111 @@ const Home = () => {
               </div>
             </div>
           )}
+
+          {isPopupOpen && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div className="bg-white p-8 rounded-xl shadow-xl w-[450px] max-w-lg">
+                <h3 className="text-2xl font-bold text-center mb-6">Nạp tiền vào tài khoản</h3>
+
+                {/* Hướng dẫn */}
+                <div className="bg-blue-50 p-4 rounded-lg mb-6 border border-blue-100">
+                  <p className="text-sm text-blue-800">
+                    Hướng dẫn: Kéo thả hoặc chọn mốc nạp từ 1.000VND đến 10.000VND. Số tiền nạp sẽ được quy đổi theo tỷ lệ:
+                  </p>
+                  <p className="font-semibold text-blue-900 mt-1">1.000VND: Khoảng 15 lần sử dụng các tính năng AI</p>
+                  <p className="text-red-500 font-bold mt-2 italic">Lưu ý: Số tiền bạn nạp vào sẽ hết hạn sau 24h kể từ lúc nạp tiền thành công.</p>
+                </div>
+
+                {/* Thanh kéo */}
+                <div className="mb-6">
+                  <p className="text-base font-medium text-gray-700 mb-4">Chọn số tiền muốn nạp</p>
+
+                  <div className="relative pt-2">
+                    {/* Container cho thanh kéo và các chấm */}
+                    <div className="relative h-6 flex items-center mb-3">
+                      {/* Input thực tế */}
+                      <input
+                        type="range"
+                        min="1000"
+                        max="10000"
+                        step="1000"
+                        value={amount}
+                        onChange={(e) => setAmount(Number(e.target.value))}
+                        className="absolute w-full h-6 opacity-0 cursor-pointer z-10"
+                      />
+
+                      {/* Thanh hiển thị phía sau */}
+                      <div className="absolute w-full h-3 bg-gray-200 rounded-full pointer-events-none"></div>
+
+                      {/* Thanh tiến trình */}
+                      <div
+                        className="absolute h-3 bg-blue-500 rounded-full transition-all duration-300"
+                        style={{
+                          width: `${((amount - 1000) / 9000) * 100}%`,
+                        }}
+                      ></div>
+
+                      {/* Các chấm */}
+                      <div className="absolute w-full">
+                        {[1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000].map((val, index) => (
+                          <div
+                            key={val}
+                            className={`absolute w-4 h-4 rounded-full transform -translate-x-1/2 -translate-y-1/2 transition-all duration-300 ${amount >= val ? "bg-blue-500 scale-125 border-2 border-white shadow-md" : "bg-gray-300"
+                              }`}
+                            style={{
+                              left: `${(index / 9) * 100}%`,
+                              top: "50%",
+                            }}
+                          />
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Giá trị min/max */}
+                    <div className="flex justify-between mt-3 px-1 text-sm font-medium">
+                      {[1000, 5000, 10000].map((val) => (
+                        <span
+                          key={val}
+                          className={`px-3 py-1 rounded-lg cursor-pointer transition-all font-medium shadow-md 
+        ${amount === val
+                              ? "bg-gradient-to-r from-blue-500 to-purple-600 scale-105 text-white"
+                              : "bg-gray-200 text-black hover:bg-gradient-to-r hover:from-gray-300 hover:to-gray-400"
+                            }`}
+                          onClick={() => setAmount(val)}
+                        >
+                          {val / 1000}k
+                        </span>
+                      ))}
+                    </div>
+
+                    {/* Giá trị hiển thị */}
+                    <div className="flex flex-col items-center mt-6 space-y-1">
+                      <span className="text-xl font-bold bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent px-4">
+                        {amount.toLocaleString()} VND
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Nút hành động */}
+                <div className="flex justify-between gap-6 mt-2">
+                  <button
+                    onClick={() => dispatch(closePopup())}
+                    className="px-6 py-3 bg-gradient-to-r from-red-400 to-red-600 text-gray-700 font-medium rounded-lg hover:brightness-110 transition duration-200 focus:ring-2 focus:ring-red-300"
+                  >
+                    Hủy
+                  </button>
+                  <button
+                    onClick={handlePayment}
+                    className="px-6 py-3 bg-gradient-to-r from-blue-400 to-blue-600 text-white font-medium rounded-lg shadow-md hover:brightness-110 hover:from-blue-600 hover:to-blue-700 transition duration-200 focus:ring-2 focus:ring-blue-300"
+                  >
+                    Thanh toán
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
         </main>
 
         {/* Right Sidebar */}
@@ -2014,6 +2178,11 @@ const Home = () => {
               <>
                 <h2 className="text-l mb-6 text-center">
                   Chào bạn, {userInfo?.name}!
+                  {userInfo?.role === "freeVersion" ? (
+                    <p className="text-sm font-semibold text-gray-600">Bạn đang ở phiên bản miễn phí</p>
+                  ) : (
+                    <p className="text-sm font-semibold text-gray-600">Bạn đang ở phiên bản trả phí</p>
+                  )}
                 </h2>
                 <div className="max-w-lg mx-auto p-4 mb-2 border rounded-md">
                   <textarea

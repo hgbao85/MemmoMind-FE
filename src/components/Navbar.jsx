@@ -15,13 +15,15 @@ import api from "../services/api";
 
 const Navbar = ({ userInfo = { name: "Guest", totalCost: 0, totalPurchasedCost: 0, freeCost: 0, totalFreeCost: 0, role: "freeVersion" }, onSearchNote, handleClearSearch }) => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [progress, setProgress] = useState(0); // Thanh phần trăm tổng chi phí đã sử dụng
+  const [progress, setProgress] = useState(0);
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  // Cập nhật progress mỗi khi userInfo.totalCost thay đổi, dựa trên role
+  // Cập nhật loading bar khi userInfo.totalCost thay đổi theo role
   useEffect(() => {
+    if (!userInfo) return;
+
     if (userInfo.role === "freeVersion") {
       if (userInfo.totalFreeCost !== 0 && userInfo.freeCost !== undefined) {
         const percentage = (userInfo.freeCost / userInfo.totalFreeCost) * 100;
@@ -83,7 +85,7 @@ const Navbar = ({ userInfo = { name: "Guest", totalCost: 0, totalPurchasedCost: 
         />
 
         {/* Thanh tiến trình hiển thị mức sử dụng chi phí */}
-        <div className="w-1/4 mr-10">
+        <div className="w-1/4 mr-10 text-center">
           <p className="text-sm text-center text-gray-600">Chi phí bạn đã sử dụng AI</p>
           <div className="w-full bg-gray-300 rounded-full h-6 shadow-lg relative overflow-hidden border border-gray-400">
             {/* Hiệu ứng thanh progress */}
