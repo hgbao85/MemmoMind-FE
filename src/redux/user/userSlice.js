@@ -36,6 +36,17 @@ const userSlice = createSlice({
       state.errorDispatch = action.payload
       state.loading = false
     },
+    
+    // New reducer to update the user's cost information
+    updateUserCost: (state, action) => {
+      if (state.currentUser && state.currentUser.user) {
+        if (state.currentUser.user.role === "freeVersion") {
+          state.currentUser.user.freeCost = action.payload;
+        } else if (state.currentUser.user.role === "costVersion") {
+          state.currentUser.user.totalCost = action.payload;
+        }
+      }
+    },
   },
 })
 
@@ -46,6 +57,7 @@ export const {
   signoutFailure,
   signoutStart,
   signoutSuccess,
+  updateUserCost,
 } = userSlice.actions
 
 export default userSlice.reducer
