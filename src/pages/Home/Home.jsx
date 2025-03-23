@@ -29,6 +29,7 @@ import { useMemo } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { closePopup } from "../../redux/user/paymentSlice";
 import { updateUserCost } from "../../redux/user/userSlice";
+import ChatbaseWidget from "../../components/ChatBase/ChatbaseWidget";
 
 const Home = () => {
   const { currentUser } = useSelector((state) => state.user);
@@ -2509,6 +2510,7 @@ const Home = () => {
           }
         </aside>
       </div>
+      <ChatbaseWidget />
     </>
   );
 };
