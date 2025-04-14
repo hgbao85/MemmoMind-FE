@@ -1,141 +1,149 @@
-import React from 'react';
-import logo from './../../assets/images/logomoi4m.png';
-import Hoanavt from './../../assets/images/Hoanavt.jpg';
-import Baoavt from './../../assets/images/Baoavt.jpg';
-import Khanhavt from './../../assets/images/Khanhavt.png';
-import Vietavt from './../../assets/images/Vietavt.png';
-import Vyavt from './../../assets/images/Vyavt.png';
-import Hangavt from './../../assets/images/Hangavt.jpg';
+"use client"
+
+import React from "react"
+import { Link } from "react-router-dom"
+import logo from "./../../assets/images/logomoi4m.png"
+import Hoanavt from "./../../assets/images/Hoanavt.jpg"
+import Baoavt from "./../../assets/images/Baoavt.jpg"
+import Khanhavt from "./../../assets/images/Khanhavt.png"
+import Vietavt from "./../../assets/images/Vietavt.png"
+import Vyavt from "./../../assets/images/Vyavt.png"
+import Hangavt from "./../../assets/images/Hangavt.jpg"
+import { Pencil, WalletCardsIcon as Cards, FileText, Network, ArrowRight } from "lucide-react"
 
 const Welcome = () => {
-    const [activeFeature, setActiveFeature] = React.useState(null);
+    const [activeFeature, setActiveFeature] = React.useState(null)
 
     const features = [
         {
-            icon: (
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 mx-auto text-blue-500 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
-                </svg>
-            ),
-            description: "Tạo ghi chú nhanh chóng",
+            icon: <Pencil className="h-8 w-8 mx-auto text-blue-500" />,
+            title: "Ghi chú nhanh",
+            description: "Tạo ghi chú nhanh chóng và hiệu quả",
         },
         {
-            icon: (
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 mx-auto text-green-500 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6a2 2 0 012-2h12a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V6z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16M4 12h16" />
-                </svg>
-            ),
-            description: "Tạo Flashcard",
+            icon: <Cards className="h-8 w-8 mx-auto text-green-500" />,
+            title: "Thẻ ghi nhớ",
+            description: "Tạo thẻ ghi nhớ cho học tập hiệu quả hơn",
         },
         {
-            icon: (
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 mx-auto text-purple-500 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 10h16M4 14h16M4 18h7" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 18h6" />
-                </svg>
-            ),
-            description: "Tóm tắt nội dung chính",
+            icon: <FileText className="h-8 w-8 mx-auto text-purple-500" />,
+            title: "Tóm tắt",
+            description: "Tóm tắt nội dung chính tự động",
         },
         {
-            icon: (
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 mx-auto text-yellow-500 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <circle cx="12" cy="12" r="3" strokeWidth="2" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3v3m0 12v3m9-9h-3m-12 0H3m2.83-7.17l2.12 2.12m8.49 8.49l2.12 2.12m0-12.73l-2.12 2.12m-8.49 8.49l-2.12 2.12" />
-                </svg>
-            ),
-            description: "Vẽ MindMap",
+            icon: <Network className="h-8 w-8 mx-auto text-amber-500" />,
+            title: "Sơ đồ tư duy",
+            description: "Tạo bản đồ tư duy trực quan để sắp xếp các ý tưởng",
         },
-    ];
+    ]
 
     return (
-        <div className="flex flex-col justify-between items-center min-h-screen bg-customGray pt-[100px]">
-            <div className="flex flex-col md:flex-row justify-center items-start w-full px-8 mt-12 animate-fade-in">
+        <div className="flex flex-col min-h-screen bg-[#f0f5ff]">
+            {/* Hero Section */}
+            <main className="flex-grow container mx-auto px-6 pt-12">
+                <div className="flex flex-col md:flex-row items-center justify-between gap-12 ml-8">
+                    {/* Left Column - Logo and Welcome Text */}
+                    <div className="md:w-1/2 text-center md:text-left">
+                        <div className="flex items-center justify-center md:justify-start mb-6">
+                            <img src={logo || "/placeholder.svg"} alt="NotePlus Logo" className="h-20" />
+                        </div>
+                        <h1 className="text-4xl font-bold text-[#1f1c2f] mb-4">Chào mừng đến với Memmomind</h1>
+                        <p className="text-xl text-gray-600 mb-8">
+                            Giải pháp ghi chép tối ưu, tổ chức ý tưởng, tạo thẻ nhớ, và bứt phá sáng tạo!
+                        </p>
+                        <Link
+                            to="/login"
+                            className="inline-flex items-center px-8 py-4 bg-[#1e2a4a] text-white rounded-lg hover:bg-[#1f1c2f] transition-colors"
+                        >
+                            Trải nghiệm ngay <ArrowRight className="ml-2 h-5 w-5" />
+                        </Link>
+                    </div>
 
-                <div className="text-center md:w-1/2">
-                    <img src={logo} alt="MemmoMind Logo" className="w-96 mx-auto" />
-                    <p className="text-xl mt-6 text-gray-800">
-                        Chào mừng bạn đến với thế giới Note cùng MEMMOMIND
-                        <span className="inline-block ml-2" role="img" aria-label="smile">😊</span>
-                    </p>
-                </div>
-
-                <div className="md:w-1/2 mt-8 md:mt-0 md:pl-12">
-                    <div className="text-left">
-                        <h2 className="text-2xl font-bold text-gray-800 mb-4">Tính năng nổi bật</h2>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Right Column - Features */}
+                    <div className="md:w-1/2 bg-white rounded-2xl shadow-md p-4">
+                        <h2 className="text-2xl font-bold text-[#1f1c2f] m-6">Các tính năng chính</h2>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                             {features.map((feature, index) => (
                                 <div
                                     key={index}
-                                    className={`bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 cursor-pointer transform
-                                    ${activeFeature === index ? 'scale-110' : ''}`}
+                                    className={`bg-gray-50 p-2 rounded-lg border shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer ${activeFeature === index ? "ring-2 ring-[#1e2a4a]" : ""
+                                        }`}
                                     onClick={() => setActiveFeature(activeFeature === index ? null : index)}
                                 >
-                                    <div className={`transition-all duration-300 ${activeFeature === index ? 'hidden' : 'block'}`}>
-                                        {feature.icon}
-                                    </div>
-                                    <div className={`text-gray-700 transition-all duration-300
-                                        ${activeFeature === index ? 'opacity-100 scale-100 text-center' : 'opacity-0 scale-95 hidden'}`}
-                                    >
-                                        {feature.description}
+                                    <div className="flex flex-col items-center text-center">
+                                        <div className="mb-3">{feature.icon}</div>
+                                        <h3 className="font-medium text-[#1e2a4a] mb-2">{feature.title}</h3>
+                                        <p
+                                            className={`text-gray-600 text-sm transition-opacity duration-300 ${activeFeature === index ? "opacity-100" : "opacity-0 h-0 overflow-hidden"
+                                                }`}
+                                        >
+                                            {feature.description}
+                                        </p>
                                     </div>
                                 </div>
                             ))}
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <a
-                href="/login"
-                className="inline-block px-8 py-3 bg-customGray font-bold text-black rounded-md text-lg hover:bg-gray-400 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 border-2 border-gray-400 animate-pulse"
-            >
-                Trải nghiệm ngay ➜
-            </a>
+                {/* Testimonials Section */}
+                <div className="mt-16 bg-white rounded-lg shadow-md py-3">
+                    <h2 className="text-2xl font-bold text-[#1f1c2f] mb-4 text-center">Đội ngũ của chúng tôi</h2>
+                    <div className="flex flex-wrap justify-center gap-6">
+                        {[
+                            { img: Vyavt, name: "Tường Vy", role: "Marketing", link: "https://www.facebook.com/me.tuongvy170423/" },
+                            { img: Hangavt, name: "Thu Hằng", role: "Marketing", link: "https://www.facebook.com/profile.php?id=100010611695553" },
+                            { img: Vietavt, name: "Quốc Việt", role: "Developer", link: "https://www.linkedin.com/in/vietlequoc-69619b2bb/" },
+                            { img: Khanhavt, name: "Quốc Khánh", role: "Developer", link: "https://www.facebook.com/profile.php?id=100030005325166" },
+                            { img: Hoanavt, name: "Trung Hoan", role: "Developer", link: "https://www.facebook.com/caotrunghoan203" },
+                            { img: Baoavt, name: "Gia Bảo", role: "Developer", link: "https://www.facebook.com/fx.baohg/" },
+                        ].map((person, index) => (
+                            <a
+                                key={index}
+                                href={person.link}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex flex-col items-center p-2 hover:bg-gray-50 rounded-lg transition-colors"
+                            >
+                                <img
+                                    src={person.img || "/placeholder.svg"}
+                                    alt={`${person.name}'s Avatar`}
+                                    className="w-16 h-16 rounded-full object-cover border-2 border-[#1e2a4a]"
+                                />
+                                <h3 className="mt-2 font-medium text-[#1e2a4a]">{person.name}</h3>
+                                <p className="text-sm text-gray-500">{person.role}</p>
+                            </a>
+                        ))}
+                    </div>
+                </div>
+            </main>
 
             {/* Footer */}
-            <footer className="bg-customRedGray w-full text-center p-4 flex flex-col md:flex-row justify-between items-center mt-12">
+            <footer className="bg-[#1e2a4a] text-white py-4">
+                <div className="container mx-auto px-6">
+                    <div className="flex flex-col md:flex-row justify-between items-center">
+                        <div className="mb-4 md:mb-0">
+                            <a
+                                href="https://www.facebook.com/profile.php?id=61572800944085"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center space-x-2 hover:text-gray-300 transition-colors"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M18.77 7.46H14.5v-1.9c0-.9.6-1.1 1-1.1h3V.5h-4.33C10.24.5 9.5 3.44 9.5 5.32v2.15h-3v4h3v12h5v-12h3.85l.42-4z" />
+                                </svg>
+                                <span>Theo dõi chúng tôi tại đây!</span>
+                            </a>
+                        </div>
 
-                <div className="flex flex-1 justify-start items-center">
-                    <a
-                        href="https://www.facebook.com/profile.php?id=61572800944085"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center space-x-1 text-white hover:text-black transition duration-300"
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M18.77 7.46H14.5v-1.9c0-.9.6-1.1 1-1.1h3V.5h-4.33C10.24.5 9.5 3.44 9.5 5.32v2.15h-3v4h3v12h5v-12h3.85l.42-4z" />
-                        </svg>
-                        <span className="text-sm">Theo dõi chúng tôi tại đây</span>
-                    </a>
-                </div>
-
-                <div className="flex flex-1 justify-center space-x-2">
-                    {[
-                        { img: Vyavt, link: "https://www.facebook.com/me.tuongvy170423/" },
-                        { img: Hangavt, link: "https://www.facebook.com/profile.php?id=100010611695553" },
-                        { img: Vietavt, link: "https://www.linkedin.com/in/vietlequoc-69619b2bb/" },
-                        { img: Khanhavt, link: "https://www.facebook.com/profile.php?id=100030005325166" },
-                        { img: Hoanavt, link: "https://www.facebook.com/caotrunghoan203" },
-                        { img: Baoavt, link: "https://www.facebook.com/fx.baohg/" },
-                    ].map((person, index) => (
-                        <a key={index} href={person.link} target="_blank" rel="noopener noreferrer">
-                            <img
-                                src={person.img}
-                                alt={`Avatar ${index + 1}`}
-                                className="w-8 h-8 rounded-full object-cover border-2 border-white hover:border-blue-400 transition duration-300"
-                            />
-                        </a>
-                    ))}
-                </div>
-
-                <div className="flex flex-1 justify-end items-center">
-                    <h3 className="text-sm text-white">© 2025 MemmoMind.io.vn</h3>
+                        <div>
+                            <p className="text-sm">© 2025 Memmomind. Tất cả quyền đã được bảo lưu.</p>
+                        </div>
+                    </div>
                 </div>
             </footer>
         </div>
-    );
-};
+    )
+}
 
-export default Welcome;
+export default Welcome
