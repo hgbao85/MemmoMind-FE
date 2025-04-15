@@ -3,12 +3,6 @@
 import React from "react"
 import { Link } from "react-router-dom"
 import logo from "./../../assets/images/logomoi4m.png"
-import Hoanavt from "./../../assets/images/Hoanavt.jpg"
-import Baoavt from "./../../assets/images/Baoavt.jpg"
-import Khanhavt from "./../../assets/images/Khanhavt.png"
-import Vietavt from "./../../assets/images/Vietavt.png"
-import Vyavt from "./../../assets/images/Vyavt.png"
-import Hangavt from "./../../assets/images/Hangavt.jpg"
 import { Pencil, WalletCardsIcon as Cards, FileText, Network, ArrowRight } from "lucide-react"
 
 const Welcome = () => {
@@ -40,15 +34,15 @@ const Welcome = () => {
     return (
         <div className="flex flex-col min-h-screen bg-[#f0f5ff]">
             {/* Hero Section */}
-            <main className="flex-grow container mx-auto px-6 pt-12">
+            <main className="flex-grow container mx-auto px-6 pt-28">
                 <div className="flex flex-col md:flex-row items-center justify-between gap-12 ml-8">
                     {/* Left Column - Logo and Welcome Text */}
                     <div className="md:w-1/2 text-center md:text-left">
-                        <div className="flex items-center justify-center md:justify-start mb-6">
+                        <div className="flex items-center justify-center md:justify-start mb-12">
                             <img src={logo || "/placeholder.svg"} alt="NotePlus Logo" className="h-20" />
                         </div>
-                        <h1 className="text-4xl font-bold text-[#1f1c2f] mb-4">Chào mừng đến với Memmomind</h1>
-                        <p className="text-xl text-gray-600 mb-8">
+                        <h1 className="text-4xl font-bold text-[#1f1c2f] mb-8">Chào mừng bạn đến với Memmomind</h1>
+                        <p className="text-xl text-gray-600 mb-12">
                             Giải pháp ghi chép tối ưu, tổ chức ý tưởng, tạo thẻ nhớ, và bứt phá sáng tạo!
                         </p>
                         <Link
@@ -83,37 +77,6 @@ const Welcome = () => {
                                 </div>
                             ))}
                         </div>
-                    </div>
-                </div>
-
-                {/* Testimonials Section */}
-                <div className="mt-16 bg-white rounded-lg shadow-md py-3">
-                    <h2 className="text-2xl font-bold text-[#1f1c2f] mb-4 text-center">Đội ngũ của chúng tôi</h2>
-                    <div className="flex flex-wrap justify-center gap-6">
-                        {[
-                            { img: Vyavt, name: "Tường Vy", role: "Marketing", link: "https://www.facebook.com/me.tuongvy170423/" },
-                            { img: Hangavt, name: "Thu Hằng", role: "Marketing", link: "https://www.facebook.com/profile.php?id=100010611695553" },
-                            { img: Vietavt, name: "Quốc Việt", role: "Developer", link: "https://www.linkedin.com/in/vietlequoc-69619b2bb/" },
-                            { img: Khanhavt, name: "Quốc Khánh", role: "Developer", link: "https://www.facebook.com/profile.php?id=100030005325166" },
-                            { img: Hoanavt, name: "Trung Hoan", role: "Developer", link: "https://www.facebook.com/caotrunghoan203" },
-                            { img: Baoavt, name: "Gia Bảo", role: "Developer", link: "https://www.facebook.com/fx.baohg/" },
-                        ].map((person, index) => (
-                            <a
-                                key={index}
-                                href={person.link}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex flex-col items-center p-2 hover:bg-gray-50 rounded-lg transition-colors"
-                            >
-                                <img
-                                    src={person.img || "/placeholder.svg"}
-                                    alt={`${person.name}'s Avatar`}
-                                    className="w-16 h-16 rounded-full object-cover border-2 border-[#1e2a4a]"
-                                />
-                                <h3 className="mt-2 font-medium text-[#1e2a4a]">{person.name}</h3>
-                                <p className="text-sm text-gray-500">{person.role}</p>
-                            </a>
-                        ))}
                     </div>
                 </div>
             </main>

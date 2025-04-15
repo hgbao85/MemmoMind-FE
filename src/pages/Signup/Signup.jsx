@@ -28,27 +28,27 @@ const Signup = () => {
     e.preventDefault()
 
     if (!firstName || !lastName) {
-      setError("Please enter your full name")
+      setError("Vui lòng nhập tên đầy đủ của bạn")
       return
     }
 
     if (!validateEmail(email)) {
-      setError("Please enter a valid email address")
+      setError("Vui lòng nhập địa chỉ email hợp lệ")
       return
     }
 
     if (!password) {
-      setError("Please enter a password")
+      setError("Vui lòng nhập mật khẩu!")
       return
     }
 
     if (password !== confirmPassword) {
-      setError("Passwords do not match")
+      setError("Mật khẩu và xác nhận mật khẩu không khớp!")
       return
     }
 
     if (!agreeTerms) {
-      setError("You must agree to the terms of use")
+      setError("Bạn phải đồng ý với các điều khoản sử dụng")
       return
     }
 

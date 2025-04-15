@@ -23,7 +23,7 @@ const ResetPassword = () => {
 
   useEffect(() => {
     if (!token) {
-      setError("Invalid reset token!")
+      setError("Mã xác thực không hợp lệ!")
       navigate("/login")
     }
   }, [token, navigate])
@@ -31,11 +31,11 @@ const ResetPassword = () => {
   const handleResetPassword = async (e) => {
     e.preventDefault()
     if (!newPassword || !confirmPassword) {
-      setError("Please enter your new password and confirm it!")
+      setError("Vui lòng nhập mật khẩu và xác nhận mật khẩu!")
       return
     }
     if (newPassword !== confirmPassword) {
-      setError("Passwords do not match!")
+      setError("Mật khẩu và xác nhận mật khẩu không khớp!")
       return
     }
     setError("")
@@ -70,8 +70,8 @@ const ResetPassword = () => {
           </div>
         </div>
 
-        <h1 className="text-2xl font-bold text-center mb-2">Reset Password</h1>
-        <p className="text-gray-500 text-center mb-6">Create a new password for your account.</p>
+        <h1 className="text-2xl font-bold text-center mb-2">Đặt lại mật khẩu</h1>
+        <p className="text-gray-500 text-center mb-6">Tạo một mật khẩu mới cho tài khoản của bạn.</p>
 
         <form onSubmit={handleResetPassword}>
           <div className="mb-4 relative">
@@ -89,11 +89,11 @@ const ResetPassword = () => {
               <label
                 htmlFor="newPassword"
                 className={`absolute text-gray-500 duration-300 transform ${newPasswordFocused || newPassword
-                    ? "text-xs -translate-y-4 top-2 left-2 bg-white px-1"
-                    : "text-base top-3 left-4"
+                  ? "text-xs -translate-y-4 top-2 left-2 bg-white px-1"
+                  : "text-base top-3 left-4"
                   } transition-all pointer-events-none`}
               >
-                New Password
+                Mật khẩu mới
               </label>
               <button
                 type="button"
@@ -156,11 +156,11 @@ const ResetPassword = () => {
               <label
                 htmlFor="confirmPassword"
                 className={`absolute text-gray-500 duration-300 transform ${confirmPasswordFocused || confirmPassword
-                    ? "text-xs -translate-y-4 top-2 left-2 bg-white px-1"
-                    : "text-base top-3 left-4"
+                  ? "text-xs -translate-y-4 top-2 left-2 bg-white px-1"
+                  : "text-base top-3 left-4"
                   } transition-all pointer-events-none`}
               >
-                Confirm Password
+                Xác nhận mật khẩu
               </label>
               <button
                 type="button"
@@ -214,7 +214,7 @@ const ResetPassword = () => {
             type="submit"
             className="w-full py-3 bg-[#1e2a4a] text-white rounded-lg hover:bg-[#2a3a5a] transition-colors"
           >
-            Reset Password
+            Xác nhận
           </button>
         </form>
       </div>
@@ -225,13 +225,13 @@ const ResetPassword = () => {
             <div className="flex justify-center mb-4">
               <CheckCircle className="h-16 w-16 text-green-500" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">Password Updated!</h2>
-            <p className="text-gray-600 mb-6">Your password has been successfully reset.</p>
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">Mật khẩu đã được cập nhật!</h2>
+            <p className="text-gray-600 mb-6">Bạn đã đặt lại mật khẩu thành công.</p>
             <button
               onClick={closeModal}
               className="px-6 py-3 bg-[#1e2a4a] text-white rounded-lg hover:bg-[#2a3a5a] transition-colors"
             >
-              Back to Login
+              Trở về trang Đăng nhập
             </button>
           </div>
         </div>
