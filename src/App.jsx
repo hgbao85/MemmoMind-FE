@@ -10,7 +10,12 @@ import PaymentCancel from "./pages/Payment/PaymentCancel";
 import PaymentSuccess from "./pages/Payment/PaymentSuccess";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/ReactToastify.css";
-
+import SummarizePage from "./pages/AIFeatures/Summarize";
+import MindmapPage from "./pages/AIFeatures/Mindmap";
+import PowerPointPage from "./pages/AIFeatures/Powerpoint";
+import FlashcardsPage from "./pages/AIFeatures/Flashcards";
+import MultipleChoicePage from "./pages/AIFeatures/Multiplechoice";
+import SolvePage from "./pages/AIFeatures/Solve"
 
 const App = () => {
   return (
@@ -25,6 +30,12 @@ const App = () => {
         <Route path="/verify-email" element={<VerifyEmail />} />
         <Route path="/payment/cancel" element={<PaymentCancel />} />
         <Route path="/payment/success" element={<PaymentSuccess />} />
+        <Route path="/summarize" element={<SummarizePage />} />
+        <Route path="/mindmap" element={<MindmapPage />} />
+        <Route path="/powerpoint" element={<PowerPointPage />} />
+        <Route path="/flashcards" element={<FlashcardsPage />} />
+        <Route path="/multiplechoice" element={<MultipleChoicePage />} />
+        <Route path="/solve" element={<SolvePage />} />
       </Routes>
       <ToastContainer position="top-center" />
     </BrowserRouter>
