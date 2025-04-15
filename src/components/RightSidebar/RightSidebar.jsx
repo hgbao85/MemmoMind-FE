@@ -20,13 +20,12 @@ const RightSidebar = ({
   handleGenerateFlashCard,
   handleGenerateSolve,
   handleGeneratePowerpoint,
-  handleGenerateMultipleChoice
+  handleGenerateMultipleChoice,
 }) => {
   return (
     <aside
-      className={`transition-all duration-300 ${
-        isRightSidebarOpen ? "w-1/5" : "w-16"
-      } h-full bg-[#C8BBBB] p-4 relative shadow-md`}
+      className={`transition-all duration-300 ${isRightSidebarOpen ? "w-1/5" : "w-16"
+        } h-full bg-[#C8BBBB] p-4 relative shadow-md`}
       style={{
         position: "absolute",
         right: 0,
