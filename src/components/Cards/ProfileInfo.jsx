@@ -1,15 +1,15 @@
-import PropTypes from "prop-types";
+// import PropTypes from "prop-types";
 // import { IoMdLogOut } from "react-icons/io";
 import { useEffect, useRef, useState } from "react";
-import { FaUserCircle, FaRegCommentDots } from "react-icons/fa";
+import { FaUserCircle } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 import api from "../../services/api";
 import { toast } from "react-toastify";
 // import { openPopup } from "../../redux/user/paymentSlice";
 
 
-const ProfileInfo = ({ onLogout }) => {
+const ProfileInfo = () => {
   // const dispatch = useDispatch();
   const { currentUser } = useSelector((state) => state.user);
   const navigate = useNavigate();
@@ -75,20 +75,19 @@ const ProfileInfo = ({ onLogout }) => {
         <div className="w-12 h-12 flex items-center justify-center rounded-full text-slate-950 font-medium">
           <FaUserCircle className="text-2xl text-slate-950" />
         </div>
+      </div>
+      <div className="text-l">
+        {userInfo?.name}
+        {/* {userInfo?.role === "freeVersion" ? (
+            <p className="text-sm font-semibold text-gray-600">
+              Bạn đang ở phiên bản miễn phí
+            </p>
+          ) : (
+            <p className="text-sm font-semibold text-gray-600">
+              Bạn đang ở phiên bản trả phí
+            </p>
+          )} */}
 
-        <div className="text-l mb-6 text-center">
-          Chào bạn, {userInfo?.name}!
-          {/* {userInfo?.role === "freeVersion" ? (
-          <p className="text-sm font-semibold text-gray-600">
-            Bạn đang ở phiên bản miễn phí
-          </p>
-        ) : (
-          <p className="text-sm font-semibold text-gray-600">
-            Bạn đang ở phiên bản trả phí
-          </p>
-        )} */}
-
-        </div>
       </div>
 
 
@@ -108,10 +107,10 @@ const ProfileInfo = ({ onLogout }) => {
 // Add prop types validation
 ProfileInfo.propTypes = {
   // onLogout: PropTypes.func.isRequired,
-  userInfo: PropTypes.shape({
-    name: PropTypes.string,
-    // role: PropTypes.oneOf(['freeVersion', 'costVersion'])
-  }).isRequired,
+  // userInfo: PropTypes.shape({
+  //   name: PropTypes.string,
+  //   role: PropTypes.oneOf(['freeVersion', 'costVersion'])
+  // }).isRequired,
 };
 
 export default ProfileInfo;

@@ -1,9 +1,29 @@
 import PropTypes from 'prop-types';
 import { useDispatch } from 'react-redux';
 import { closePopup } from '../../redux/user/paymentSlice';
-
-const PaymentModal = ({ amount, setAmount, handlePayment }) => {
+import api from '../../services/api';
+const PaymentModal = ({ amount, setAmount }) => {
   const dispatch = useDispatch();
+
+  const handlePayment = async () => {
+    try {
+      const orderCode = Date.now();
+      const res = await api.post("/payment/create-payment", {
+        orderCode,
+        amount,
+        description: "Nap tien Memmomind",
+        cancelUrl: `${window.location.origin}/payment/cancel`,
+        returnUrl: `${window.location.origin}/payment/success?&amount=${amount}`,
+      });
+
+      if (res.data?.data?.checkoutUrl) {
+        dispatch(closePopup());
+        window.location.href = res.data.data.checkoutUrl;
+      }
+    } catch (error) {
+      console.error("Lỗi thanh toán:", error);
+    }
+  };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -113,7 +133,6 @@ const PaymentModal = ({ amount, setAmount, handlePayment }) => {
 PaymentModal.propTypes = {
   amount: PropTypes.number.isRequired,
   setAmount: PropTypes.func.isRequired,
-  handlePayment: PropTypes.func.isRequired
 };
 
 export default PaymentModal; 

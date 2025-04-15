@@ -1,4 +1,6 @@
+'use client'; // Đảm bảo chạy trong client component
 import PropTypes from 'prop-types';
+import { useLocation } from 'react-router-dom';
 import { MdOutlineFileUpload, MdOpenInNew, MdClose } from 'react-icons/md';
 
 const TextInput = ({
@@ -6,10 +8,31 @@ const TextInput = ({
   handleChange,
   handleFileUpload,
   handleRemoveFile,
+  handleSummarize,
+  handleGenerateMultipleChoice,
+  handleOther,
   pdfUrl,
   imageSrc,
-  charCount
+  charCount,
+  isSubmitting
 }) => {
+  const location = useLocation();
+  const pathname = location.pathname;
+
+  const isDisabled = !fileContent && !pdfUrl && !imageSrc;
+
+  const handleSubmit = () => {
+    if (pathname.includes('/summarize') && handleSummarize) {
+      handleSummarize();
+    } else if (pathname.includes('/multiplechoice') && handleGenerateMultipleChoice) {
+      handleGenerateMultipleChoice();
+    } else if (handleOther) {
+      handleOther(); // fallback hoặc các route khác
+    } else {
+      console.warn('Không tìm thấy hàm xử lý tương ứng với route:', pathname);
+    }
+  };
+
   return (
     <div className="max-w-lg mx-auto p-4 mb-2 border rounded-md">
       <textarea
@@ -24,11 +47,12 @@ const TextInput = ({
         }}
         maxLength={40000}
       ></textarea>
-      <div className="text-right">
+      <div className="text-right text-sm text-gray-500">
         {charCount}/{40000}
       </div>
-      <div className="flex justify-between items-center w-full">
-        <label className="cursor-pointer text-[13px] bg-blue-500 text-white px-2 py-2 mb-3 mt-3 rounded-lg hover:bg-blue-600 transition flex items-center gap-1">
+
+      <div className="flex flex-wrap justify-between items-center w-full mt-4 gap-2">
+        <label className="cursor-pointer text-sm bg-blue-500 text-white px-3 py-2 rounded-lg hover:bg-blue-600 transition flex items-center gap-1">
           <MdOutlineFileUpload className="text-lg" />
           Chọn tệp
           <input
@@ -39,13 +63,13 @@ const TextInput = ({
           />
         </label>
 
-        <div className="flex items-center space-x-3 ml-auto">
+        <div className="flex items-center space-x-2 ml-auto">
           {pdfUrl && (
             <a
               href={pdfUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="cursor-pointer text-[13px] bg-blue-500 text-white px-2 py-2 ml-2 rounded-lg hover:bg-blue-600 transition flex items-center gap-1"
+              className="text-sm bg-blue-500 text-white px-3 py-2 rounded-lg hover:bg-blue-600 transition flex items-center gap-1"
               title="Xem PDF đã upload"
             >
               <MdOpenInNew className="text-lg" />
@@ -58,7 +82,7 @@ const TextInput = ({
               href={imageSrc}
               target="_blank"
               rel="noopener noreferrer"
-              className="cursor-pointer text-[13px] bg-blue-500 text-white ml-2 px-2 py-2 rounded-lg hover:bg-blue-600 transition flex items-center gap-1"
+              className="text-sm bg-blue-500 text-white px-3 py-2 rounded-lg hover:bg-blue-600 transition flex items-center gap-1"
               title="Xem ảnh đã upload"
             >
               <MdOpenInNew className="text-lg" />
@@ -69,7 +93,7 @@ const TextInput = ({
           {(pdfUrl || imageSrc) && (
             <button
               onClick={handleRemoveFile}
-              className="bg-red-500 cursor-pointer text-white px-2 py-2 rounded-lg transition"
+              className="bg-red-500 text-white px-3 py-2 rounded-lg hover:bg-red-600 transition"
               title="Xóa tài liệu đã upload"
             >
               <MdClose className="text-md" />
@@ -77,6 +101,7 @@ const TextInput = ({
           )}
         </div>
       </div>
+
       {imageSrc && (
         <img
           src={imageSrc}
@@ -91,6 +116,19 @@ const TextInput = ({
           className="w-full mt-4 h-auto border rounded-md shadow-lg"
         />
       )}
+
+      <div className="mt-6 text-right">
+        <button
+          onClick={handleSubmit}
+          disabled={isDisabled || isSubmitting}
+          className={`px-6 py-2 rounded-lg text-white text-sm transition ${isDisabled || isSubmitting
+            ? 'bg-gray-400 cursor-not-allowed'
+            : 'bg-green-600 hover:bg-green-700'
+            }`}
+        >
+          {isSubmitting ? 'Đang gửi...' : 'Gửi'}
+        </button>
+      </div>
     </div>
   );
 };
@@ -100,9 +138,13 @@ TextInput.propTypes = {
   handleChange: PropTypes.func.isRequired,
   handleFileUpload: PropTypes.func.isRequired,
   handleRemoveFile: PropTypes.func.isRequired,
+  handleSummarize: PropTypes.func,
+  handleGenerateMultipleChoice: PropTypes.func,
+  handleOther: PropTypes.func,
   pdfUrl: PropTypes.string,
   imageSrc: PropTypes.string,
-  charCount: PropTypes.number
+  charCount: PropTypes.number,
+  isSubmitting: PropTypes.bool
 };
 
-export default TextInput; 
+export default TextInput;
