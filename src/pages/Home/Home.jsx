@@ -1,23 +1,5 @@
 /* eslint-disable no-unused-vars */
 import { useEffect, useState, useRef } from "react";
-import NoteCard from "../../components/Cards/NoteCard";
-import {
-  MdClose,
-  MdAdd,
-  MdOutlineMenu,
-  MdFavorite,
-  MdDelete,
-  MdHome,
-  MdArrowBack,
-  MdArrowForward,
-  MdOutlineFileUpload,
-  MdOpenInNew,
-  MdFileDownload,
-  MdRefresh
-} from "react-icons/md";
-import AddEditNotes from "./AddEditNotes";
-import { useNavigate } from "react-router-dom";
-import Navbar from "../../components/Navbar";
 import { toast } from "react-toastify";
 // import EmptyCard from "../../components/EmptyCard/EmptyCard";
 import api from "../../services/api";
@@ -29,7 +11,22 @@ import { useMemo } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { closePopup } from "../../redux/user/paymentSlice";
 import { updateUserCost } from "../../redux/user/userSlice";
+import { useNavigate } from "react-router-dom";
+import Navbar from "../../components/Navbar";
 import ChatbaseWidget from "../../components/ChatBase/ChatbaseWidget";
+
+// Import các component từ RightSidebar
+import RightSidebar from "../../components/RightSidebar/RightSidebar";
+import Summarize from "../../components/RightSidebar/Summarize";
+import Mindmap from "../../components/RightSidebar/Mindmap";
+import Flashcard from "../../components/RightSidebar/Flashcard";
+import Solve from "../../components/RightSidebar/Solve";
+import PowerPoint from "../../components/RightSidebar/PowerPoint";
+import MultipleChoice from "../../components/RightSidebar/MultipleChoice";
+
+// Import các component mới tạo
+import LeftSidebar from "../../components/LeftSidebar/LeftSidebar";
+import MainContent from "../../components/MainContent/MainContent";
 
 const Home = () => {
   const { currentUser } = useSelector((state) => state.user);
@@ -1556,959 +1553,108 @@ const Home = () => {
 
       <div className="flex h-screen" style={{ overflow: "hidden" }}>
         {/* Left Sidebar */}
-        <aside
-          className={`transition-all duration-300 ${isSidebarOpen ? "w-1/5" : "w-16"
-            } h-full bg-gray-100 p-4 relative shadow-md`}
-          style={{ backgroundColor: "#C8BBBB" }}
-        >
-          <div className="flex justify-between items-center">
-            {isSidebarOpen && (
-              <button
-                className="w-12 h-12 flex items-center justify-center rounded-md"
-                onClick={handleShowAllNotes}
-                title="Tất cả ghi chú"
-              >
-                <MdHome
-                  className={`text-[24px] ${showAllNotes ? "text-white" : "text-black hover:text-white"
-                    }`}
-                />
-              </button>
-            )}
-
-            {isSidebarOpen && (
-              <button
-                className="w-12 h-12 flex items-center justify-center rounded-md"
-                onClick={handleAddNote}
-                title="Tạo ghi chú"
-              >
-                <MdAdd className="text-[24px] text-black hover:text-white" />
-              </button>
-            )}
-
-            {isSidebarOpen && (
-              <button
-                className="w-12 h-12 flex items-center justify-center rounded-md"
-                onClick={handleShowPinned}
-                title="Ghi chú được đánh dấu"
-              >
-                <MdFavorite
-                  className={`text-[24px] ${showPinned ? "text-red-500" : "text-black hover:text-white"
-                    }`}
-                />
-              </button>
-            )}
-
-            {isSidebarOpen && (
-              <button
-                className="w-12 h-12 flex items-center justify-center rounded-md"
-                onClick={handleShowDeleted}
-                title="Ghi chú đã xóa"
-              >
-                <MdDelete
-                  className={`text-[24px] ${showDeleted
-                    ? "text-blue-500"
-                    : "text-black hover:text-white"
-                    }`}
-                />
-              </button>
-            )}
-
-            <button
-              className="w-12 h-12 flex items-center justify-center rounded-md"
-              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              title="Menu"
-            >
-              <MdOutlineMenu className="text-[24px] text-black hover:text-white" />
-            </button>
-          </div>
-
-          {isSidebarOpen && (
-            <>
-              <div className="mt-4 overflow-y-auto max-h-[calc(100vh-100px)]">
-                {isSearch && allNotes.length === 0 ? (
-                  <p className="text-center text-gray-500 mt-4">
-                    Oops! Không tìm thấy ghi chú nào phù hợp với tìm kiếm của
-                    bạn.
-                  </p>
-                ) : showPinned ? (
-                  pinnedNotes.map((note) => (
-                    <NoteCard
-                      key={note._id}
-                      title={note.title}
-                      date={note.createdAt}
-                      isPinned={note.isPinned}
-                      onEdit={() => handleEdit(note)}
-                      onDelete={() => moveToTrash(note._id)}
-                      onPinNote={() => updateIsPinned(note)}
-                    />
-                  ))
-                ) : showDeleted ? (
-                  deletedNotes.map((note) => (
-                    <NoteCard
-                      key={note._id}
-                      title={note.title}
-                      date={note.createdAt}
-                      isDeleted={true}
-                      onShow={() => handleShowNote(note)}
-                      onRestore={() => restoreNote(note._id)}
-                      onPermanentlyDelete={() =>
-                        permanentlyDeleteNote(note._id)
-                      }
-                    />
-                  ))
-                ) : (
-                  allNotes.map((note) => (
-                    <NoteCard
-                      key={note._id}
-                      title={note.title}
-                      date={note.createdAt}
-                      isPinned={note.isPinned}
-                      isDeleted={false}
-                      onEdit={() => handleEdit(note)}
-                      onDelete={() => moveToTrash(note._id)}
-                      onPinNote={() => updateIsPinned(note)}
-                    />
-                  ))
-                )}
-              </div>
-            </>
-          )}
-        </aside>
+        <LeftSidebar 
+          isSidebarOpen={isSidebarOpen}
+          setIsSidebarOpen={setIsSidebarOpen}
+          handleShowAllNotes={handleShowAllNotes}
+          handleAddNote={handleAddNote}
+          handleShowPinned={handleShowPinned}
+          handleShowDeleted={handleShowDeleted}
+          isSearch={isSearch}
+          showPinned={showPinned}
+          showDeleted={showDeleted}
+          showAllNotes={showAllNotes}
+          allNotes={allNotes}
+          pinnedNotes={pinnedNotes}
+          deletedNotes={deletedNotes}
+          handleEdit={handleEdit}
+          moveToTrash={moveToTrash}
+          updateIsPinned={updateIsPinned}
+          handleShowNote={handleShowNote}
+          restoreNote={restoreNote}
+          permanentlyDeleteNote={permanentlyDeleteNote}
+        />
 
         {/* Main Content */}
-        <main
-          className={`flex-1 p-5 overflow-y-auto h-full transition-all duration-300 ${isSidebarOpen ? "ml-0" : "ml-16"
-            }`}
-          style={{ margin: "auto", marginRight: rightSidebarWidth }}
-        >
-          {!isManuallyClosed && (
-            <AddEditNotes
-              key={formKey}
-              onClose={() => {
-                setNoteData(null);
-                setAddEditType("add");
-                setIsManuallyClosed(true);
-                handleAddNoteSuccess();
-                setFormKey((prev) => prev + 1);
-              }}
-              noteData={noteData}
-              type={addEditType}
-              getAllNotes={getAllNotes}
-            />
-          )}
-
-          {summary && (
-            <div className="relative mt-4 p-2 border rounded-md bg-gray-200">
-              <button
-                onClick={() => setSummary(null)}
-                className="absolute top-2 right-2 text-gray-600 hover:text-black"
-                aria-label="Close Summary"
-              >
-                <MdClose className="text-xl" />
-              </button>
-              <h2 className="text-lg font-bold text-gray-800 mb-3">Tóm tắt</h2>
-              <div
-                className="prose"
-                dangerouslySetInnerHTML={{
-                  __html: marked(summary),
-                }}
-              />
-              <button
-                onClick={() =>
-                  handleAddNote({ title: "Tóm tắt mới", content: summary })
-                }
-                className="mt-2 px-2 py-0.5 bg-green-500 text-white rounded-md hover:bg-green-600 flex items-center shadow-sm text-xs ml-auto"
-              >
-                <MdAdd className="inline-block mr-1 text-sm" />
-                Thêm vào ghi chú mới
-              </button>
-            </div>
-          )}
-
-          {mindmapHtml && (
-            <div
-              className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 p-4"
-              style={{ zIndex: 1000 }}
-            >
-              <div className="relative w-full max-w-5xl bg-white rounded-lg shadow-lg p-4">
-                <button
-                  onClick={() => setMindmapHtml(null)}
-                  className="absolute top-2 right-2 text-gray-600 hover:text-black"
-                  aria-label="Close Mindmap"
-                >
-                  <MdClose className="text-xl" />
-                </button>
-
-                <h2 className="text-xl font-bold text-center text-gray-800 mb-3">
-                  Sơ đồ tư duy
-                </h2>
-
-                <iframe
-                  srcDoc={mindmapHtml}
-                  className="w-full h-[510px] border-none rounded-md shadow"
-                  style={{
-                    display: "block",
-                    overflow: "hidden",
-                  }}
-                />
-
-                <div className="flex justify-end mt-3">
-                  <button
-                    onClick={saveMindmapAsHTML}
-                    className="px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 flex items-center shadow-sm text-sm"
-                  >
-                    <MdFileDownload className="inline-block mr-1 text-base" />
-                    Tải xuống
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {flashcard && flashcard.length > 0 && (
-            <div
-              className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 p-4"
-              style={{ zIndex: 1000 }}
-            >
-              <div className="relative w-full max-w-3xl bg-white rounded-lg shadow-lg p-6 flex flex-col items-center">
-                <button
-                  onClick={() => setFlashCard([])}
-                  className="absolute top-3 right-3 text-gray-600 hover:text-black"
-                  aria-label="Close Flashcard"
-                >
-                  <MdClose className="text-2xl" />
-                </button>
-
-                <h2 className="text-2xl font-bold text-gray-800 mb-4 text-center">
-                  Thẻ ghi nhớ
-                </h2>
-
-                <div className="flashcard-container w-full max-w-2xl">
-                  <div
-                    className={`flashcard ${isFlipped ? "flipped" : ""} ${isTransitioning ? "hidden" : ""
-                      }`}
-                    onClick={() => setIsFlipped(!isFlipped)}
-                  >
-                    <div className="front">
-                      <h3 className="text-lg font-semibold uppercase tracking-wide text-center">
-                        {topic}
-                      </h3>
-                      <p className="question text-xl font-bold text-gray-800 mt-4 text-center">
-                        {content?.Question?.[0] || "Không có dữ liệu"}
-                      </p>
-                    </div>
-                    <div className="back">
-                      <p className="answer text-xl font-bold text-gray-900 mt-4 text-center">
-                        {content?.Answer?.[0] || "Không có dữ liệu"}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex justify-between items-center w-full max-w-md mt-4">
-                  <button onClick={handlePrev} className="btn-arrow">
-                    <MdArrowBack className="text-3xl" />
-                  </button>
-                  <p className="text-lg font-semibold text-gray-700">
-                    {currentIndex + 1} / {flashcard.length}
-                  </p>
-                  <button onClick={handleNext} className="btn-arrow">
-                    <MdArrowForward className="text-3xl" />
-                  </button>
-                </div>
-
-                <div className="w-full flex justify-end mt-3">
-                  <button
-                    onClick={saveFlashcardAsHTML}
-                    className="px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 flex items-center shadow-sm text-sm"
-                  >
-                    <MdFileDownload className="inline-block mr-1 text-base" />
-                    Tải xuống
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {solve && (
-            <div className="relative mt-4 p-2 border rounded-md bg-gray-200">
-              <button
-                onClick={() => setSolve(null)}
-                className="absolute top-2 right-2 text-gray-600 hover:text-black"
-                aria-label="Close Solve"
-              >
-                <MdClose className="text-xl" />
-              </button>
-              <div className="markdown-preview">
-                <h3 className="text-lg font-semibold">Giải pháp:</h3>
-                <div
-                  className="break-words markdown-content"
-                  dangerouslySetInnerHTML={{
-                    __html: marked(solve || "", {
-                      breaks: true,
-                      gfm: true,
-                      sanitize: true,
-                    }),
-                  }}
-                />
-              </div>
-              <button
-                onClick={() =>
-                  handleAddNote({ title: "Giải pháp mới", content: solve })
-                }
-                className="mt-2 px-2 py-0.5 bg-green-500 text-white rounded-md hover:bg-green-600 flex items-center shadow-sm text-xs ml-auto"
-              >
-                <MdAdd className="inline-block mr-1 text-sm" />
-                Thêm vào ghi chú mới
-              </button>
-            </div>
-          )}
-
-          {powerpointPreview && (
-            <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-60 p-6 z-50 animate-fade-in">
-              <div className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl p-4">
-                {/* Nút đóng */}
-                <button
-                  onClick={() => {
-                    URL.revokeObjectURL(powerpointPreview.url);
-                    setPowerpointPreview("");
-                  }}
-                  className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 transition-transform transform hover:scale-110"
-                  aria-label="Đóng"
-                >
-                  <MdClose className="text-2xl" />
-                </button>
-
-                {/* Tiêu đề */}
-                <div className="text-center">
-                  <div className="mb-6">
-                    <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <svg
-                        className="w-8 h-8 text-blue-500"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                        />
-                      </svg>
-                    </div>
-                    <h2 className="text-3xl font-bold text-gray-800">
-                      Tạo PowerPoint thành công! 🎉
-                    </h2>
-                    <p className="text-gray-600 mt-1">
-                      File PowerPoint đã sẵn sàng để tải xuống
-                    </p>
-                  </div>
-
-                  {/* Hiển thị PDF */}
-                  <div className="relative border border-gray-300 rounded-lg overflow-hidden shadow-md bg-gray-50">
-                    <iframe
-                      src={`${powerpointPreview.url}#toolbar=0`}
-                      title="PDF Preview"
-                      className="w-full h-[400px] border-none rounded-md"
-                    />
-                  </div>
-
-                  {/* Nút tải xuống */}
-                  <button
-                    onClick={handleDownloadPowerpoint}
-                    className="w-full mt-6 px-6 py-4 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-lg flex items-center justify-center space-x-3 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-1"
-                  >
-                    <MdFileDownload className="text-2xl" />
-                    <span className="text-lg font-semibold">
-                      Tải xuống
-                    </span>
-                  </button>
-
-                  <p className="mt-3 text-sm text-gray-500">
-                    Nhấn vào nút trên để tải về file PowerPoint của bạn 📂
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {multipleChoice && multipleChoice.length > currentChoiceIndex && (
-            <div
-              className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 p-4"
-              style={{ zIndex: 1000 }}
-            >
-              <div className="relative w-full max-w-3xl bg-white rounded-lg shadow-lg p-6 flex flex-col items-center">
-                <button
-                  onClick={() => {
-                    setMultipleChoice([]); // Xóa danh sách câu hỏi
-                    setUserAnswers({}); // Xóa đáp án đã chọn
-                    setCurrentChoiceIndex(0); // Đặt lại về câu hỏi đầu tiên
-                    setSelectedAnswer(null); // Xóa lựa chọn hiện tại
-                    setIsAnswerCorrect(null); // Xóa trạng thái kiểm tra đúng/sai
-                  }}
-                  className="absolute top-3 right-3 text-gray-600 hover:text-black"
-                  aria-label="Close MultipleChoice"
-                >
-                  <MdClose className="text-2xl" />
-                </button>
-
-                <h2 className="text-2xl font-bold text-gray-800 mb-4 text-center">
-                  Câu hỏi trắc nghiệm
-                </h2>
-                <div className={`text-center transition-opacity duration-300 ${isTransitioning ? "opacity-0" : "opacity-100"}`}>
-                  <h3 className="text-lg font-semibold uppercase tracking-wide">
-                    {topicMulchoice}
-                  </h3>
-                  <p className="question text-xl font-bold text-gray-800 mt-4">
-                    {contentMulchoice.question}
-                  </p>
-                </div>
-
-
-                {(() => {
-                  const labels = ["A", "B", "C", "D"]; // Nhãn cho các đáp án
-                  const correctAnswer = contentMulchoice.correctAnswer;
-
-                  return (
-                    <div className="mt-4">
-                      {shuffledAnswers.map((answer, index) => (
-                        <button
-                          key={index}
-                          className={`block w-full text-left px-4 py-2 mt-2 rounded-md border 
-      ${selectedAnswer
-                              ? answer === contentMulchoice.correctAnswer
-                                ? "bg-green-500 text-white border-green-700"
-                                : selectedAnswer === contentMulchoice.correctAnswer
-                                  ? "bg-gray-300 text-gray-700 border-gray-500"
-                                  : answer === selectedAnswer
-                                    ? "bg-red-500 text-white border-red-700"
-                                    : "bg-gray-300 text-gray-700 border-gray-500"
-                              : "bg-gray-200 hover:bg-gray-300 border-gray-400"
-                            }`}
-                          disabled={selectedAnswer !== null}
-                          onClick={() => handleAnswerClick(answer)}
-                        >
-                          <strong>{["A", "B", "C", "D"][index]}.</strong> {answer}
-                        </button>
-                      ))}
-
-                    </div>
-                  );
-                })()}
-
-                {selectedAnswer !== null && (
-                  <div className="mt-4">
-                    {selectedAnswer === contentMulchoice.correctAnswer ? (
-                      <span className="text-green-600 font-bold">✅ Chính xác!</span>
-                    ) : (
-                      <span className="text-red-600 font-bold">
-                        ❌ Đáp án đúng là:{" "}
-                        {shuffledAnswers.includes(contentMulchoice.correctAnswer)
-                          ? ["A", "B", "C", "D"][shuffledAnswers.indexOf(contentMulchoice.correctAnswer)]
-                          : "Không xác định"}
-                      </span>
-                    )}
-                  </div>
-                )}
-
-
-
-                <div className="flex justify-between items-center w-full max-w-md mt-4">
-                  <button onClick={handlePrevmulchoice} className="btn-arrow">
-                    <MdArrowBack className="text-3xl" />
-                  </button>
-                  <p className="text-lg font-semibold text-gray-700">
-                    {currentChoiceIndex + 1} / {multipleChoice.length}
-                  </p>
-                  <button onClick={handleNextmulchoice} className="btn-arrow">
-                    <MdArrowForward className="text-3xl" />
-                  </button>
-                </div>
-
-                <div className="w-full flex justify-between mt-3">
-                  <button
-                    onClick={resetAllAnswers}
-                    className="px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600 flex items-center shadow-sm text-sm"
-                  >
-                    <MdRefresh className="inline-block mr-1 text-base" />
-                    Thử lại toàn bộ câu hỏi
-                  </button>
-                  <button
-                    onClick={saveMultipleChoiceAsHTML}
-                    className="px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 flex items-center shadow-sm text-sm"
-                  >
-                    <MdFileDownload className="inline-block mr-1 text-base" />
-                    Tải xuống
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {isPopupOpen && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-              <div className="bg-white p-8 rounded-xl shadow-xl w-[450px] max-w-lg">
-                <h3 className="text-2xl font-bold text-center mb-6">Nạp tiền vào tài khoản</h3>
-
-                {/* Hướng dẫn */}
-                <div className="bg-blue-50 p-4 rounded-lg mb-6 border border-blue-100">
-                  <p className="text-sm text-blue-800">
-                    Hướng dẫn: Kéo thả hoặc chọn mốc nạp từ 1.000VND đến 10.000VND. Số tiền nạp sẽ được quy đổi theo tỷ lệ:
-                  </p>
-                  <p className="font-semibold text-blue-900 mt-1">1.000VND: Khoảng 15 lần sử dụng các tính năng AI</p>
-                  <p className="text-red-500 font-bold mt-2 italic">Lưu ý: Số tiền bạn nạp vào sẽ hết hạn sau 24h kể từ lúc nạp tiền thành công.</p>
-                </div>
-
-                {/* Thanh kéo */}
-                <div className="mb-6">
-                  <p className="text-base font-medium text-gray-700 mb-4">Chọn số tiền muốn nạp</p>
-
-                  <div className="relative pt-2">
-                    {/* Container cho thanh kéo và các chấm */}
-                    <div className="relative h-6 flex items-center mb-3">
-                      {/* Input thực tế */}
-                      <input
-                        type="range"
-                        min="1000"
-                        max="10000"
-                        step="1000"
-                        value={amount}
-                        onChange={(e) => setAmount(Number(e.target.value))}
-                        className="absolute w-full h-6 opacity-0 cursor-pointer z-10"
-                      />
-
-                      {/* Thanh hiển thị phía sau */}
-                      <div className="absolute w-full h-3 bg-gray-200 rounded-full pointer-events-none"></div>
-
-                      {/* Thanh tiến trình */}
-                      <div
-                        className="absolute h-3 bg-blue-500 rounded-full transition-all duration-300"
-                        style={{
-                          width: `${((amount - 1000) / 9000) * 100}%`,
-                        }}
-                      ></div>
-
-                      {/* Các chấm */}
-                      <div className="absolute w-full">
-                        {[1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000].map((val, index) => (
-                          <div
-                            key={val}
-                            className={`absolute w-4 h-4 rounded-full transform -translate-x-1/2 -translate-y-1/2 transition-all duration-300 ${amount >= val ? "bg-blue-500 scale-125 border-2 border-white shadow-md" : "bg-gray-300"
-                              }`}
-                            style={{
-                              left: `${(index / 9) * 100}%`,
-                              top: "50%",
-                            }}
-                          />
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Giá trị min/max */}
-                    <div className="flex justify-between mt-3 px-1 text-sm font-medium">
-                      {[1000, 5000, 10000].map((val) => (
-                        <span
-                          key={val}
-                          className={`px-3 py-1 rounded-lg cursor-pointer transition-all font-medium shadow-md 
-        ${amount === val
-                              ? "bg-gradient-to-r from-blue-500 to-purple-600 scale-105 text-white"
-                              : "bg-gray-200 text-black hover:bg-gradient-to-r hover:from-gray-300 hover:to-gray-400"
-                            }`}
-                          onClick={() => setAmount(val)}
-                        >
-                          {val / 1000}k
-                        </span>
-                      ))}
-                    </div>
-
-                    {/* Giá trị hiển thị */}
-                    <div className="flex flex-col items-center mt-6 space-y-1">
-                      <span className="text-xl font-bold bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent px-4">
-                        {amount.toLocaleString()} VND
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Nút hành động */}
-                <div className="flex justify-between gap-6 mt-2">
-                  <button
-                    onClick={() => dispatch(closePopup())}
-                    className="px-6 py-3 bg-gradient-to-r from-red-400 to-red-600 text-gray-700 font-medium rounded-lg hover:brightness-110 transition duration-200 focus:ring-2 focus:ring-red-300"
-                  >
-                    Hủy
-                  </button>
-                  <button
-                    onClick={handlePayment}
-                    className="px-6 py-3 bg-gradient-to-r from-blue-400 to-blue-600 text-white font-medium rounded-lg shadow-md hover:brightness-110 hover:from-blue-600 hover:to-blue-700 transition duration-200 focus:ring-2 focus:ring-blue-300"
-                  >
-                    Thanh toán
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-        </main>
+        <MainContent 
+          isSidebarOpen={isSidebarOpen}
+          isRightSidebarOpen={isRightSidebarOpen}
+          isManuallyClosed={isManuallyClosed}
+          formKey={formKey}
+          noteData={noteData}
+          addEditType={addEditType}
+          setNoteData={setNoteData}
+          setAddEditType={setAddEditType}
+          setIsManuallyClosed={setIsManuallyClosed}
+          handleAddNoteSuccess={handleAddNoteSuccess}
+          setFormKey={setFormKey}
+          getAllNotes={getAllNotes}
+          amount={amount}
+          setAmount={setAmount}
+          handlePayment={handlePayment}
+          summary={summary}
+          setSummary={setSummary}
+          solve={solve}
+          setSolve={setSolve}
+          handleAddNote={handleAddNote}
+        />
 
         {/* Right Sidebar */}
-        <aside
-          className={`transition-all duration-300 ${isRightSidebarOpen ? "w-1/5" : "w-16"
-            } h-full bg-[#C8BBBB] p-4 relative shadow-md`
-          }
-          style={{
-            position: "absolute",
-            right: 0,
-            maxHeight: "100vh",
-            overflowY: "auto",
-          }}
-        >
-          <div className="flex justify-between items-center">
-            <button
-              className="w-12 h-12 flex items-center justify-center rounded-md"
-              onClick={() => setIsRightSidebarOpen(!isRightSidebarOpen)}
-              title="Menu"
-            >
-              <MdOutlineMenu className="text-[24px] text-black hover:text-white" />
-            </button>
-          </div>
-
-          {
-            isRightSidebarOpen && (
-              <>
-                <h2 className="text-l mb-6 text-center">
-                  Chào bạn, {userInfo?.name}!
-                  {userInfo?.role === "freeVersion" ? (
-                    <p className="text-sm font-semibold text-gray-600">Bạn đang ở phiên bản miễn phí</p>
-                  ) : (
-                    <p className="text-sm font-semibold text-gray-600">Bạn đang ở phiên bản trả phí</p>
-                  )}
-                </h2>
-                <div className="max-w-lg mx-auto p-4 mb-2 border rounded-md">
-                  <textarea
-                    className="w-full h-24 p-2 border rounded-md mb-2"
-                    placeholder="Nhập văn bản hoặc tải lên tài liệu (.txt, .pdf, .jpg, .png) có sẵn."
-                    value={fileContent}
-                    onChange={handleChange}
-                    style={{
-                      maxHeight: "500px",
-                      minHeight: "150px",
-                      resize: "vertical",
-                    }}
-                    maxLength={40000}
-                  ></textarea>
-                  <div className="text-right">
-                    {charCount}/{40000}
-                  </div>
-                  <div className="flex justify-between items-center w-full">
-                    <label className="cursor-pointer text-[13px] bg-blue-500 text-white px-2 py-2 mb-3 mt-3 rounded-lg hover:bg-blue-600 transition flex items-center gap-1">
-                      <MdOutlineFileUpload className="text-lg" />
-                      Chọn tệp
-                      <input
-                        type="file"
-                        accept=".txt,.pdf,image/*"
-                        onChange={handleFileUpload}
-                        className="hidden"
-                      />
-                    </label>
-
-                    <div className="flex items-center space-x-3 ml-auto">
-                      {pdfUrl && (
-                        <a
-                          href={pdfUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="cursor-pointer text-[13px] bg-blue-500 text-white px-2 py-2 ml-2 rounded-lg hover:bg-blue-600 transition flex items-center gap-1"
-                          title="Xem PDF đã upload"
-                        >
-                          <MdOpenInNew className="text-lg" />
-                          Xem PDF
-                        </a>
-                      )}
-
-                      {imageSrc && (
-                        <a
-                          href={imageSrc}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="cursor-pointer text-[13px] bg-blue-500 text-white ml-2 px-2 py-2 rounded-lg hover:bg-blue-600 transition flex items-center gap-1"
-                          title="Xem ảnh đã upload"
-                        >
-                          <MdOpenInNew className="text-lg" />
-                          Xem ảnh
-                        </a>
-                      )}
-
-                      {(pdfUrl || imageSrc) && (
-                        <button
-                          onClick={handleRemoveFile}
-                          className="bg-red-500 cursor-pointer text-white px-2 py-2 rounded-lg transition"
-                          title="Xóa tài liệu đã upload"
-                        >
-                          <MdClose className="text-md" />
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                  {imageSrc && (
-                    <img
-                      src={imageSrc}
-                      alt="Uploaded"
-                      className="w-1/2 h-auto my-4 border rounded-md"
-                    />
-                  )}
-                  {pdfUrl && (
-                    <iframe
-                      src={pdfUrl}
-                      title="PDF Viewer"
-                      className="w-full mt-4 h-auto border rounded-md shadow-lg"
-                    />
-                  )}
-                </div>
-
-                <div className="flex justify-between gap-2 pt-2">
-                  <button
-                    className={`flex-1 h-12 w-6 text-[10px] font-medium text-white bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 rounded-2xl flex items-center justify-center shadow-lg transition-transform transform hover:scale-105 ${loadingState.isLoading &&
-                      loadingState.action === "summarize"
-                      ? "opacity-75 cursor-wait"
-                      : ""
-                      }`}
-                    onClick={handleSummarize}
-                    disabled={loadingState.isLoading}
-                    title="Tạo tóm tắt"
-                  >
-                    {loadingState.isLoading &&
-                      loadingState.action === "summarize" ? (
-                      <div className="flex items-center space-x-2">
-                        <svg
-                          className="animate-spin h-2 w-2 text-white"
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                        >
-                          <circle
-                            className="opacity-25"
-                            cx="12"
-                            cy="12"
-                            r="10"
-                            stroke="currentColor"
-                            strokeWidth="4"
-                          ></circle>
-                          <path
-                            className="opacity-75"
-                            fill="currentColor"
-                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                          ></path>
-                        </svg>
-                        <span>Loading</span>
-                      </div>
-                    ) : (
-                      "Tóm Tắt"
-                    )}
-                  </button>
-
-                  <button
-                    className={`flex-1 h-12 w-6 text-[10px] font-medium text-white bg-gradient-to-r from-purple-500 to-purple-700 hover:from-purple-600 hover:to-purple-800 rounded-2xl flex items-center justify-center shadow-lg transition-transform transform hover:scale-105 ${loadingState.isLoading && loadingState.action === "mindmap"
-                      ? "opacity-75 cursor-wait"
-                      : ""
-                      }`}
-                    onClick={handleGenerateMindmap}
-                    disabled={loadingState.isLoading}
-                    title="Tạo sơ đồ tư duy"
-                  >
-                    {loadingState.isLoading &&
-                      loadingState.action === "mindmap" ? (
-                      <div className="flex items-center space-x-2">
-                        <svg
-                          className="animate-spin h-2 w-2 text-white"
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                        >
-                          <circle
-                            className="opacity-25"
-                            cx="12"
-                            cy="12"
-                            r="10"
-                            stroke="currentColor"
-                            strokeWidth="4"
-                          ></circle>
-                          <path
-                            className="opacity-75"
-                            fill="currentColor"
-                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                          ></path>
-                        </svg>
-                        <span>Loading</span>
-                      </div>
-                    ) : (
-                      "Mindmap"
-                    )}
-                  </button>
-
-                  <button
-                    className={`flex-1 h-12 w-6 text-[10px] font-medium text-white bg-gradient-to-r from-orange-500 to-orange-700 hover:from-orange-600 hover:to-orange-800 rounded-2xl flex items-center justify-center shadow-lg transition-transform transform hover:scale-105 ${loadingState.isLoading &&
-                      loadingState.action === "flashcard"
-                      ? "opacity-75 cursor-wait"
-                      : ""
-                      }`}
-                    onClick={handleGenerateFlashCard}
-                    disabled={loadingState.isLoading}
-                    title="Tạo thẻ ghi nhớ"
-                  >
-                    {loadingState.isLoading &&
-                      loadingState.action === "flashcard" ? (
-                      <div className="flex items-center space-x-2">
-                        <svg
-                          className="animate-spin h-2 w-2 text-white"
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                        >
-                          <circle
-                            className="opacity-25"
-                            cx="12"
-                            cy="12"
-                            r="10"
-                            stroke="currentColor"
-                            strokeWidth="4"
-                          ></circle>
-                          <path
-                            className="opacity-75"
-                            fill="currentColor"
-                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                          ></path>
-                        </svg>
-                        <span>Loading</span>
-                      </div>
-                    ) : (
-                      "FlashCards"
-                    )}
-                  </button>
-                </div>
-                <div className="flex justify-between gap-2 pt-2">
-                  <button
-                    className={`flex-1 h-12 w-6 text-[10px] font-medium text-white bg-gradient-to-r from-green-500 to-green-700 hover:from-green-600 hover:to-green-800 rounded-2xl flex items-center justify-center shadow-lg transition-transform transform hover:scale-105 ${loadingState.isLoading && loadingState.action === "solve"
-                      ? "opacity-75 cursor-wait"
-                      : ""
-                      }`}
-                    onClick={handleGenerateSolve}
-                    disabled={loadingState.isLoading}
-                    title="Hỗ trợ làm bài"
-                  >
-                    {loadingState.isLoading && loadingState.action === "solve" ? (
-                      <div className="flex items-center space-x-2">
-                        <svg
-                          className="animate-spin h-2 w-2 text-white"
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                        >
-                          <circle
-                            className="opacity-25"
-                            cx="12"
-                            cy="12"
-                            r="10"
-                            stroke="currentColor"
-                            strokeWidth="4"
-                          ></circle>
-                          <path
-                            className="opacity-75"
-                            fill="currentColor"
-                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                          ></path>
-                        </svg>
-                        <span>Loading</span>
-                      </div>
-                    ) : (
-                      "Hỗ trợ làm bài"
-                    )}
-                  </button>
-
-                  <button
-                    className={`flex-1 h-12 w-6 text-[10px] font-medium text-white bg-gradient-to-r from-red-500 to-red-700 hover:from-red-600 hover:to-red-800 rounded-2xl flex items-center justify-center shadow-lg transition-transform transform hover:scale-105 ${loadingState.isLoading &&
-                      loadingState.action === "powerpoint"
-                      ? "opacity-75 cursor-wait"
-                      : ""
-                      }`}
-                    onClick={handleGeneratePowerpoint}
-                    disabled={loadingState.isLoading}
-                    title="Tạo PowerPoint"
-                  >
-                    {loadingState.isLoading &&
-                      loadingState.action === "powerpoint" ? (
-                      <div className="flex items-center space-x-2">
-                        <svg
-                          className="animate-spin h-2 w-2 text-white"
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                        >
-                          <circle
-                            className="opacity-25"
-                            cx="12"
-                            cy="12"
-                            r="10"
-                            stroke="currentColor"
-                            strokeWidth="4"
-                          ></circle>
-                          <path
-                            className="opacity-75"
-                            fill="currentColor"
-                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                          ></path>
-                        </svg>
-                        <span>Loading</span>
-                      </div>
-                    ) : (
-                      "PowerPoint"
-                    )}
-                  </button>
-
-                  <button
-                    className={`flex-1 h-12 w-6 text-[10px] font-medium text-white bg-gradient-to-r from-pink-500 to-pink-700 hover:from-pink-600 hover:to-pink-800 rounded-2xl flex items-center justify-center shadow-lg transition-transform transform hover:scale-105 ${loadingState.isLoading && loadingState.action === "multiplechoice"
-                      ? "opacity-75 cursor-wait"
-                      : ""
-                      }`}
-                    onClick={handleGenerateMultipleChoice}
-                    disabled={loadingState.isLoading}
-                    title="Tạo câu hỏi trắc nghiệm"
-                  >
-                    {loadingState.isLoading && loadingState.action === "multiplechoice" ? (
-                      <div className="flex items-center space-x-2">
-                        <svg
-                          className="animate-spin h-2 w-2 text-white"
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                        >
-                          <circle
-                            className="opacity-25"
-                            cx="12"
-                            cy="12"
-                            r="10"
-                            stroke="currentColor"
-                            strokeWidth="4"
-                          ></circle>
-                          <path
-                            className="opacity-75"
-                            fill="currentColor"
-                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                          ></path>
-                        </svg>
-                        <span>Loading</span>
-                      </div>
-                    ) : (
-                      "MultipleChoice"
-                    )}
-                  </button>
-
-                </div>
-              </>
-            )
-          }
-        </aside>
+        <RightSidebar
+          isRightSidebarOpen={isRightSidebarOpen}
+          setIsRightSidebarOpen={setIsRightSidebarOpen}
+          userInfo={userInfo}
+          fileContent={fileContent}
+          handleChange={handleChange}
+          handleFileUpload={handleFileUpload}
+          handleRemoveFile={handleRemoveFile}
+          pdfUrl={pdfUrl}
+          imageSrc={imageSrc}
+          charCount={charCount}
+          loadingState={loadingState}
+          handleSummarize={handleSummarize}
+          handleGenerateMindmap={handleGenerateMindmap}
+          handleGenerateFlashCard={handleGenerateFlashCard}
+          handleGenerateSolve={handleGenerateSolve}
+          handleGeneratePowerpoint={handleGeneratePowerpoint}
+          handleGenerateMultipleChoice={handleGenerateMultipleChoice}
+        />
+        
+        {/* Các component hiển thị kết quả */}
+        {summary && <Summarize summary={summary} setSummary={setSummary} handleAddNote={handleAddNote} />}
+        {mindmapHtml && <Mindmap mindmapHtml={mindmapHtml} setMindmapHtml={setMindmapHtml} />}
+        {flashcard && <Flashcard 
+          flashcard={flashcard} 
+          setFlashCard={setFlashCard} 
+          currentIndex={currentIndex}
+          setCurrentIndex={setCurrentIndex}
+          isFlipped={isFlipped}
+          setIsFlipped={setIsFlipped}
+          topic={topic}
+          content={content}
+          handleNext={handleNext}
+          handlePrev={handlePrev}
+          saveFlashcardAsHTML={saveFlashcardAsHTML}
+        />}
+        {solve && <Solve solve={solve} setSolve={setSolve} handleAddNote={handleAddNote} />}
+        {powerpointPreview && <PowerPoint 
+          powerpointPreview={powerpointPreview} 
+          setPowerpointPreview={setPowerpointPreview} 
+          handleDownloadPowerpoint={handleDownloadPowerpoint} 
+        />}
+        {multipleChoice && multipleChoice.length > 0 && (
+          <MultipleChoice 
+            text={fileContent}
+            topic={topicMulchoice}
+            setMultipleChoice={setMultipleChoice}
+            currentChoiceIndex={currentChoiceIndex}
+            setCurrentChoiceIndex={setCurrentChoiceIndex}
+            isTransitioning={isTransitioning}
+            setIsTransitioning={setIsTransitioning}
+            selectedAnswer={selectedAnswer}
+            setSelectedAnswer={setSelectedAnswer}
+          />
+        )}
       </div>
       <ChatbaseWidget />
     </>
