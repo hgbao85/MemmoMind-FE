@@ -22,23 +22,14 @@ const NoteCard = ({ note, onEdit, onView, onDelete, onRestore, onPermanentlyDele
       lecture: "bg-pink-100 border-pink-300",
       image: "bg-white border-gray-300",
       benefits: "bg-green-100 border-green-300",
-      default: "bg-white border-gray-200",
+      default: "bg-white",
     }
     return colors[category] || colors.default
   }
 
   // Get card hover color based on category
   const getCardHoverColor = () => {
-    const colors = {
-      planner: "bg-blue-200",
-      event: "bg-purple-400",
-      study: "bg-orange-200",
-      lecture: "bg-pink-200",
-      image: "bg-gray-100",
-      benefits: "bg-green-200",
-      default: "bg-orange-500",
-    }
-    return colors[category] || colors.default
+    return "bg-[#58a9ff]"
   }
 
   // Get card color with hover state
@@ -51,9 +42,11 @@ const NoteCard = ({ note, onEdit, onView, onDelete, onRestore, onPermanentlyDele
     const icons = {
       planner: <Calendar className="h-5 w-5 text-blue-500" />,
       event: <Cake className="h-5 w-5 text-purple-600" />,
-      study: <Sliders className="h-5 w-5 text-red-500" />,
+      study: <Sliders className="h-5 w-5 text-orange-500" />,
       lecture: <FileText className="h-5 w-5 text-pink-500" />,
-      default: <FileText className="h-5 w-5" />,
+      image: <div className="h-5 w-5 text-gray-600">🖼️</div>,
+      benefits: <div className="h-5 w-5 text-green-600">⚡</div>,
+      default: <FileText className="h-5 w-5 text-gray-600" />,
     }
     return icons[category] || icons.default
   }
@@ -118,29 +111,37 @@ const NoteCard = ({ note, onEdit, onView, onDelete, onRestore, onPermanentlyDele
     }
   }, [])
 
+  // Update the card component to change text color on hover
   return (
     <div
-      className={`rounded-lg overflow-hidden shadow-md transition-all duration-300 border ${getCardColor()} ${isDeleted ? "opacity-75" : ""
-        }`}
+      className={`m-2 rounded-lg overflow-hidden shadow-md transition-all duration-300 border ${getCardColor()} ${isDeleted ? "opacity-75" : ""}`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
       {/* Card Header */}
       <div className="p-4 relative">
         <div className="flex justify-between items-center">
-          <div className="flex items-center justify-center w-10 h-10 border rounded-lg">
-            {getCardIcon()}
+          <div
+            className={`flex items-center justify-center w-10 h-10 rounded-lg ${isHovered ? "bg-white bg-opacity-20" : "border"}`}
+          >
+            {isHovered ? (
+              <div className="text-white">
+                <FileText className="h-5 w-5" />
+              </div>
+            ) : (
+              getCardIcon()
+            )}
           </div>
 
           <div className="absolute right-4 top-4 flex space-x-2">
             {!isDeleted && (
               <Heart
-                className={`h-5 w-5 cursor-pointer ${isPinned ? "text-red-500 fill-red-500" : "text-gray-600"}`}
+                className={`h-5 w-5 cursor-pointer ${isPinned ? "text-red-500 fill-red-500" : isHovered ? "text-white" : "text-gray-600"}`}
                 onClick={handleTogglePin}
               />
             )}
             <MoreHorizontal
-              className="h-5 w-5 text-gray-600 cursor-pointer"
+              className={`h-5 w-5 cursor-pointer ${isHovered ? "text-white" : "text-gray-600"}`}
               onClick={(e) => {
                 e.stopPropagation()
                 setShowMenu(!showMenu)
@@ -210,19 +211,22 @@ const NoteCard = ({ note, onEdit, onView, onDelete, onRestore, onPermanentlyDele
           )}
         </div>
 
-        <p className="text-[#131313] text-2xl font-semibold mt-4">{title}</p>
+        <p className={`text-2xl font-semibold mt-4 ${isHovered ? "text-white" : "text-[#131313]"}`}>{title}</p>
       </div>
 
       {/* Card Content */}
       <div className="p-4 cursor-pointer" onClick={() => onView(note)}>
-        <div className="text-[#768492] min-h-[80px] max-h-[120px] overflow-hidden">{formatContent()}</div>
+        <div className={`min-h-[80px] max-h-[120px] overflow-hidden ${isHovered ? "text-white" : "text-[#768492]"}`}>
+          {formatContent()}
+        </div>
 
         {/* Card Footer */}
-        <div className="flex justify-between items-center mt-4 text-xs text-gray-500">
-
+        <div className="flex justify-between items-center mt-4 text-xs">
           <div className="flex items-center">
-            <Calendar className="h-4 w-4 mr-1" />
-            <span>{moment(createdAt).format("DD MMM YYYY")}</span>
+            <div className={isHovered ? "text-white" : "text-gray-500"}>
+              <Calendar className="h-4 w-4 mr-1 inline" />
+              <span>{moment(createdAt).format("DD MMM YYYY")}</span>
+            </div>
           </div>
         </div>
       </div>

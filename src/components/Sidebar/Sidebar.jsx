@@ -1,75 +1,71 @@
-import { Plus, Pencil, CheckSquare, Brain, Map, FileText, ChevronDown, ChevronRight, PresentationIcon, LayoutGrid, ListChecks, Calculator } from 'lucide-react';
-import ProfileInfo from "../Cards/ProfileInfo";
-import { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { useEffect } from 'react';
-import { useDispatch } from "react-redux";
-import { openPopup } from "../../redux/user/paymentSlice";
-import logo from "../../assets/images/logomoi4m.png";
-import { Link } from "react-router-dom";
+"use client"
+
+import {
+  Plus,
+  Pencil,
+  CheckSquare,
+  Brain,
+  Map,
+  FileText,
+  ChevronDown,
+  ChevronRight,
+  PresentationIcon,
+  LayoutGrid,
+  ListChecks,
+  Calculator,
+} from "lucide-react"
+import ProfileInfo from "../Cards/ProfileInfo"
+import { useState } from "react"
+import { useNavigate, useLocation } from "react-router-dom"
+import { useEffect } from "react"
+import { useDispatch } from "react-redux"
+import { openPopup } from "../../redux/user/paymentSlice"
+import logo from "../../assets/images/logomoi4m.png"
+import { Link } from "react-router-dom"
 
 const Sidebar = () => {
-  // const isPopupOpen = useSelector((state) => state.payment.isPopupOpen);
-  const [aiDropdownOpen, setAiDropdownOpen] = useState(false);
-  const navigate = useNavigate();
-  const location = useLocation();
-  const dispatch = useDispatch();
-  const [isLoading, setIsLoading] = useState(false);
-
+  const [aiDropdownOpen, setAiDropdownOpen] = useState(false)
+  const navigate = useNavigate()
+  const location = useLocation()
+  const dispatch = useDispatch()
+  const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
-    const aiPaths = [
-      '/summarize',
-      '/mindmap',
-      '/powerpoint',
-      '/flashcards',
-      '/multiplechoice',
-      '/solve'
-    ];
+    const aiPaths = ["/summarize", "/mindmap", "/powerpoint", "/flashcards", "/multiplechoice", "/solve"]
     if (aiPaths.includes(location.pathname)) {
-      setAiDropdownOpen(true);
+      setAiDropdownOpen(true)
     }
-  }, [location.pathname]);
-
+  }, [location.pathname])
 
   const FullscreenLoader = () => (
     <div className="fixed inset-0 bg-white bg-opacity-80 flex items-center justify-center z-50">
       <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-gray-900"></div>
     </div>
-  );
+  )
 
   const handleNavigate = (path) => {
-    setIsLoading(true);
+    setIsLoading(true)
     setTimeout(() => {
-      navigate(path);
-      setIsLoading(false);
-    }, 700);
-  };
+      navigate(path)
+      setIsLoading(false)
+    }, 700)
+  }
 
   return (
-    <div className="w-52 bg-white border-r border-gray-200 flex flex-col overflow-auto">
+    <div className="w-64 bg-white border-r border-gray-200 rounded-lg flex flex-col overflow-auto mx-8 my-4">
       <div className="p-4 border-b border-gray-200">
         <div className="flex justify-center items-center">
           <Link to="/homepage">
-            <img src={logo} alt="Logo" className="h-12 w-auto" />
+            <img src={logo || "/placeholder.svg"} alt="Logo" className="h-12 w-auto" />
           </Link>
         </div>
       </div>
-
 
       <div className="border-b border-gray-200">
         <ProfileInfo />
       </div>
 
       <div className="p-2">
-        {/* cái này để bên maincontent luôn */}
-        {/* <SearchBar
-        value={searchQuery}
-        onChange={({ target }) => setSearchQuery(target.value)}
-        handleSearch={handleSearch}
-        onClearSearch={onClearSearch}
-        /> */}
-
         <div className="relative">
           <button className="bg-blue-500 text-white rounded w-full p-2 flex items-center justify-between">
             <div className="flex items-center">
@@ -95,58 +91,60 @@ const Sidebar = () => {
                 <Brain size={16} className="mr-2" />
                 <span>Tính năng AI</span>
               </div>
-              {aiDropdownOpen ? (
-                <ChevronDown size={16} />
-              ) : (
-                <ChevronRight size={16} />
-              )}
+              {aiDropdownOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
             </button>
 
             {aiDropdownOpen && (
               <div className="ml-5 pl-2 border-l border-gray-200">
                 <button
-                  onClick={() => handleNavigate('/summarize')}
-                  className={`flex items-center p-2 rounded w-full text-left cursor-pointer ${location.pathname === '/summarize' ? 'bg-blue-100 text-blue-600' : 'text-gray-500 hover:bg-gray-100'
+                  onClick={() => handleNavigate("/summarize")}
+                  className={`flex items-center p-2 rounded w-full text-left cursor-pointer ${location.pathname === "/summarize" ? "bg-blue-100 text-blue-600" : "text-gray-500 hover:bg-gray-100"
                     }`}
                 >
                   <FileText size={14} className="mr-2" />
                   <span>Summarize</span>
                 </button>
                 <button
-                  onClick={() => handleNavigate('/mindmap')}
-                  className={`flex items-center p-2 rounded w-full text-left cursor-pointer ${location.pathname === '/mindmap' ? 'bg-blue-100 text-blue-600' : 'text-gray-500 hover:bg-gray-100'
+                  onClick={() => handleNavigate("/mindmap")}
+                  className={`flex items-center p-2 rounded w-full text-left cursor-pointer ${location.pathname === "/mindmap" ? "bg-blue-100 text-blue-600" : "text-gray-500 hover:bg-gray-100"
                     }`}
                 >
                   <Map size={14} className="mr-2" />
                   <span>Mindmap</span>
                 </button>
                 <button
-                  onClick={() => handleNavigate('/powerpoint')}
-                  className={`flex items-center p-2 rounded w-full text-left cursor-pointer ${location.pathname === '/powerpoint' ? 'bg-blue-100 text-blue-600' : 'text-gray-500 hover:bg-gray-100'
+                  onClick={() => handleNavigate("/powerpoint")}
+                  className={`flex items-center p-2 rounded w-full text-left cursor-pointer ${location.pathname === "/powerpoint"
+                      ? "bg-blue-100 text-blue-600"
+                      : "text-gray-500 hover:bg-gray-100"
                     }`}
                 >
                   <PresentationIcon size={14} className="mr-2" />
                   <span>PowerPoint</span>
                 </button>
                 <button
-                  onClick={() => handleNavigate('/flashcards')}
-                  className={`flex items-center p-2 rounded w-full text-left cursor-pointer ${location.pathname === '/flashcards' ? 'bg-blue-100 text-blue-600' : 'text-gray-500 hover:bg-gray-100'
+                  onClick={() => handleNavigate("/flashcards")}
+                  className={`flex items-center p-2 rounded w-full text-left cursor-pointer ${location.pathname === "/flashcards"
+                      ? "bg-blue-100 text-blue-600"
+                      : "text-gray-500 hover:bg-gray-100"
                     }`}
                 >
                   <LayoutGrid size={14} className="mr-2" />
                   <span>Flashcards</span>
                 </button>
                 <button
-                  onClick={() => handleNavigate('/multiplechoice')}
-                  className={`flex items-center p-2 rounded w-full text-left cursor-pointer ${location.pathname === '/multiplechoice' ? 'bg-blue-100 text-blue-600' : 'text-gray-500 hover:bg-gray-100'
+                  onClick={() => handleNavigate("/multiplechoice")}
+                  className={`flex items-center p-2 rounded w-full text-left cursor-pointer ${location.pathname === "/multiplechoice"
+                      ? "bg-blue-100 text-blue-600"
+                      : "text-gray-500 hover:bg-gray-100"
                     }`}
                 >
                   <ListChecks size={14} className="mr-2" />
                   <span>MultipleChoice</span>
                 </button>
                 <button
-                  onClick={() => handleNavigate('/solve')}
-                  className={`flex items-center p-2 rounded w-full text-left cursor-pointer ${location.pathname === '/solve' ? 'bg-blue-100 text-blue-600' : 'text-gray-500 hover:bg-gray-100'
+                  onClick={() => handleNavigate("/solve")}
+                  className={`flex items-center p-2 rounded w-full text-left cursor-pointer ${location.pathname === "/solve" ? "bg-blue-100 text-blue-600" : "text-gray-500 hover:bg-gray-100"
                     }`}
                 >
                   <Calculator size={14} className="mr-2" />
@@ -154,11 +152,12 @@ const Sidebar = () => {
                 </button>
               </div>
             )}
-
           </div>
 
-          <div className="flex items-center p-2 text-gray-500 hover:bg-gray-100 rounded cursor-pointer"
-            onClick={() => navigate('/bin')}>
+          <div
+            className="flex items-center p-2 text-gray-500 hover:bg-gray-100 rounded cursor-pointer"
+            onClick={() => navigate("/bin")}
+          >
             <CheckSquare size={16} className="mr-2" />
             <span>Bin</span>
           </div>
@@ -168,29 +167,17 @@ const Sidebar = () => {
       <div className="mt-auto p-4">
         <div className="text-center">
           <div className="mb-2">
-            <img src={logo} alt="Rocket" className="mx-auto" />
+            <img src={logo || "/placeholder.svg"} alt="Rocket" className="mx-auto" />
           </div>
-          <div className="text-xs text-gray-600 mb-2">
-            Set Business Account To Explore Premium Features
-          </div>
-          <button
-            onClick={() => dispatch(openPopup())}
-            className="bg-gray-900 text-white text-xs rounded px-4 py-1">
+          <div className="text-xs text-gray-600 mb-2">Set Business Account To Explore Premium Features</div>
+          <button onClick={() => dispatch(openPopup())} className="bg-gray-900 text-white text-xs rounded px-4 py-1">
             Upgrade
           </button>
         </div>
       </div>
-      {/* 
-      {isPopupOpen && (
-        <PaymentModal
-          amount={amount}
-          setAmount={setAmount}
-          handlePayment={handlePayment}
-        />
-      )} */}
       {isLoading && <FullscreenLoader />}
     </div>
-  );
-};
+  )
+}
 
-export default Sidebar; 
+export default Sidebar

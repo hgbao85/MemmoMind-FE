@@ -149,103 +149,105 @@ export default function Home() {
 
         {/* Notes Section */}
         <div className="flex-1 overflow-auto p-4">
-          <div className="mb-4">
-            <h2 className="text-xl font-bold mb-2">Your Notes</h2>
+          <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+            <div className="mb-4">
+              <h2 className="text-xl font-bold mb-2">Your Notes</h2>
 
-            <div className="flex border-b border-gray-200">
-              {tabs.map((tab) => (
+              <div className="flex border-b border-gray-200">
+                {tabs.map((tab) => (
+                  <button
+                    key={tab}
+                    className={`px-4 py-2 ${
+                      activeTab === tab ? "text-[#1e2a4a] border-b-2 border-[#1e2a4a]" : "text-gray-500"
+                    }`}
+                    onClick={() => setActiveTab(tab)}
+                  >
+                    {tab}
+                  </button>
+                ))}
+                <div className="ml-auto flex">
+                  <button className="p-2 text-gray-500">
+                    <Filter size={18} />
+                  </button>
+                  <button
+                    className={`p-2 ${viewMode === "grid" ? "text-[#1e2a4a]" : "text-gray-500"}`}
+                    onClick={() => setViewMode("grid")}
+                  >
+                    <Grid size={18} />
+                  </button>
+                  <button
+                    className={`p-2 ${viewMode === "list" ? "text-[#1e2a4a]" : "text-gray-500"}`}
+                    onClick={() => setViewMode("list")}
+                  >
+                    <List size={18} />
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Notes Grid */}
+            {isLoading ? (
+              <div className="flex justify-center items-center h-64">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#1e2a4a]"></div>
+              </div>
+            ) : (
+              <div
+                className={`${viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" : "space-y-4"}`}
+              >
+                {getDisplayNotes().length > 0 ? (
+                  getDisplayNotes().map((note) => (
+                    <NoteCard
+                      key={note._id}
+                      note={note}
+                      onEdit={handleEditNote}
+                      onView={handleViewNote}
+                      onDelete={moveToTrash}
+                      onUpdateSuccess={getAllNotes}
+                    />
+                  ))
+                ) : (
+                  <div className="col-span-full text-center py-10 text-gray-500">
+                    {activeTab === "Favourite Notes"
+                      ? "No favourite notes found. Pin some notes to see them here."
+                      : "No notes found. Create a new note to get started."}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Footer */}
+          <div className="p-4 bg-white border-t border-gray-200 rounded-lg flex justify-between text-xs text-gray-500">
+            <div className="flex gap-4">
+              <span>Privacy Policy</span>
+              <span>Terms of Use</span>
+            </div>
+            <div>
+              <span>2025© Memmomind</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Add Note Modal would go here */}
+        {showAddNoteModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            {/* Modal content would go here */}
+            <div className="bg-white rounded-lg p-6 w-full max-w-2xl">
+              <h2 className="text-xl font-bold mb-4">Create New Note</h2>
+              {/* Note form would go here */}
+              <div className="flex justify-end mt-4">
                 <button
-                  key={tab}
-                  className={`px-4 py-2 ${
-                    activeTab === tab ? "text-[#1e2a4a] border-b-2 border-[#1e2a4a]" : "text-gray-500"
-                  }`}
-                  onClick={() => setActiveTab(tab)}
+                  className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg mr-2"
+                  onClick={() => setShowAddNoteModal(false)}
                 >
-                  {tab}
+                  Cancel
                 </button>
-              ))}
-              <div className="ml-auto flex">
-                <button className="p-2 text-gray-500">
-                  <Filter size={18} />
-                </button>
-                <button
-                  className={`p-2 ${viewMode === "grid" ? "text-[#1e2a4a]" : "text-gray-500"}`}
-                  onClick={() => setViewMode("grid")}
-                >
-                  <Grid size={18} />
-                </button>
-                <button
-                  className={`p-2 ${viewMode === "list" ? "text-[#1e2a4a]" : "text-gray-500"}`}
-                  onClick={() => setViewMode("list")}
-                >
-                  <List size={18} />
-                </button>
+                <button className="px-4 py-2 bg-[#1e2a4a] text-white rounded-lg">Save Note</button>
               </div>
             </div>
           </div>
-
-          {/* Notes Grid */}
-          {isLoading ? (
-            <div className="flex justify-center items-center h-64">
-              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#1e2a4a]"></div>
-            </div>
-          ) : (
-            <div
-              className={`${viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" : "space-y-4"}`}
-            >
-              {getDisplayNotes().length > 0 ? (
-                getDisplayNotes().map((note) => (
-                  <NoteCard
-                    key={note._id}
-                    note={note}
-                    onEdit={handleEditNote}
-                    onView={handleViewNote}
-                    onDelete={moveToTrash}
-                    onUpdateSuccess={getAllNotes}
-                  />
-                ))
-              ) : (
-                <div className="col-span-full text-center py-10 text-gray-500">
-                  {activeTab === "Favourite Notes"
-                    ? "No favourite notes found. Pin some notes to see them here."
-                    : "No notes found. Create a new note to get started."}
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* Footer */}
-        <div className="p-4 bg-white border-t border-gray-200 flex justify-between text-xs text-gray-500">
-          <div className="flex gap-4">
-            <span>Privacy Policy</span>
-            <span>Terms of Use</span>
-          </div>
-          <div>
-            <span>2025© NotePlus</span>
-          </div>
-        </div>
+        )}
       </div>
-
-      {/* Add Note Modal would go here */}
-      {showAddNoteModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          {/* Modal content would go here */}
-          <div className="bg-white rounded-lg p-6 w-full max-w-2xl">
-            <h2 className="text-xl font-bold mb-4">Create New Note</h2>
-            {/* Note form would go here */}
-            <div className="flex justify-end mt-4">
-              <button
-                className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg mr-2"
-                onClick={() => setShowAddNoteModal(false)}
-              >
-                Cancel
-              </button>
-              <button className="px-4 py-2 bg-[#1e2a4a] text-white rounded-lg">Save Note</button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
 }
