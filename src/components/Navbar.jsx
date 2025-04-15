@@ -110,11 +110,11 @@ const Navbar = ({ userInfo = { name: "Guest", totalCost: 0, totalPurchasedCost: 
 Navbar.propTypes = {
   userInfo: PropTypes.shape({
     name: PropTypes.string.isRequired,
-    totalCost: PropTypes.number.isRequired, // Thêm prop totalCost
-    totalPurchasedCost: PropTypes.number.isRequired, // Thêm prop totalPurchasedCost
-    freeCost: PropTypes.number.isRequired, // Thêm prop freeCost
-    totalFreeCost: PropTypes.number.isRequired, // Thêm prop totalFreeCost
-    role: PropTypes.string.isRequired, // Thêm prop role
+    totalCost: PropTypes.number.isRequired,
+    totalPurchasedCost: PropTypes.number.isRequired,
+    freeCost: PropTypes.number.isRequired,
+    totalFreeCost: PropTypes.number.isRequired,
+    role: PropTypes.string.isRequired,
   }).isRequired,
   onSearchNote: PropTypes.func.isRequired,
   handleClearSearch: PropTypes.func.isRequired,
