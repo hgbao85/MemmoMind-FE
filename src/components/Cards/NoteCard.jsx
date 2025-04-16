@@ -6,7 +6,7 @@ import moment from "moment"
 import { Calendar, Eye, Edit3, Trash2, MoreHorizontal, Heart, FileText } from "lucide-react"
 import api from "../../services/api"
 import { toast } from "react-toastify"
-import ConfirmationDialog from "../../components/ConfirmationDialog/ConfirmationDialog"
+import ConfirmationDialog from "../ConfirmationDialog/ConfirmationDialog"
 
 const NoteCard = ({ note, onEdit, onView, onDelete, onRestore, onPermanentlyDelete, onUpdateSuccess }) => {
   const [showMenu, setShowMenu] = useState(false)
@@ -26,7 +26,7 @@ const NoteCard = ({ note, onEdit, onView, onDelete, onRestore, onPermanentlyDele
 
   // Get card hover color based on category
   const getCardHoverColor = () => {
-    return "bg-[#58a9ff]"
+    return "bg-[#87baf5]"
   }
 
   // Get card color with hover state
@@ -45,6 +45,21 @@ const NoteCard = ({ note, onEdit, onView, onDelete, onRestore, onPermanentlyDele
   // Format content for display
   const formatContent = () => {
     if (!content) return ""
+
+    // Check if content contains HTML tags
+    const containsHTML = /<[a-z][\s\S]*>/i.test(content)
+
+    if (containsHTML) {
+      // For HTML content, create a temporary div to parse the HTML
+      const tempDiv = document.createElement("div")
+      tempDiv.innerHTML = content
+
+      // Get the text content without HTML tags
+      const textContent = tempDiv.textContent || tempDiv.innerText || ""
+
+      // Return truncated text
+      return <p>{textContent.length > 120 ? textContent.substring(0, 120) + "..." : textContent}</p>
+    }
 
     // If content has bullet points (starts with - or •)
     if (content.match(/^[\s]*[-•*][\s]/m)) {
@@ -81,10 +96,10 @@ const NoteCard = ({ note, onEdit, onView, onDelete, onRestore, onPermanentlyDele
         return
       }
 
-      toast.success(isPinned ? "Note unpinned" : "Note pinned")
+      toast.success(isPinned ? "Đã bỏ Note khỏi mục Yêu thích!" : "Đã thêm Note vào mục Yêu thích!")
       if (onUpdateSuccess) onUpdateSuccess()
     } catch (error) {
-      toast.error(error.message || "Error updating pin status")
+      toast.error(error.message || "Lỗi khi thêm Note vào mục Yêu thích!")
     }
   }
 
@@ -130,7 +145,7 @@ const NoteCard = ({ note, onEdit, onView, onDelete, onRestore, onPermanentlyDele
   return (
     <>
       <div
-        className={`m-1 rounded-lg overflow-hidden shadow-md transition-all duration-300 border ${getCardColor()} ${isDeleted ? "opacity-75" : ""}`}
+        className={`m-2 rounded-lg overflow-hidden shadow-md transition-all duration-300 border ${getCardColor()} ${isDeleted ? "opacity-75" : ""}`}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
@@ -152,7 +167,7 @@ const NoteCard = ({ note, onEdit, onView, onDelete, onRestore, onPermanentlyDele
             <div className="absolute right-4 top-4 flex space-x-2">
               {!isDeleted && (
                 <Heart
-                  className={`h-5 w-5 cursor-pointer ${isPinned ? "text-red-500 fill-red-500" : isHovered ? "text-white" : "text-gray-600"}`}
+                  className={`h-5 w-5 cursor-pointer ${isPinned ? "text-red-400 fill-red-400" : isHovered ? "text-white" : "text-gray-600"}`}
                   onClick={handleTogglePin}
                 />
               )}
@@ -167,7 +182,7 @@ const NoteCard = ({ note, onEdit, onView, onDelete, onRestore, onPermanentlyDele
 
             {/* Dropdown Menu */}
             {showMenu && (
-              <div ref={menuRef} className="absolute right-4 top-12 bg-white shadow-lg rounded-md py-2 z-10 w-40">
+              <div ref={menuRef} className="absolute right-4 top-12 bg-white shadow-lg rounded-md py-2 z-10 w-32">
                 <div
                   className="px-4 py-2 hover:bg-gray-100 flex items-center cursor-pointer"
                   onClick={(e) => {
@@ -188,7 +203,7 @@ const NoteCard = ({ note, onEdit, onView, onDelete, onRestore, onPermanentlyDele
                       onEdit(note)
                     }}
                   >
-                    <Edit3 className="h-4 w-4 mr-2" /> Chỉnh sửa
+                    <Edit3 className="h-4 w-4 mr-2" /> Sửa
                   </div>
                 )}
 
@@ -215,20 +230,20 @@ const NoteCard = ({ note, onEdit, onView, onDelete, onRestore, onPermanentlyDele
             )}
           </div>
 
-          <p className={`text-2xl font-semibold mt-3 ${isHovered ? "text-white" : "text-[#131313]"}`}>{title}</p>
+          <p className={`text-2xl font-semibold mt-4 ${isHovered ? "text-white" : "text-[#131313]"}`}>{title}</p>
         </div>
 
         {/* Card Content */}
-        <div className="px-4 pb-4 cursor-pointer" onClick={() => onView(note)}>
+        <div className="p-4 cursor-pointer" onClick={() => onView(note)}>
           <div className={`min-h-[80px] max-h-[120px] overflow-hidden ${isHovered ? "text-white" : "text-[#768492]"}`}>
             {formatContent()}
           </div>
 
           {/* Card Footer */}
-          <div className="flex mt-4 text-sm justify-end">
+          <div className="flex justify-between items-center mt-4 text-sm">
             <div className="flex items-center">
-              <div className={isHovered ? "text-white" : "text-[#1f1c2f] font-semibold"}>
-                <Calendar className={isHovered ? "h-5 w-5 mr-1 inline text-white" : "h-5 w-5 mr-1 inline"} />
+              <div className={isHovered ? "text-white" : "text-gray-500"}>
+                <Calendar className="h-4 w-4 mr-1 inline" />
                 <span>{moment(createdAt).format("DD/MM/YYYY")}</span>
               </div>
             </div>
@@ -239,13 +254,9 @@ const NoteCard = ({ note, onEdit, onView, onDelete, onRestore, onPermanentlyDele
       {/* Confirmation Dialog */}
       <ConfirmationDialog
         isOpen={confirmDialogOpen}
-        title={confirmDialogType === "permanentDelete" ? "Xóa vĩnh viễn" : "Xóa ghi chú"}
-        message={
-          confirmDialogType === "permanentDelete"
-            ? "Bạn có chắc chắn muốn xóa vĩnh viễn ghi chú này? Hành động này không thể hoàn tác."
-            : "Bạn có chắc chắn muốn chuyển ghi chú này vào thùng rác?"
-        }
-        confirmText={confirmDialogType === "permanentDelete" ? "Xóa vĩnh viễn" : "Xóa"}
+        title="Xác nhận xóa"
+        message="Bạn có chắc chắn muốn xóa ghi chú này? Ghi chú sẽ được chuyển vào thùng rác."
+        confirmText="Xóa"
         cancelText="Hủy"
         onConfirm={handleConfirmDelete}
         onCancel={() => setConfirmDialogOpen(false)}
