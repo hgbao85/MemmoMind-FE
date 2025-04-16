@@ -1,22 +1,25 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Filter, Grid, List, Search, Plus } from "lucide-react"
+import { Grid, List, Search, Edit, Trash2, Eye, Heart } from "lucide-react"
 import Sidebar from "../../components/Sidebar/Sidebar"
 import NoteCard from "../../components/Cards/NoteCard"
 import api from "../../services/api"
 import { toast } from "react-toastify"
+import moment from "moment"
+import ConfirmationDialog from "../../components/ConfirmationDialog/ConfirmationDialog"
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState("All")
-  const [viewMode, setViewMode] = useState("grid") // grid or list
+  const [viewMode, setViewMode] = useState("grid")
   const [allNotes, setAllNotes] = useState([])
   const [pinnedNotes, setPinnedNotes] = useState([])
   const [searchQuery, setSearchQuery] = useState("")
   const [isLoading, setIsLoading] = useState(true)
-  const [showAddNoteModal, setShowAddNoteModal] = useState(false)
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false)
+  const [noteToDelete, setNoteToDelete] = useState(null)
 
-  const tabs = ["All", "Favourite Notes"]
+  const tabs = ["Tất cả", "Yêu thích"]
 
   // Fetch all notes
   const getAllNotes = async () => {
@@ -44,6 +47,26 @@ export default function Home() {
       setIsLoading(false)
     }
   }
+
+    // Toggle pin status
+    const handleTogglePin = async (noteId) => {
+      try {
+        const res = await api.put(
+          `https://memmomind-be-ycwv.onrender.com/api/note/update-note-pinned/${noteId}`,
+          {},
+          { withCredentials: true },
+        )
+  
+        if (!res.data.success) {
+          toast.error(res.data.message)
+          return
+        }
+  
+        getAllNotes()
+      } catch (error) {
+        toast.error(error.message || "Error updating pin status")
+      }
+    }
 
   // Search notes
   const handleSearch = async () => {
@@ -85,6 +108,8 @@ export default function Home() {
 
       toast.success("Note moved to trash")
       getAllNotes()
+      setConfirmDialogOpen(false)
+      setNoteToDelete(null)
     } catch (error) {
       toast.error(error.message || "Error moving note to trash")
     }
@@ -111,11 +136,17 @@ export default function Home() {
 
   // Get notes to display based on active tab
   const getDisplayNotes = () => {
-    if (activeTab === "Favourite Notes") {
+    if (activeTab === "Yêu thích") {
       return pinnedNotes
     }
     return allNotes
   }
+
+    // Handle the delete button click
+    const handleDeleteClick = (noteId) => {
+      setNoteToDelete(noteId)
+      setConfirmDialogOpen(true)
+    }
 
   return (
     <div className="flex h-screen bg-[#f0f5ff]">
@@ -124,7 +155,7 @@ export default function Home() {
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
-        <div className="p-4 bg-white border-b border-gray-200 shadow-sm">
+        <div className="m-4 p-4 rounded-lg bg-white border-b border-gray-200 shadow-sm">
           <div className="flex items-center">
             <div className="flex-1 relative">
               <input
@@ -137,13 +168,6 @@ export default function Home() {
               />
               <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
             </div>
-            <button
-              className="ml-4 px-4 py-2 bg-[#1e2a4a] text-white rounded-lg flex items-center"
-              onClick={() => setShowAddNoteModal(true)}
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              New Note
-            </button>
           </div>
         </div>
 
@@ -151,14 +175,14 @@ export default function Home() {
         <div className="flex-1 overflow-auto p-4">
           <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
             <div className="mb-4">
-              <h2 className="text-xl font-bold mb-2">Your Notes</h2>
+              <h3 className="text-xl text-[28px] text-[#131313] mb-2">Your Notes</h3>
 
               <div className="flex border-b border-gray-200">
                 {tabs.map((tab) => (
                   <button
                     key={tab}
                     className={`px-4 py-2 ${
-                      activeTab === tab ? "text-[#1e2a4a] border-b-2 border-[#1e2a4a]" : "text-gray-500"
+                      activeTab === tab ? "text-[#1f1c2f] font-bold border-b-2 border-[#1f1c2f]" : "text-[#848486] font-bold"
                     }`}
                     onClick={() => setActiveTab(tab)}
                   >
@@ -166,17 +190,14 @@ export default function Home() {
                   </button>
                 ))}
                 <div className="ml-auto flex">
-                  <button className="p-2 text-gray-500">
-                    <Filter size={18} />
-                  </button>
                   <button
-                    className={`p-2 ${viewMode === "grid" ? "text-[#1e2a4a]" : "text-gray-500"}`}
+                    className={`p-2 ${viewMode === "grid" ? "text-[#1f1c2f] font-bold" : "text-gray-500"}`}
                     onClick={() => setViewMode("grid")}
                   >
                     <Grid size={18} />
                   </button>
                   <button
-                    className={`p-2 ${viewMode === "list" ? "text-[#1e2a4a]" : "text-gray-500"}`}
+                    className={`p-2 ${viewMode === "list" ? "text-[#1f1c2f] font-bold" : "text-gray-500"}`}
                     onClick={() => setViewMode("list")}
                   >
                     <List size={18} />
@@ -189,6 +210,79 @@ export default function Home() {
             {isLoading ? (
               <div className="flex justify-center items-center h-64">
                 <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#1e2a4a]"></div>
+              </div>
+            ) : viewMode === "list" ? (
+              // List View
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-[#1f1c2f] text-white">
+                    <tr>
+                      <th className="px-4 py-3 text-left">Chủ đề</th>
+                      <th className="px-4 py-3 text-left">Nội dung</th>
+                      <th className="px-4 py-3 text-left">Ngày tạo</th>
+                      <th className="px-4 py-3 text-center">Hoạt động</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {getDisplayNotes().length > 0 ? (
+                      getDisplayNotes().map((note) => (
+                        <tr key={note._id} className="border-b border-gray-200 hover:bg-gray-50">
+                          <td className="px-4 py-4">
+                            <div>
+                              <div className="font-medium text-lg">{note.title}</div>
+                            </div>
+                          </td>
+                          <td className="px-4 py-4">
+                            <div className="text-gray-500 truncate max-w-md">
+                                {note.content ? note.content.substring(0, 100) : "No content"}
+                            </div>
+                          </td>
+                          <td className="px-4 py-4">{moment(note.createdAt).format("MMM DD")}</td>
+                          <td className="px-4 py-4">
+                            <div className="flex justify-center space-x-2">
+                            <button
+                                onClick={() => handleViewNote(note)}
+                                className="p-2 bg-blue-100 rounded-full text-blue-600 hover:bg-blue-200"
+                              >
+                                <Eye size={16} />
+                              </button>
+                              <button
+                                onClick={() => handleEditNote(note)}
+                                className="p-2 bg-green-100 rounded-full text-green-600 hover:bg-green-200"
+                              >
+                                <Edit size={16} />
+                              </button>
+                              <button
+                                onClick={() => handleTogglePin(note._id)}
+                                className={`p-2 rounded-full ${
+                                  note.isPinned
+                                    ? "bg-red-100 text-red-600 hover:bg-red-200"
+                                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                                }`}
+                              >
+                                <Heart size={16} fill={note.isPinned ? "currentColor" : "none"} />
+                              </button>
+                              <button
+                                onClick={() => handleDeleteClick(note._id)}
+                                className="p-2 bg-red-100 rounded-full text-red-600 hover:bg-red-200"
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={4} className="px-4 py-8 text-center text-gray-500">
+                          {activeTab === "Yêu thích"
+                            ? "No favourite notes found. Pin some notes to see them here."
+                            : "No notes found. Create a new note to get started."}
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
               </div>
             ) : (
               <div
@@ -207,7 +301,7 @@ export default function Home() {
                   ))
                 ) : (
                   <div className="col-span-full text-center py-10 text-gray-500">
-                    {activeTab === "Favourite Notes"
+                    {activeTab === "Yêu thích"
                       ? "No favourite notes found. Pin some notes to see them here."
                       : "No notes found. Create a new note to get started."}
                   </div>
@@ -227,27 +321,19 @@ export default function Home() {
             </div>
           </div>
         </div>
-
-        {/* Add Note Modal would go here */}
-        {showAddNoteModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            {/* Modal content would go here */}
-            <div className="bg-white rounded-lg p-6 w-full max-w-2xl">
-              <h2 className="text-xl font-bold mb-4">Create New Note</h2>
-              {/* Note form would go here */}
-              <div className="flex justify-end mt-4">
-                <button
-                  className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg mr-2"
-                  onClick={() => setShowAddNoteModal(false)}
-                >
-                  Cancel
-                </button>
-                <button className="px-4 py-2 bg-[#1e2a4a] text-white rounded-lg">Save Note</button>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
+      <ConfirmationDialog
+        isOpen={confirmDialogOpen}
+        title="Xác nhận xóa"
+        message="Bạn có chắc chắn muốn xóa ghi chú này? Ghi chú sẽ được chuyển vào thùng rác."
+        confirmText="Xóa"
+        cancelText="Hủy"
+        onConfirm={() => noteToDelete && moveToTrash(noteToDelete)}
+        onCancel={() => {
+          setConfirmDialogOpen(false)
+          setNoteToDelete(null)
+        }}
+      />
     </div>
   )
 }

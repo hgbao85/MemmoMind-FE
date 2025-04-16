@@ -1,0 +1,6 @@
+/* src/styles/toast.css */
+.toast-small .Toastify__toast {
+    font-size: 14px;
+    min-width: 150px;
+    color: #1f1c2f
+  }
