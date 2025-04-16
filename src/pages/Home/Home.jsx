@@ -8,6 +8,7 @@ import api from "../../services/api"
 import { toast } from "react-toastify"
 import moment from "moment"
 import ConfirmationDialog from "../../components/ConfirmationDialog/ConfirmationDialog"
+import Footer from "../../components/Footer/Footer"
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState("All")
@@ -175,7 +176,7 @@ export default function Home() {
         <div className="flex-1 overflow-auto p-4">
           <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
             <div className="mb-4">
-              <h3 className="text-xl text-[28px] text-[#131313] mb-2">Your Notes</h3>
+              <h3 className="text-xl text-[28px] text-[#131313] mb-2">Note của bạn</h3>
 
               <div className="flex border-b border-gray-200">
                 {tabs.map((tab) => (
@@ -234,7 +235,7 @@ export default function Home() {
                           </td>
                           <td className="px-4 py-4">
                             <div className="text-gray-500 truncate max-w-md">
-                                {note.content ? note.content.substring(0, 100) : "No content"}
+                                {note.content ? note.content.substring(0, 100) : "Không có nội dung"}
                             </div>
                           </td>
                           <td className="px-4 py-4">{moment(note.createdAt).format("MMM DD")}</td>
@@ -276,8 +277,8 @@ export default function Home() {
                       <tr>
                         <td colSpan={4} className="px-4 py-8 text-center text-gray-500">
                           {activeTab === "Yêu thích"
-                            ? "No favourite notes found. Pin some notes to see them here."
-                            : "No notes found. Create a new note to get started."}
+                            ? "Không tìm thấy ghi chú yêu thích. Ghim một số ghi chú để xem chúng ở đây."
+                            : "Không tìm thấy ghi chú. Tạo một ghi chú mới để bắt đầu."}
                         </td>
                       </tr>
                     )}
@@ -302,24 +303,15 @@ export default function Home() {
                 ) : (
                   <div className="col-span-full text-center py-10 text-gray-500">
                     {activeTab === "Yêu thích"
-                      ? "No favourite notes found. Pin some notes to see them here."
-                      : "No notes found. Create a new note to get started."}
+                      ? "Không tìm thấy ghi chú yêu thích. Ghim một số ghi chú để xem chúng ở đây."
+                      : "Không tìm thấy ghi chú. Tạo một ghi chú mới để bắt đầu."}
                   </div>
                 )}
               </div>
             )}
           </div>
-
           {/* Footer */}
-          <div className="p-4 bg-white border-t border-gray-200 rounded-lg flex justify-between text-xs text-gray-500">
-            <div className="flex gap-4">
-              <span>Privacy Policy</span>
-              <span>Terms of Use</span>
-            </div>
-            <div>
-              <span>2025© Memmomind</span>
-            </div>
-          </div>
+          <Footer />
         </div>
       </div>
       <ConfirmationDialog

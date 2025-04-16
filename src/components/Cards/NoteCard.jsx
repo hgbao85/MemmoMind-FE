@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react"
 import PropTypes from "prop-types"
 import moment from "moment"
-import { Calendar, Eye, Edit3, Trash2, MoreHorizontal, Heart, Sliders, Cake, FileText } from "lucide-react"
+import { Calendar, Eye, Edit3, Trash2, MoreHorizontal, Heart, FileText } from "lucide-react"
 import api from "../../services/api"
 import { toast } from "react-toastify"
 import ConfirmationDialog from "../../components/ConfirmationDialog/ConfirmationDialog"
@@ -19,12 +19,6 @@ const NoteCard = ({ note, onEdit, onView, onDelete, onRestore, onPermanentlyDele
   // Get card base color based on category or default
   const getCardBaseColor = () => {
     const colors = {
-      planner: "bg-blue-100 border-blue-300",
-      event: "bg-purple-300 border-purple-400",
-      study: "bg-orange-100 border-orange-300",
-      lecture: "bg-pink-100 border-pink-300",
-      image: "bg-white border-gray-300",
-      benefits: "bg-green-100 border-green-300",
       default: "bg-white",
     }
     return colors[category] || colors.default
@@ -43,12 +37,6 @@ const NoteCard = ({ note, onEdit, onView, onDelete, onRestore, onPermanentlyDele
   // Get card icon based on category
   const getCardIcon = () => {
     const icons = {
-      planner: <Calendar className="h-5 w-5 text-blue-500" />,
-      event: <Cake className="h-5 w-5 text-purple-600" />,
-      study: <Sliders className="h-5 w-5 text-orange-500" />,
-      lecture: <FileText className="h-5 w-5 text-pink-500" />,
-      image: <div className="h-5 w-5 text-gray-600">🖼️</div>,
-      benefits: <div className="h-5 w-5 text-green-600">⚡</div>,
       default: <FileText className="h-5 w-5 text-gray-600" />,
     }
     return icons[category] || icons.default
@@ -142,7 +130,7 @@ const NoteCard = ({ note, onEdit, onView, onDelete, onRestore, onPermanentlyDele
   return (
     <>
       <div
-        className={`m-2 rounded-lg overflow-hidden shadow-md transition-all duration-300 border ${getCardColor()} ${isDeleted ? "opacity-75" : ""}`}
+        className={`m-1 rounded-lg overflow-hidden shadow-md transition-all duration-300 border ${getCardColor()} ${isDeleted ? "opacity-75" : ""}`}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
@@ -179,7 +167,7 @@ const NoteCard = ({ note, onEdit, onView, onDelete, onRestore, onPermanentlyDele
 
             {/* Dropdown Menu */}
             {showMenu && (
-              <div ref={menuRef} className="absolute right-4 top-12 bg-white shadow-lg rounded-md py-2 z-10 w-32">
+              <div ref={menuRef} className="absolute right-4 top-12 bg-white shadow-lg rounded-md py-2 z-10 w-40">
                 <div
                   className="px-4 py-2 hover:bg-gray-100 flex items-center cursor-pointer"
                   onClick={(e) => {
@@ -188,7 +176,7 @@ const NoteCard = ({ note, onEdit, onView, onDelete, onRestore, onPermanentlyDele
                     onView(note)
                   }}
                 >
-                  <Eye className="h-4 w-4 mr-2" /> View
+                  <Eye className="h-4 w-4 mr-2" /> Xem
                 </div>
 
                 {!isDeleted && (
@@ -200,7 +188,7 @@ const NoteCard = ({ note, onEdit, onView, onDelete, onRestore, onPermanentlyDele
                       onEdit(note)
                     }}
                   >
-                    <Edit3 className="h-4 w-4 mr-2" /> Edit
+                    <Edit3 className="h-4 w-4 mr-2" /> Chỉnh sửa
                   </div>
                 )}
 
@@ -208,7 +196,7 @@ const NoteCard = ({ note, onEdit, onView, onDelete, onRestore, onPermanentlyDele
                   className="px-4 py-2 hover:bg-gray-100 flex items-center cursor-pointer text-red-500"
                   onClick={handleDeleteClick}
                 >
-                  <Trash2 className="h-4 w-4 mr-2" /> Delete
+                  <Trash2 className="h-4 w-4 mr-2" /> Xóa
                 </div>
 
                 {isDeleted && (
@@ -220,28 +208,28 @@ const NoteCard = ({ note, onEdit, onView, onDelete, onRestore, onPermanentlyDele
                       onRestore(_id)
                     }}
                   >
-                    <Calendar className="h-4 w-4 mr-2" /> Restore
+                    <Calendar className="h-4 w-4 mr-2" /> Khôi phục
                   </div>
                 )}
               </div>
             )}
           </div>
 
-          <p className={`text-2xl font-semibold mt-4 ${isHovered ? "text-white" : "text-[#131313]"}`}>{title}</p>
+          <p className={`text-2xl font-semibold mt-3 ${isHovered ? "text-white" : "text-[#131313]"}`}>{title}</p>
         </div>
 
         {/* Card Content */}
-        <div className="p-4 cursor-pointer" onClick={() => onView(note)}>
+        <div className="px-4 pb-4 cursor-pointer" onClick={() => onView(note)}>
           <div className={`min-h-[80px] max-h-[120px] overflow-hidden ${isHovered ? "text-white" : "text-[#768492]"}`}>
             {formatContent()}
           </div>
 
           {/* Card Footer */}
-          <div className="flex justify-between items-center mt-4 text-xs">
+          <div className="flex mt-4 text-sm justify-end">
             <div className="flex items-center">
-              <div className={isHovered ? "text-white" : "text-gray-500"}>
-                <Calendar className="h-4 w-4 mr-1 inline" />
-                <span>{moment(createdAt).format("DD MMM YYYY")}</span>
+              <div className={isHovered ? "text-white" : "text-[#1f1c2f] font-semibold"}>
+                <Calendar className={isHovered ? "h-5 w-5 mr-1 inline text-white" : "h-5 w-5 mr-1 inline"} />
+                <span>{moment(createdAt).format("DD/MM/YYYY")}</span>
               </div>
             </div>
           </div>
