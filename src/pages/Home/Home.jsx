@@ -1,223 +1,343 @@
-import { useState } from 'react';
-import { Filter, Grid, Calendar, Gift, Pencil, Image, Zap, Clock, Mail, Share2 } from 'lucide-react';
-import Sidebar from '../../components/Sidebar/Sidebar';
+"use client"
+
+import { useState, useEffect } from "react"
+import { Grid, List, Search, Edit, Trash2, Eye, Heart } from "lucide-react"
+import Sidebar from "../../components/Sidebar/Sidebar"
+import NoteCard from "../../components/Cards/NoteCard"
+import api from "../../services/api"
+import { toast } from "react-toastify"
+import moment from "moment"
+import ConfirmationDialog from "../../components/ConfirmationDialog/ConfirmationDialog"
+
 export default function Home() {
-  const [activeTab, setActiveTab] = useState('All');
+  const [activeTab, setActiveTab] = useState("All")
+  const [viewMode, setViewMode] = useState("grid")
+  const [allNotes, setAllNotes] = useState([])
+  const [pinnedNotes, setPinnedNotes] = useState([])
+  const [searchQuery, setSearchQuery] = useState("")
+  const [isLoading, setIsLoading] = useState(true)
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false)
+  const [noteToDelete, setNoteToDelete] = useState(null)
+
+  const tabs = ["Tất cả", "Yêu thích"]
+
+  // Fetch all notes
+  const getAllNotes = async () => {
+    setIsLoading(true)
+    try {
+      const res = await api.get("https://memmomind-be-ycwv.onrender.com/api/note/all", {
+        withCredentials: true,
+      })
+
+      if (!res.data.success) {
+        toast.error("Failed to load notes")
+        setIsLoading(false)
+        return
+      }
+
+      let fetchedNotes = res.data.notes.filter((note) => !note.isDeleted)
+      fetchedNotes = fetchedNotes.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+
+      setAllNotes(fetchedNotes)
+      setPinnedNotes(fetchedNotes.filter((note) => note.isPinned))
+      setIsLoading(false)
+    } catch (error) {
+      console.error("Error fetching notes:", error)
+      toast.error("Error loading notes!")
+      setIsLoading(false)
+    }
+  }
+
+    // Toggle pin status
+    const handleTogglePin = async (noteId) => {
+      try {
+        const res = await api.put(
+          `https://memmomind-be-ycwv.onrender.com/api/note/update-note-pinned/${noteId}`,
+          {},
+          { withCredentials: true },
+        )
   
-  const tabs = ['All', 'Favourite Notes'];
+        if (!res.data.success) {
+          toast.error(res.data.message)
+          return
+        }
   
-  const notes = [
-    {
-      id: 1,
-      icon: <Calendar className="text-blue-500" />,
-      title: 'Weekly Planner',
-      content: 'Virtual Digital Marketing Course every week on Monday, Wednesday and Saturday.Virtual Digital Marketing Course every week on Monday',
-      shareCount: '03 Share',
-      date: '12 Jan 2021',
-      onlyYou: true,
-    },
-    {
-      id: 2,
-      icon: <Gift className="text-purple-500" />,
-      title: 'Birthday Celebration',
-      content: 'You can easily share via message, WhatsApp, emails etc. You can also save your notes and edit it later or can easily delete the note.',
-      onlyYou: true,
-      date: '10 Jan 2021',
-    },
-    {
-      id: 3,
-      icon: <Pencil className="text-orange-500" />,
-      title: 'Essay Outline',
-      content: [
-        'Content should be of topic.',
-        '300 Words only.',
-        'Make presentation.',
-      ],
-      onlyYou: true,
-      date: '09 Jan 2021',
-    },
-    {
-      id: 4,
-      icon: <Calendar className="text-pink-500" />,
-      title: 'Lecture Notes',
-      content: [
-        'Chapter 1 notes.',
-        'Chapter 2 Assignment.',
-        'Chapter 3 practical File.',
-      ],
-      checklist: true,
-      onlyYou: true,
-      date: '09 Jan 2021',
-    },
-    {
-      id: 5,
-      icon: <Image className="text-blue-500" />,
-      title: 'Image Notes',
-      images: ['/api/placeholder/100/75', '/api/placeholder/100/75', '/api/placeholder/100/75'],
-      shareCount: '01 Share',
-      date: '05 Jan 2021',
-    },
-    {
-      id: 6,
-      icon: <Zap className="text-green-500" />,
-      title: 'Benefits of NotePlus',
-      content: 'Take organized notes and share later as meeting minutes or check-list with this simple accessible Noteplus. Each note you create will be stored on a virtual page of the NotePlus. You',
-      shareCount: '02 Share',
-      date: '10 Jan 2021',
-    },
-    {
-      id: 7,
-      icon: <Clock className="text-green-500" />,
-      title: 'Quick Summary',
-      content: 'Need to write a summary note of the subject you just finished? NotePlus lets you do in on-the-go! \n\nHttps://Dribble.com/Shots/6387620',
-      onlyYou: true,
-      date: '11 Jan 2021',
-    },
-    {
-      id: 8,
-      icon: <Mail className="text-orange-500" />,
-      title: 'Address & Email',
-      content: 'Quickly note down the address and email address on NotePlus so that you can access it from anywhere.',
-      shareCount: '04 Share',
-      date: '13 Jan 2021',
-    },
-    {
-      id: 9,
-      icon: <Zap className="text-blue-500" />,
-      title: 'NotePlus for Entrepreneurs',
-      content: 'With NotePlus, you can easily share via message, WhatsApp, emails etc. You can also save your notes and edit it later or can easily delete the note.',
-      onlyYou: true,
-      date: '14 Jan 2021',
-    },
-  ];
+        getAllNotes()
+      } catch (error) {
+        toast.error(error.message || "Error updating pin status")
+      }
+    }
+
+  // Search notes
+  const handleSearch = async () => {
+    if (!searchQuery.trim()) {
+      getAllNotes()
+      return
+    }
+
+    setIsLoading(true)
+    try {
+      const res = await api.get(`https://memmomind-be-ycwv.onrender.com/api/note/search`, {
+        params: { keyword: searchQuery },
+        withCredentials: true,
+      })
+
+      const filteredNotes = res.data.notes.filter((note) => !note.isDeleted)
+      setAllNotes(filteredNotes)
+      setIsLoading(false)
+    } catch (error) {
+      console.error("Error searching notes:", error)
+      toast.error("Error searching notes")
+      setIsLoading(false)
+    }
+  }
+
+  // Move note to trash
+  const moveToTrash = async (noteId) => {
+    try {
+      const res = await api.put(
+        `https://memmomind-be-ycwv.onrender.com/api/note/trash/${noteId}`,
+        {},
+        { withCredentials: true },
+      )
+
+      if (!res.data.success) {
+        toast.error(res.data.message)
+        return
+      }
+
+      toast.success("Note moved to trash")
+      getAllNotes()
+      setConfirmDialogOpen(false)
+      setNoteToDelete(null)
+    } catch (error) {
+      toast.error(error.message || "Error moving note to trash")
+    }
+  }
+
+  // Handle view note
+  const handleViewNote = (note) => {
+    // Implement view note functionality
+    console.log("View note:", note)
+    // You would typically open a modal or navigate to a detail page
+  }
+
+  // Handle edit note
+  const handleEditNote = (note) => {
+    // Implement edit note functionality
+    console.log("Edit note:", note)
+    // You would typically open a modal with the note data for editing
+  }
+
+  // Load notes on component mount
+  useEffect(() => {
+    getAllNotes()
+  }, [])
+
+  // Get notes to display based on active tab
+  const getDisplayNotes = () => {
+    if (activeTab === "Yêu thích") {
+      return pinnedNotes
+    }
+    return allNotes
+  }
+
+    // Handle the delete button click
+    const handleDeleteClick = (noteId) => {
+      setNoteToDelete(noteId)
+      setConfirmDialogOpen(true)
+    }
 
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="flex h-screen bg-[#f0f5ff]">
+      <Sidebar />
 
-      <Sidebar
-      // gọi hàm
-      />
-      
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
-        <div className="p-4 bg-white border-b border-gray-200">
+        <div className="m-4 p-4 rounded-lg bg-white border-b border-gray-200 shadow-sm">
           <div className="flex items-center">
-            <div className="flex-1">
-              <input 
-                type="text" 
-                placeholder="Write Your Note" 
-                className="w-full p-2 rounded border border-gray-200"
+            <div className="flex-1 relative">
+              <input
+                type="text"
+                placeholder="Search notes..."
+                className="w-full p-2 pl-10 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#1e2a4a]"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyPress={(e) => e.key === "Enter" && handleSearch()}
               />
+              <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
             </div>
           </div>
         </div>
-        
+
         {/* Notes Section */}
         <div className="flex-1 overflow-auto p-4">
-          <div className="mb-4">
-            <h2 className="text-xl font-bold mb-2">Your Notes</h2>
-            
-            <div className="flex border-b border-gray-200">
-              {tabs.map(tab => (
-                <button
-                  key={tab}
-                  className={`px-4 py-2 ${activeTab === tab ? 'text-blue-500 border-b-2 border-blue-500' : 'text-gray-500'}`}
-                  onClick={() => setActiveTab(tab)}
-                >
-                  {tab}
-                </button>
-              ))}
-              <div className="ml-auto flex">
-                <button className="p-2 text-gray-500">
-                  <Filter size={18} />
-                </button>
-                <button className="p-2 text-gray-500">
-                  <Grid size={18} />
-                </button>
+          <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+            <div className="mb-4">
+              <h3 className="text-xl text-[28px] text-[#131313] mb-2">Your Notes</h3>
+
+              <div className="flex border-b border-gray-200">
+                {tabs.map((tab) => (
+                  <button
+                    key={tab}
+                    className={`px-4 py-2 ${
+                      activeTab === tab ? "text-[#1f1c2f] font-bold border-b-2 border-[#1f1c2f]" : "text-[#848486] font-bold"
+                    }`}
+                    onClick={() => setActiveTab(tab)}
+                  >
+                    {tab}
+                  </button>
+                ))}
+                <div className="ml-auto flex">
+                  <button
+                    className={`p-2 ${viewMode === "grid" ? "text-[#1f1c2f] font-bold" : "text-gray-500"}`}
+                    onClick={() => setViewMode("grid")}
+                  >
+                    <Grid size={18} />
+                  </button>
+                  <button
+                    className={`p-2 ${viewMode === "list" ? "text-[#1f1c2f] font-bold" : "text-gray-500"}`}
+                    onClick={() => setViewMode("list")}
+                  >
+                    <List size={18} />
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-          
-          {/* Notes Grid */}
-          <div className="grid grid-cols-3 gap-4">
-            {notes.map(note => (
-              <div key={note.id} className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-                <div className="p-4">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="bg-gray-100 p-2 rounded">
-                      {note.icon}
-                    </div>
-                    <button className="text-gray-400">
-                      <span>•••</span>
-                    </button>
-                  </div>
-                  
-                  <h3 className="font-bold mb-2">{note.title}</h3>
-                  
-                  {Array.isArray(note.content) ? (
-                    <ul className="text-sm text-gray-600 mb-4">
-                      {note.content.map((item, i) => (
-                        <li key={i} className="mb-1 flex items-start">
-                          {note.checklist ? (
-                            <span className="mr-2 text-gray-400 border border-gray-300 rounded w-4 h-4 flex-shrink-0 mt-0.5"></span>
-                          ) : (
-                            <span className="mr-2">•</span>
-                          )}
-                          <span>{item}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : note.images ? (
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      {note.images.map((img, i) => (
-                        <img key={i} src={img} alt="Note" className="rounded" />
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-sm text-gray-600 mb-4">{note.content}</p>
-                  )}
-                </div>
-                
-                <div className="border-t border-gray-200 p-2 flex items-center text-xs text-gray-500">
-                  {note.onlyYou && (
-                    <div className="flex items-center mr-4">
-                      <span className="w-2 h-2 bg-red-500 rounded-full mr-1"></span>
-                      <span>Only You</span>
-                    </div>
-                  )}
-                  
-                  {note.shareCount && (
-                    <div className="flex items-center mr-4">
-                      <Share2 size={12} className="mr-1" />
-                      <span>{note.shareCount}</span>
-                    </div>
-                  )}
-                  
-                  <div className="ml-auto flex items-center">
-                    <Calendar size={12} className="mr-1" />
-                    <span>{note.date}</span>
-                  </div>
-                </div>
+
+            {/* Notes Grid */}
+            {isLoading ? (
+              <div className="flex justify-center items-center h-64">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#1e2a4a]"></div>
               </div>
-            ))}
+            ) : viewMode === "list" ? (
+              // List View
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-[#1f1c2f] text-white">
+                    <tr>
+                      <th className="px-4 py-3 text-left">Chủ đề</th>
+                      <th className="px-4 py-3 text-left">Nội dung</th>
+                      <th className="px-4 py-3 text-left">Ngày tạo</th>
+                      <th className="px-4 py-3 text-center">Hoạt động</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {getDisplayNotes().length > 0 ? (
+                      getDisplayNotes().map((note) => (
+                        <tr key={note._id} className="border-b border-gray-200 hover:bg-gray-50">
+                          <td className="px-4 py-4">
+                            <div>
+                              <div className="font-medium text-lg">{note.title}</div>
+                            </div>
+                          </td>
+                          <td className="px-4 py-4">
+                            <div className="text-gray-500 truncate max-w-md">
+                                {note.content ? note.content.substring(0, 100) : "No content"}
+                            </div>
+                          </td>
+                          <td className="px-4 py-4">{moment(note.createdAt).format("MMM DD")}</td>
+                          <td className="px-4 py-4">
+                            <div className="flex justify-center space-x-2">
+                            <button
+                                onClick={() => handleViewNote(note)}
+                                className="p-2 bg-blue-100 rounded-full text-blue-600 hover:bg-blue-200"
+                              >
+                                <Eye size={16} />
+                              </button>
+                              <button
+                                onClick={() => handleEditNote(note)}
+                                className="p-2 bg-green-100 rounded-full text-green-600 hover:bg-green-200"
+                              >
+                                <Edit size={16} />
+                              </button>
+                              <button
+                                onClick={() => handleTogglePin(note._id)}
+                                className={`p-2 rounded-full ${
+                                  note.isPinned
+                                    ? "bg-red-100 text-red-600 hover:bg-red-200"
+                                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                                }`}
+                              >
+                                <Heart size={16} fill={note.isPinned ? "currentColor" : "none"} />
+                              </button>
+                              <button
+                                onClick={() => handleDeleteClick(note._id)}
+                                className="p-2 bg-red-100 rounded-full text-red-600 hover:bg-red-200"
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={4} className="px-4 py-8 text-center text-gray-500">
+                          {activeTab === "Yêu thích"
+                            ? "No favourite notes found. Pin some notes to see them here."
+                            : "No notes found. Create a new note to get started."}
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div
+                className={`${viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" : "space-y-4"}`}
+              >
+                {getDisplayNotes().length > 0 ? (
+                  getDisplayNotes().map((note) => (
+                    <NoteCard
+                      key={note._id}
+                      note={note}
+                      onEdit={handleEditNote}
+                      onView={handleViewNote}
+                      onDelete={moveToTrash}
+                      onUpdateSuccess={getAllNotes}
+                    />
+                  ))
+                ) : (
+                  <div className="col-span-full text-center py-10 text-gray-500">
+                    {activeTab === "Yêu thích"
+                      ? "No favourite notes found. Pin some notes to see them here."
+                      : "No notes found. Create a new note to get started."}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
-        </div>
-        
-        {/* Footer */}
-        <div className="p-4 bg-white border-t border-gray-200 flex justify-between text-xs text-gray-500">
-          <div className="flex gap-4">
-            <span>Privacy Policy</span>
-            <span>Terms of Use</span>
-          </div>
-          <div>
-            <span>2025© NotePlus</span>
+
+          {/* Footer */}
+          <div className="p-4 bg-white border-t border-gray-200 rounded-lg flex justify-between text-xs text-gray-500">
+            <div className="flex gap-4">
+              <span>Privacy Policy</span>
+              <span>Terms of Use</span>
+            </div>
+            <div>
+              <span>2025© Memmomind</span>
+            </div>
           </div>
         </div>
       </div>
+      <ConfirmationDialog
+        isOpen={confirmDialogOpen}
+        title="Xác nhận xóa"
+        message="Bạn có chắc chắn muốn xóa ghi chú này? Ghi chú sẽ được chuyển vào thùng rác."
+        confirmText="Xóa"
+        cancelText="Hủy"
+        onConfirm={() => noteToDelete && moveToTrash(noteToDelete)}
+        onCancel={() => {
+          setConfirmDialogOpen(false)
+          setNoteToDelete(null)
+        }}
+      />
     </div>
-  );
+  )
 }
+
 
 
 

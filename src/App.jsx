@@ -16,6 +16,7 @@ import PowerPointPage from "./pages/AIFeatures/Powerpoint";
 import FlashcardsPage from "./pages/AIFeatures/Flashcards";
 import MultipleChoicePage from "./pages/AIFeatures/Multiplechoice";
 import SolvePage from "./pages/AIFeatures/Solve"
+import "./styles/toast.css";
 
 const App = () => {
   return (
@@ -37,7 +38,10 @@ const App = () => {
         <Route path="/multiplechoice" element={<MultipleChoicePage />} />
         <Route path="/solve" element={<SolvePage />} />
       </Routes>
-      <ToastContainer position="top-center" />
+      <ToastContainer
+        position="top-right"
+        className="toast-small"
+      />
     </BrowserRouter>
   );
 };

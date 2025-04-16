@@ -36,7 +36,7 @@ const userSlice = createSlice({
       state.errorDispatch = action.payload
       state.loading = false
     },
-    
+
     // New reducer to update the user's cost information
     updateUserCost: (state, action) => {
       if (state.currentUser && state.currentUser.user) {
