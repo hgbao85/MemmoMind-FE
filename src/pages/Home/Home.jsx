@@ -8,6 +8,9 @@ import api from "../../services/api"
 import { toast } from "react-toastify"
 import moment from "moment"
 import ConfirmationDialog from "../../components/ConfirmationDialog/ConfirmationDialog"
+import Footer from "../../components/Footer/Footer"
+import NoteModal from "../../components/Cards/NoteModal"
+import { Tooltip } from 'react-tooltip'
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState("All")
@@ -18,6 +21,9 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(true)
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false)
   const [noteToDelete, setNoteToDelete] = useState(null)
+  const [noteModalOpen, setNoteModalOpen] = useState(false)
+  const [selectedNote, setSelectedNote] = useState(null)
+  const [noteModalMode, setNoteModalMode] = useState("view")
 
   const tabs = ["Tất cả", "Yêu thích"]
 
@@ -106,32 +112,33 @@ export default function Home() {
         return
       }
 
-      toast.success("Note moved to trash")
+      toast.success("Note đã được đưa vào Thùng rác!")
       getAllNotes()
       setConfirmDialogOpen(false)
       setNoteToDelete(null)
     } catch (error) {
-      toast.error(error.message || "Error moving note to trash")
+      toast.error(error.message || "Lỗi khi chuyển Note vào Thùng rác!")
     }
   }
 
   // Handle view note
   const handleViewNote = (note) => {
-    // Implement view note functionality
-    console.log("View note:", note)
-    // You would typically open a modal or navigate to a detail page
+    setSelectedNote(note)
+    setNoteModalMode("view")
+    setNoteModalOpen(true)
   }
 
   // Handle edit note
   const handleEditNote = (note) => {
-    // Implement edit note functionality
-    console.log("Edit note:", note)
-    // You would typically open a modal with the note data for editing
+    setSelectedNote(note)
+    setNoteModalMode("edit")
+    setNoteModalOpen(true)
   }
 
   // Load notes on component mount
   useEffect(() => {
     getAllNotes()
+    setActiveTab("Tất cả")
   }, [])
 
   // Get notes to display based on active tab
@@ -153,7 +160,7 @@ export default function Home() {
       <Sidebar />
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
         {/* Header */}
         <div className="m-4 p-4 rounded-lg bg-white border-b border-gray-200 shadow-sm">
           <div className="flex items-center">
@@ -175,7 +182,7 @@ export default function Home() {
         <div className="flex-1 overflow-auto p-4">
           <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
             <div className="mb-4">
-              <h3 className="text-xl text-[28px] text-[#131313] mb-2">Your Notes</h3>
+              <h3 className="text-xl text-[28px] text-[#131313] mb-2">Note của bạn</h3>
 
               <div className="flex border-b border-gray-200">
                 {tabs.map((tab) => (
@@ -234,21 +241,34 @@ export default function Home() {
                           </td>
                           <td className="px-4 py-4">
                             <div className="text-gray-500 truncate max-w-md">
-                                {note.content ? note.content.substring(0, 100) : "No content"}
+                            {note.content
+                                ? /<[a-z][\s\S]*>/i.test(note.content)
+                                  ? (() => {
+                                      const tempDiv = document.createElement("div")
+                                      tempDiv.innerHTML = note.content
+                                      const textContent = tempDiv.textContent || tempDiv.innerText || ""
+                                      return textContent.substring(0, 100) + (textContent.length > 100 ? "..." : "")
+                                    })()
+                                  : note.content.substring(0, 100) + (note.content.length > 100 ? "..." : "")
+                                : "Không có nội dung"}
                             </div>
                           </td>
-                          <td className="px-4 py-4">{moment(note.createdAt).format("MMM DD")}</td>
+                          <td className="px-4 py-4">{moment(note.createdAt).format("DD/MM/YYYY")}</td>
                           <td className="px-4 py-4">
                             <div className="flex justify-center space-x-2">
                             <button
                                 onClick={() => handleViewNote(note)}
                                 className="p-2 bg-blue-100 rounded-full text-blue-600 hover:bg-blue-200"
+                                data-tooltip-id="view-tooltip"
+                                data-tooltip-content="Xem"
                               >
                                 <Eye size={16} />
                               </button>
                               <button
                                 onClick={() => handleEditNote(note)}
                                 className="p-2 bg-green-100 rounded-full text-green-600 hover:bg-green-200"
+                                data-tooltip-id="edit-tooltip"
+                                data-tooltip-content="Chỉnh sửa"
                               >
                                 <Edit size={16} />
                               </button>
@@ -257,17 +277,26 @@ export default function Home() {
                                 className={`p-2 rounded-full ${
                                   note.isPinned
                                     ? "bg-red-100 text-red-600 hover:bg-red-200"
-                                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                                }`}
+                                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
+                                data-tooltip-id="favorite-tooltip"
+                                data-tooltip-content="Yêu thích"
                               >
                                 <Heart size={16} fill={note.isPinned ? "currentColor" : "none"} />
                               </button>
                               <button
                                 onClick={() => handleDeleteClick(note._id)}
                                 className="p-2 bg-red-100 rounded-full text-red-600 hover:bg-red-200"
+                                data-tooltip-id="delete-tooltip"
+                                data-tooltip-content="Xóa"
                               >
                                 <Trash2 size={16} />
                               </button>
+
+                              <Tooltip id="view-tooltip" />
+                              <Tooltip id="edit-tooltip" />
+                              <Tooltip id="favorite-tooltip" />
+                              <Tooltip id="delete-tooltip" />
+
                             </div>
                           </td>
                         </tr>
@@ -276,8 +305,8 @@ export default function Home() {
                       <tr>
                         <td colSpan={4} className="px-4 py-8 text-center text-gray-500">
                           {activeTab === "Yêu thích"
-                            ? "No favourite notes found. Pin some notes to see them here."
-                            : "No notes found. Create a new note to get started."}
+                            ? "Không tìm thấy ghi chú yêu thích. Ghim một số ghi chú để xem chúng ở đây."
+                            : "Không tìm thấy ghi chú. Tạo một ghi chú mới để bắt đầu."}
                         </td>
                       </tr>
                     )}
@@ -302,26 +331,32 @@ export default function Home() {
                 ) : (
                   <div className="col-span-full text-center py-10 text-gray-500">
                     {activeTab === "Yêu thích"
-                      ? "No favourite notes found. Pin some notes to see them here."
-                      : "No notes found. Create a new note to get started."}
+                      ? "Không tìm thấy ghi chú yêu thích. Ghim một số ghi chú để xem chúng ở đây."
+                      : "Không tìm thấy ghi chú. Tạo một ghi chú mới để bắt đầu."}
                   </div>
                 )}
               </div>
             )}
           </div>
-
           {/* Footer */}
-          <div className="p-4 bg-white border-t border-gray-200 rounded-lg flex justify-between text-xs text-gray-500">
-            <div className="flex gap-4">
-              <span>Privacy Policy</span>
-              <span>Terms of Use</span>
-            </div>
-            <div>
-              <span>2025© Memmomind</span>
-            </div>
+          <div className="mt-[50px] ">
+            <Footer />
           </div>
         </div>
       </div>
+
+      {/* Note Modal */}
+      {selectedNote && (
+        <NoteModal
+          isOpen={noteModalOpen}
+          onClose={() => setNoteModalOpen(false)}
+          note={selectedNote}
+          mode={noteModalMode}
+          onUpdateSuccess={getAllNotes}
+        />
+      )}
+      
+      {/* Confirm Delete Note */}
       <ConfirmationDialog
         isOpen={confirmDialogOpen}
         title="Xác nhận xóa"

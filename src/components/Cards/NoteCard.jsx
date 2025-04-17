@@ -3,10 +3,10 @@
 import { useState, useRef, useEffect } from "react"
 import PropTypes from "prop-types"
 import moment from "moment"
-import { Calendar, Eye, Edit3, Trash2, MoreHorizontal, Heart, Sliders, Cake, FileText } from "lucide-react"
+import { Calendar, Eye, Edit3, Trash2, MoreHorizontal, Heart, FileText } from "lucide-react"
 import api from "../../services/api"
 import { toast } from "react-toastify"
-import ConfirmationDialog from "../../components/ConfirmationDialog/ConfirmationDialog"
+import ConfirmationDialog from "../ConfirmationDialog/ConfirmationDialog"
 
 const NoteCard = ({ note, onEdit, onView, onDelete, onRestore, onPermanentlyDelete, onUpdateSuccess }) => {
   const [showMenu, setShowMenu] = useState(false)
@@ -19,12 +19,6 @@ const NoteCard = ({ note, onEdit, onView, onDelete, onRestore, onPermanentlyDele
   // Get card base color based on category or default
   const getCardBaseColor = () => {
     const colors = {
-      planner: "bg-blue-100 border-blue-300",
-      event: "bg-purple-300 border-purple-400",
-      study: "bg-orange-100 border-orange-300",
-      lecture: "bg-pink-100 border-pink-300",
-      image: "bg-white border-gray-300",
-      benefits: "bg-green-100 border-green-300",
       default: "bg-white",
     }
     return colors[category] || colors.default
@@ -32,7 +26,7 @@ const NoteCard = ({ note, onEdit, onView, onDelete, onRestore, onPermanentlyDele
 
   // Get card hover color based on category
   const getCardHoverColor = () => {
-    return "bg-[#58a9ff]"
+    return "bg-[#87baf5]"
   }
 
   // Get card color with hover state
@@ -43,12 +37,6 @@ const NoteCard = ({ note, onEdit, onView, onDelete, onRestore, onPermanentlyDele
   // Get card icon based on category
   const getCardIcon = () => {
     const icons = {
-      planner: <Calendar className="h-5 w-5 text-blue-500" />,
-      event: <Cake className="h-5 w-5 text-purple-600" />,
-      study: <Sliders className="h-5 w-5 text-orange-500" />,
-      lecture: <FileText className="h-5 w-5 text-pink-500" />,
-      image: <div className="h-5 w-5 text-gray-600">🖼️</div>,
-      benefits: <div className="h-5 w-5 text-green-600">⚡</div>,
       default: <FileText className="h-5 w-5 text-gray-600" />,
     }
     return icons[category] || icons.default
@@ -57,6 +45,21 @@ const NoteCard = ({ note, onEdit, onView, onDelete, onRestore, onPermanentlyDele
   // Format content for display
   const formatContent = () => {
     if (!content) return ""
+
+    // Check if content contains HTML tags
+    const containsHTML = /<[a-z][\s\S]*>/i.test(content)
+
+    if (containsHTML) {
+      // For HTML content, create a temporary div to parse the HTML
+      const tempDiv = document.createElement("div")
+      tempDiv.innerHTML = content
+
+      // Get the text content without HTML tags
+      const textContent = tempDiv.textContent || tempDiv.innerText || ""
+
+      // Return truncated text
+      return <p>{textContent.length > 120 ? textContent.substring(0, 120) + "..." : textContent}</p>
+    }
 
     // If content has bullet points (starts with - or •)
     if (content.match(/^[\s]*[-•*][\s]/m)) {
@@ -93,10 +96,10 @@ const NoteCard = ({ note, onEdit, onView, onDelete, onRestore, onPermanentlyDele
         return
       }
 
-      toast.success(isPinned ? "Note unpinned" : "Note pinned")
+      toast.success(isPinned ? "Đã bỏ Note khỏi mục Yêu thích!" : "Đã thêm Note vào mục Yêu thích!")
       if (onUpdateSuccess) onUpdateSuccess()
     } catch (error) {
-      toast.error(error.message || "Error updating pin status")
+      toast.error(error.message || "Lỗi khi thêm Note vào mục Yêu thích!")
     }
   }
 
@@ -164,7 +167,7 @@ const NoteCard = ({ note, onEdit, onView, onDelete, onRestore, onPermanentlyDele
             <div className="absolute right-4 top-4 flex space-x-2">
               {!isDeleted && (
                 <Heart
-                  className={`h-5 w-5 cursor-pointer ${isPinned ? "text-red-500 fill-red-500" : isHovered ? "text-white" : "text-gray-600"}`}
+                  className={`h-5 w-5 cursor-pointer ${isPinned ? "text-red-400 fill-red-400" : isHovered ? "text-white" : "text-gray-600"}`}
                   onClick={handleTogglePin}
                 />
               )}
@@ -188,7 +191,7 @@ const NoteCard = ({ note, onEdit, onView, onDelete, onRestore, onPermanentlyDele
                     onView(note)
                   }}
                 >
-                  <Eye className="h-4 w-4 mr-2" /> View
+                  <Eye className="h-4 w-4 mr-2" /> Xem
                 </div>
 
                 {!isDeleted && (
@@ -200,7 +203,7 @@ const NoteCard = ({ note, onEdit, onView, onDelete, onRestore, onPermanentlyDele
                       onEdit(note)
                     }}
                   >
-                    <Edit3 className="h-4 w-4 mr-2" /> Edit
+                    <Edit3 className="h-4 w-4 mr-2" /> Sửa
                   </div>
                 )}
 
@@ -208,7 +211,7 @@ const NoteCard = ({ note, onEdit, onView, onDelete, onRestore, onPermanentlyDele
                   className="px-4 py-2 hover:bg-gray-100 flex items-center cursor-pointer text-red-500"
                   onClick={handleDeleteClick}
                 >
-                  <Trash2 className="h-4 w-4 mr-2" /> Delete
+                  <Trash2 className="h-4 w-4 mr-2" /> Xóa
                 </div>
 
                 {isDeleted && (
@@ -220,7 +223,7 @@ const NoteCard = ({ note, onEdit, onView, onDelete, onRestore, onPermanentlyDele
                       onRestore(_id)
                     }}
                   >
-                    <Calendar className="h-4 w-4 mr-2" /> Restore
+                    <Calendar className="h-4 w-4 mr-2" /> Khôi phục
                   </div>
                 )}
               </div>
@@ -237,11 +240,11 @@ const NoteCard = ({ note, onEdit, onView, onDelete, onRestore, onPermanentlyDele
           </div>
 
           {/* Card Footer */}
-          <div className="flex justify-between items-center mt-4 text-xs">
+          <div className="flex justify-between items-center mt-4 text-sm">
             <div className="flex items-center">
               <div className={isHovered ? "text-white" : "text-gray-500"}>
                 <Calendar className="h-4 w-4 mr-1 inline" />
-                <span>{moment(createdAt).format("DD MMM YYYY")}</span>
+                <span>{moment(createdAt).format("DD/MM/YYYY")}</span>
               </div>
             </div>
           </div>
@@ -251,13 +254,9 @@ const NoteCard = ({ note, onEdit, onView, onDelete, onRestore, onPermanentlyDele
       {/* Confirmation Dialog */}
       <ConfirmationDialog
         isOpen={confirmDialogOpen}
-        title={confirmDialogType === "permanentDelete" ? "Xóa vĩnh viễn" : "Xóa ghi chú"}
-        message={
-          confirmDialogType === "permanentDelete"
-            ? "Bạn có chắc chắn muốn xóa vĩnh viễn ghi chú này? Hành động này không thể hoàn tác."
-            : "Bạn có chắc chắn muốn chuyển ghi chú này vào thùng rác?"
-        }
-        confirmText={confirmDialogType === "permanentDelete" ? "Xóa vĩnh viễn" : "Xóa"}
+        title="Xác nhận xóa"
+        message="Bạn có chắc chắn muốn xóa ghi chú này? Ghi chú sẽ được chuyển vào thùng rác."
+        confirmText="Xóa"
         cancelText="Hủy"
         onConfirm={handleConfirmDelete}
         onCancel={() => setConfirmDialogOpen(false)}
