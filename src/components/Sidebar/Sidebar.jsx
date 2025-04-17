@@ -94,7 +94,7 @@ const Sidebar = () => {
           {/* AI Features Dropdown */}
           <div className="mt-1">
             <button
-              className="flex items-center justify-between w-full p-2 text-gray-500 hover:bg-gray-100 rounded"
+              className="flex items-center justify-between w-full p-2 text-[#1f1c2f] hover:bg-gray-100 rounded"
               onClick={() => setAiDropdownOpen(!aiDropdownOpen)}
             >
               <div className="flex items-center">
@@ -165,7 +165,7 @@ const Sidebar = () => {
           </div>
 
           <div
-            className="flex items-center p-2 text-gray-500 hover:bg-gray-100 rounded cursor-pointer"
+            className="flex items-center p-2 text-[#1f1c2f] hover:bg-gray-100 rounded cursor-pointer"
             onClick={() => navigate("/trash")}
           >
             <Trash size={16} className="mr-2" />
