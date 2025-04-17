@@ -2,6 +2,7 @@
 import TextInput from '../../components/Sidebar/TextInput';
 import Sidebar from '../../components/Sidebar/Sidebar';
 import { useState } from 'react';
+import Footer from '../../components/Footer/Footer';
 
 const MindmapPage = () => {
     const [fileContent, setFileContent] = useState('');
@@ -76,14 +77,8 @@ const MindmapPage = () => {
                         charCount={charCount}
                     />
                 </div>
-                <div className="p-4 bg-white border-t border-gray-200 flex justify-between text-xs text-gray-500">
-                    <div className="flex gap-4">
-                        <span>Privacy Policy</span>
-                        <span>Terms of Use</span>
-                    </div>
-                    <div>
-                        <span>2025© NotePlus</span>
-                    </div>
+                <div>
+                    <Footer />
                 </div>
             </div>
         </div>
@@ -92,3 +87,80 @@ const MindmapPage = () => {
 };
 
 export default MindmapPage;
+
+
+
+
+//   const handleGenerateMindmap = async () => {
+//     if (!fileContent.trim() && !uploadedFile) {
+//       toast.error("Vui lòng nhập văn bản hoặc tải lên tệp trước khi tạo mindmap!");
+//       return;
+//     }
+
+//     setLoadingState({ isLoading: true, action: "mindmap" });
+
+//     try {
+//       let payload = { userId: currentUser.user._id };
+
+//       if (uploadedFile) {
+//         if (uploadedFile.type === "text/plain") {
+//           const text = await uploadedFile.text();
+//           payload.text = text;
+//         } else {
+//           const base64String = await convertFileToBase64(uploadedFile);
+//           payload.file = base64String;
+//           payload.fileType = uploadedFile.type;
+//           payload.fileName = uploadedFile.name;
+//         }
+//       } else {
+//         payload.text = fileContent;
+//       }
+
+//       const response = await axios.post("http://vietserver.ddns.net:6082/mindmap", payload, {
+//         headers: { "Content-Type": "application/json" },
+//         responseType: "blob",
+//       });
+
+//       const arrayBuffer = await response.data.arrayBuffer();
+//       const decodedData = msgpack.decode(new Uint8Array(arrayBuffer));
+
+//       const jsonData = decodedData.json;
+
+//       if (jsonData.metadata && jsonData.metadata.content_type === "application/html") {
+//         const htmlContent = new TextDecoder().decode(decodedData.file);
+//         setMindmapHtml(htmlContent); // Cập nhật state hiển thị mindmap
+//       }
+
+//       // Kiểm tra xem có trường total_cost trong metadata không
+//       const newCost = jsonData?.total_cost || 0;
+
+//       if (newCost > 0) {
+//         // Gửi yêu cầu cập nhật chi phí lên server
+//         await axios.post(
+//           "https://memmomind-be-ycwv.onrender.com/api/user/update-cost",
+//           {
+//             userId: currentUser.user._id,
+//             newCost: newCost,
+//           },
+//           {
+//             headers: {
+//               Authorization: `Bearer ${currentUser.token}`,
+//             },
+//           }
+//         );
+//         console.log("Total cost saved:", newCost);
+//         // Cập nhật cost trong Redux store để cập nhật thanh tiến trình
+//         if (currentUser?.user?.role === "freeVersion") {
+//           dispatch(updateUserCost((currentUser?.user?.freeCost || 0) + newCost));
+//         } else if (currentUser?.user?.role === "costVersion") {
+//           dispatch(updateUserCost((currentUser?.user?.totalCost || 0) + newCost));
+//         }
+//       }
+
+//     } catch (error) {
+//       console.error("Error generating mindmap:", error);
+//       toast.error("Có lỗi xảy ra khi tạo mindmap!");
+//     } finally {
+//       setLoadingState({ isLoading: false, action: "" });
+//     }
+//   };

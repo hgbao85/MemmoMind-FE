@@ -2,6 +2,7 @@
 import TextInput from '../../components/Sidebar/TextInput';
 import Sidebar from '../../components/Sidebar/Sidebar';
 import { useState } from 'react';
+import Footer from '../../components/Footer/Footer';
 
 const PowerPointPage = () => {
     const [fileContent, setFileContent] = useState('');
@@ -76,14 +77,8 @@ const PowerPointPage = () => {
                         charCount={charCount}
                     />
                 </div>
-                <div className="p-4 bg-white border-t border-gray-200 flex justify-between text-xs text-gray-500">
-                    <div className="flex gap-4">
-                        <span>Privacy Policy</span>
-                        <span>Terms of Use</span>
-                    </div>
-                    <div>
-                        <span>2025© NotePlus</span>
-                    </div>
+                <div>
+                    <Footer />
                 </div>
             </div>
         </div>
@@ -92,3 +87,140 @@ const PowerPointPage = () => {
 };
 
 export default PowerPointPage;
+
+
+
+
+
+//   const handleGeneratePowerpoint = async () => {
+//     if (!fileContent.trim() && !uploadedFile) {
+//       toast.error("Vui lòng nhập văn bản hoặc tải lên tệp trước khi tạo PowerPoint!");
+//       return;
+//     }
+
+//     setLoadingState({ isLoading: true, action: "powerpoint" });
+
+//     try {
+//       let payload = { userId: currentUser.user._id, text: fileContent };
+
+//       if (uploadedFile) {
+//         const base64String = await convertFileToBase64(uploadedFile);
+//         payload.file = base64String;
+//         payload.fileType = uploadedFile.type;
+//         payload.fileName = uploadedFile.name;
+//       }
+
+//       // Gửi yêu cầu API để tạo PowerPoint
+//       const response = await axios.post(
+//         "http://vietserver.ddns.net:6082/powpoint-create",
+//         payload,
+//         {
+//           headers: { "Content-Type": "application/json" },
+//           responseType: "blob",
+//         }
+//       );
+
+//       const arrayBuffer = await response.data.arrayBuffer();
+//       const decodedData = msgpack.decode(new Uint8Array(arrayBuffer));
+
+//       const jsonData = decodedData.json;
+//       let contentType = jsonData?.metadata?.content_type || "application/pdf";
+//       let filename = jsonData?.metadata?.filename || "unknown.pdf";
+//       let pptxPath = jsonData?.powpointPath || "";
+
+//       let pdfUrl = null;
+
+//       // Nếu có dữ liệu file, tạo URL cho PDF
+//       if (decodedData.file) {
+//         const pdfBlob = new Blob([decodedData.file], { type: contentType });
+//         pdfUrl = URL.createObjectURL(pdfBlob);
+//       }
+
+//       // Nếu có đường dẫn PowerPoint, lưu lại
+//       if (pptxPath) {
+//         setPptxFilename(pptxPath);
+//       }
+
+//       // Mở PDF nếu có
+//       if (pdfUrl) {
+//         window.open(pdfUrl, "_blank");
+//       } else {
+//         console.error("❌ Không thể mở PDF vì pdfUrl là null");
+//       }
+
+//       console.log("Decoded Data:", decodedData);
+
+//       // Hiển thị preview PowerPoint
+//       setPowerpointPreview((prev) => ({
+//         ...prev,
+//         url: pdfUrl,
+//         filename: filename,
+//       }));
+
+//       // Lưu total_cost nếu có trong phản hồi từ server
+//       const newCost = decodedData?.json?.total_cost || 0;
+//       console.log("Total Cost:", newCost);  // Debug: In ra total_cost
+
+//       if (newCost > 0) {
+//         // Gửi yêu cầu cập nhật chi phí lên server
+//         await axios.post(
+//           "https://memmomind-be-ycwv.onrender.com/api/user/update-cost",
+//           {
+//             userId: currentUser.user._id,
+//             newCost: newCost,
+//           },
+//           {
+//             headers: {
+//               Authorization: `Bearer ${currentUser.token}`,
+//             },
+//           }
+//         );
+//         console.log("Total cost saved:", newCost);
+
+//         // Cập nhật cost trong Redux store để cập nhật thanh tiến trình
+//         if (currentUser?.user?.role === "freeVersion") {
+//           dispatch(updateUserCost((currentUser?.user?.freeCost || 0) + newCost));
+//         } else if (currentUser?.user?.role === "costVersion") {
+//           dispatch(updateUserCost((currentUser?.user?.totalCost || 0) + newCost));
+//         }
+//       }
+
+//     } catch (error) {
+//       console.error("Error generating PowerPoint:", error);
+//       toast.error("Có lỗi xảy ra khi tạo PowerPoint!");  // Thông báo lỗi
+//     } finally {
+//       setLoadingState({ isLoading: false, action: "" });  // Đặt lại trạng thái tải
+//     }
+//   };
+
+
+//   const handleDownloadPowerpoint = async () => {
+//     if (!pptxFilename) {
+//       toast.error("Không tìm thấy đường dẫn PowerPoint!");
+//       return;
+//     }
+
+//     try {
+//       const response = await axios.post(
+//         "http://vietserver.ddns.net:6082/powpoint-download",
+//         { powpointPath: pptxFilename },
+//         {
+//           headers: { "Content-Type": "application/json" },
+//           responseType: "blob",
+//         }
+//       );
+
+//       // Lưu file PowerPoint xuống máy người dùng
+//       const blob = new Blob([response.data], {
+//         type: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+//       });
+//       const link = document.createElement("a");
+//       link.href = URL.createObjectURL(blob);
+//       link.download = "presentation.pptx";
+//       document.body.appendChild(link);
+//       link.click();
+//       document.body.removeChild(link);
+//     } catch (error) {
+//       toast.error("Lỗi khi tải xuống PowerPoint!");
+//     }
+//   };

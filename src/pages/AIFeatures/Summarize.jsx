@@ -13,6 +13,7 @@ import { updateUserCost } from "../../redux/user/userSlice";
 import { useDispatch } from "react-redux";
 import Summarize from '../../components/Sidebar/Summarize';
 import PaymentModal from '../../components/MainContent/PaymentModal';
+import Footer from '../../components/Footer/Footer';
 
 const SummarizePage = () => {
   const { currentUser } = useSelector((state) => state.user);
@@ -20,7 +21,6 @@ const SummarizePage = () => {
   const [charCount, setCharCount] = useState(0);
   const [pdfUrl, setPdfUrl] = useState('');
   const [imageSrc, setImageSrc] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const initialUserCheck = useRef(false);
   const navigate = useNavigate();
   const [userInfo, setUserInfo] = useState(null);
@@ -99,23 +99,7 @@ const SummarizePage = () => {
     const reader = new FileReader();
     setUploadedFile(file); // Lưu file để gửi API
 
-    if (file.type === "text/plain") {
-      reader.onload = (e) => {
-        let content = e.target.result;
-
-        // Loại bỏ các ký tự xuống dòng
-        content = content.replace(/\r?\n/g, "");
-
-        // Validate text length (< 40000 characters)
-        if (content.length > 40000) {
-          toast.error("Nội dung văn bản vượt quá 40000 ký tự!");
-          return;
-        }
-        setFileContent(content);
-        setCharCount(content.length);
-      };
-      reader.readAsText(file);
-    } else if (file.type.startsWith("image/")) {
+    if (file.type.startsWith("image/")) {
       const imageUrl = URL.createObjectURL(file);
       setImageSrc(imageUrl);
       setPdfUrl(null);
@@ -124,7 +108,7 @@ const SummarizePage = () => {
       setPdfUrl(pdfUrl);
       setImageSrc(null);
     } else {
-      alert("Chỉ hỗ trợ các định dạng file: .txt, .pdf, .jpg, .png");
+      alert("Chỉ hỗ trợ các định dạng file: .pdf, .jpg, .png");
     }
   };
 
@@ -138,7 +122,6 @@ const SummarizePage = () => {
   };
 
   const handleSummarize = async () => {
-    setIsSubmitting(true);
     if (!fileContent.trim() && !uploadedFile) {
       toast.error("Vui lòng nhập văn bản hoặc tải lên tệp trước khi tóm tắt!");
       return;
@@ -162,7 +145,7 @@ const SummarizePage = () => {
       }
 
       const response = await axios.post(
-        "http://vietserver.ddns.net:6082/summarize",
+        "http://localhost:6082/summarize",
         payload,
         {
           headers: { "Content-Type": "application/json" },
@@ -201,7 +184,6 @@ const SummarizePage = () => {
           dispatch(updateUserCost((currentUser?.user?.totalCost || 0) + newCost));
         }
       }
-
     } catch (error) {
       console.error("Error summarizing:", error.message);
       toast.error("Có lỗi xảy ra khi tóm tắt!");
@@ -229,20 +211,14 @@ const SummarizePage = () => {
             imageSrc={imageSrc}
             charCount={charCount}
             handleSummarize={handleSummarize}
-            isSubmitting={isSubmitting}
           />
+          {summary && <Summarize summary={summary} setSummary={setSummary} handleAddNote={handleAddNote} />}
         </div>
-        <div className="p-4 bg-white border-t border-gray-200 flex justify-between text-xs text-gray-500">
-          <div className="flex gap-4">
-            <span>Privacy Policy</span>
-            <span>Terms of Use</span>
-          </div>
-          <div>
-            <span>2025© NotePlus</span>
-          </div>
+        <div>
+          <Footer />
         </div>
       </div>
-      {summary && <Summarize summary={summary} setSummary={setSummary} handleAddNote={handleAddNote} />}
+
       {isPopupOpen && (
         <PaymentModal
           amount={amount}

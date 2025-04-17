@@ -2,6 +2,7 @@
 import TextInput from '../../components/Sidebar/TextInput';
 import Sidebar from '../../components/Sidebar/Sidebar';
 import { useState } from 'react';
+import Footer from '../../components/Footer/Footer';
 
 const FlashcardsPage = () => {
     const [fileContent, setFileContent] = useState('');
@@ -77,14 +78,8 @@ const FlashcardsPage = () => {
                         charCount={charCount}
                     />
                 </div>
-                <div className="p-4 bg-white border-t border-gray-200 flex justify-between text-xs text-gray-500">
-                    <div className="flex gap-4">
-                        <span>Privacy Policy</span>
-                        <span>Terms of Use</span>
-                    </div>
-                    <div>
-                        <span>2025© NotePlus</span>
-                    </div>
+                <div>
+                    <Footer />
                 </div>
             </div>
         </div>
@@ -93,3 +88,94 @@ const FlashcardsPage = () => {
 };
 
 export default FlashcardsPage;
+
+
+
+//   const handleGenerateFlashCard = async () => {
+//     if (!fileContent.trim() && !uploadedFile) {
+//       toast.error("Vui lòng nhập văn bản hoặc tải lên tệp trước khi tạo flashcard!");
+//       return;
+//     }
+
+//     setLoadingState({ isLoading: true, action: "flashcard" });
+
+//     try {
+//       let payload = { userId: currentUser.user._id };
+
+//       // Kiểm tra tệp được tải lên
+//       if (uploadedFile) {
+//         if (uploadedFile.type === "text/plain") {
+//           const text = await uploadedFile.text();
+//           payload.text = text;
+//         } else {
+//           const base64String = await convertFileToBase64(uploadedFile);
+//           payload.file = base64String;
+//           payload.fileType = uploadedFile.type;
+//           payload.fileName = uploadedFile.name;
+//         }
+//       } else {
+//         payload.text = fileContent;
+//       }
+
+//       // Gửi yêu cầu đến API tạo flashcard
+//       const response = await axios.post(
+//         "http://vietserver.ddns.net:6082/flashcard",
+//         payload,
+//         {
+//           headers: { "Content-Type": "application/json" },
+//           responseType: "blob", // Nhận phản hồi dưới dạng blob
+//         }
+//       );
+
+//       // Giải mã phản hồi nhận được từ server
+//       const arrayBuffer = await response.data.arrayBuffer();
+//       const decodedData = msgpack.decode(new Uint8Array(arrayBuffer));
+
+//       console.log("Decoded Data:", decodedData);  // Debug: Kiểm tra dữ liệu trả về
+
+//       // Lấy danh sách flashcards từ dữ liệu đã giải mã
+//       const flashcardData = decodedData?.json?.flashcard || [];
+
+//       // Kiểm tra nếu dữ liệu hợp lệ và có flashcards
+//       if (Array.isArray(flashcardData) && flashcardData.length > 0) {
+//         setFlashCard(flashcardData);  // Cập nhật trạng thái hiển thị flashcards
+//         setCurrentIndex(0);  // Đặt chỉ số hiện tại về 0
+//       } else {
+//         toast.error("Dữ liệu flashcard không hợp lệ!");  // Thông báo lỗi nếu dữ liệu không hợp lệ
+//         setFlashCard([]);  // Đảm bảo không có flashcard nào hiển thị
+//       }
+
+//       // Lưu total_cost nếu có trong phản hồi từ server
+//       const newCost = decodedData?.json?.total_cost || 0;
+//       console.log("Total Cost:", newCost);  // Debug: In ra total_cost
+
+//       if (newCost > 0) {
+//         // Gửi yêu cầu cập nhật chi phí lên server
+//         await axios.post(
+//           "https://memmomind-be-ycwv.onrender.com/api/user/update-cost",
+//           {
+//             userId: currentUser.user._id,
+//             newCost: newCost,
+//           },
+//           {
+//             headers: {
+//               Authorization: `Bearer ${currentUser.token}`,
+//             },
+//           }
+//         );
+//         console.log("Total cost saved:", newCost);
+//         // Cập nhật cost trong Redux store để cập nhật thanh tiến trình
+//         if (currentUser?.user?.role === "freeVersion") {
+//           dispatch(updateUserCost((currentUser?.user?.freeCost || 0) + newCost));
+//         } else if (currentUser?.user?.role === "costVersion") {
+//           dispatch(updateUserCost((currentUser?.user?.totalCost || 0) + newCost));
+//         }
+//       }
+
+//     } catch (error) {
+//       console.error("Error generating flashcard:", error);
+//       toast.error("Có lỗi xảy ra khi tạo flashcard!");  // Thông báo lỗi
+//     } finally {
+//       setLoadingState({ isLoading: false, action: "" });  // Đặt lại trạng thái tải
+//     }
+//   };
