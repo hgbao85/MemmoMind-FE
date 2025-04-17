@@ -29,6 +29,7 @@ const MindmapPage = () => {
     const [noteData, setNoteData] = useState(null);
     const [addEditType, setAddEditType] = useState("add");
     const [uploadedFile, setUploadedFile] = useState(null);
+    const [isLoading, setIsLoading] = useState(false);
 
 
     useEffect(() => {
@@ -122,7 +123,7 @@ const MindmapPage = () => {
             toast.error("Vui lòng nhập văn bản hoặc tải lên tệp trước khi tạo mindmap!");
             return;
         }
-
+        setIsLoading(true);
         try {
             let payload = { userId: currentUser.user._id };
 
@@ -184,6 +185,8 @@ const MindmapPage = () => {
         } catch (error) {
             console.error("Error generating mindmap:", error);
             toast.error("Có lỗi xảy ra khi tạo mindmap!");
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -223,6 +226,7 @@ const MindmapPage = () => {
                         imageSrc={imageSrc}
                         charCount={charCount}
                         handleGenerateMindmap={handleGenerateMindmap}
+                        isLoading={isLoading}
                     />
                     {mindmapHtml && <Mindmap mindmapHtml={mindmapHtml} setMindmapHtml={setMindmapHtml} saveMindmapAsHTML={saveMindmapAsHTML} />}
                 </div>

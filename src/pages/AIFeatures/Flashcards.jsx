@@ -31,6 +31,7 @@ const FlashcardsPage = () => {
   const [uploadedFile, setUploadedFile] = useState(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const topic =
     flashcard.length > 0 && currentIndex < flashcard.length
@@ -87,12 +88,6 @@ const FlashcardsPage = () => {
     setCharCount(0);
   };
 
-  const handleAddNote = (note = { title: "", content: "" }) => {
-    setIsManuallyClosed(false);
-    setNoteData(note);
-    setAddEditType("add");
-  };
-
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
     if (!file) return;
@@ -134,7 +129,7 @@ const FlashcardsPage = () => {
       toast.error("Vui lòng nhập văn bản hoặc tải lên tệp trước khi tạo flashcard!");
       return;
     }
-
+    setIsLoading(true);
     try {
       let payload = { userId: currentUser.user._id };
 
@@ -211,6 +206,8 @@ const FlashcardsPage = () => {
     } catch (error) {
       console.error("Error generating flashcard:", error);
       toast.error("Có lỗi xảy ra khi tạo flashcard!");  // Thông báo lỗi
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -435,6 +432,7 @@ const FlashcardsPage = () => {
             imageSrc={imageSrc}
             charCount={charCount}
             handleGenerateFlashCard={handleGenerateFlashCard}
+            isLoading={isLoading}
           />
           {flashcard && <Flashcard
             flashcard={flashcard}

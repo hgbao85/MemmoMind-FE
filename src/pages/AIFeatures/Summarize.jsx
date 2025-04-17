@@ -29,6 +29,7 @@ const SummarizePage = () => {
   const [noteData, setNoteData] = useState(null);
   const [addEditType, setAddEditType] = useState("add");
   const [uploadedFile, setUploadedFile] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     if (!initialUserCheck.current) {
@@ -121,7 +122,7 @@ const SummarizePage = () => {
       toast.error("Vui lòng nhập văn bản hoặc tải lên tệp trước khi tóm tắt!");
       return;
     }
-
+    setIsLoading(true);
     try {
       let payload = { userId: currentUser.user._id };
 
@@ -182,6 +183,8 @@ const SummarizePage = () => {
     } catch (error) {
       console.error("Error summarizing:", error.message);
       toast.error("Có lỗi xảy ra khi tóm tắt!");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -206,6 +209,7 @@ const SummarizePage = () => {
             imageSrc={imageSrc}
             charCount={charCount}
             handleSummarize={handleSummarize}
+            isLoading={isLoading}
           />
           {summary && <Summarize summary={summary} setSummary={setSummary} handleAddNote={handleAddNote} />}
         </div>
