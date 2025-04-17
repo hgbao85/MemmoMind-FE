@@ -12,234 +12,230 @@ import * as msgpack from "@msgpack/msgpack";
 import { updateUserCost } from "../../redux/user/userSlice";
 import { useDispatch } from "react-redux";
 import Flashcard from "../../components/Sidebar/Flashcard";
-import PaymentModal from '../../components/MainContent/PaymentModal';
 import Footer from '../../components/Footer/Footer';
 
 const FlashcardsPage = () => {
-    const { currentUser } = useSelector((state) => state.user);
-    const [fileContent, setFileContent] = useState('');
-    const [charCount, setCharCount] = useState(0);
-    const [pdfUrl, setPdfUrl] = useState('');
-    const [imageSrc, setImageSrc] = useState('');
-    const initialUserCheck = useRef(false);
-    const navigate = useNavigate();
-    const [userInfo, setUserInfo] = useState(null);
-    const [flashcard, setFlashCard] = useState("");
-    const dispatch = useDispatch();
-    const [isManuallyClosed, setIsManuallyClosed] = useState(false);
-    const [noteData, setNoteData] = useState(null);
-    const [addEditType, setAddEditType] = useState("add");
-    const [uploadedFile, setUploadedFile] = useState(null);
-    const [currentIndex, setCurrentIndex] = useState(0);
-    const [isFlipped, setIsFlipped] = useState(false);
+  const { currentUser } = useSelector((state) => state.user);
+  const [fileContent, setFileContent] = useState('');
+  const [charCount, setCharCount] = useState(0);
+  const [pdfUrl, setPdfUrl] = useState('');
+  const [imageSrc, setImageSrc] = useState('');
+  const initialUserCheck = useRef(false);
+  const navigate = useNavigate();
+  const [userInfo, setUserInfo] = useState(null);
+  const [flashcard, setFlashCard] = useState("");
+  const dispatch = useDispatch();
+  const [isManuallyClosed, setIsManuallyClosed] = useState(false);
+  const [noteData, setNoteData] = useState(null);
+  const [addEditType, setAddEditType] = useState("add");
+  const [uploadedFile, setUploadedFile] = useState(null);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isFlipped, setIsFlipped] = useState(false);
 
-    const topic =
-        flashcard.length > 0 && currentIndex < flashcard.length
-            ? Object.keys(flashcard[currentIndex])[0]
-            : "";
-    const content =
-        flashcard.length > 0 && currentIndex < flashcard.length
-            ? flashcard[currentIndex][topic]
-            : null;
-    const [isTransitioning, setIsTransitioning] = useState(false);
-
-    const isPopupOpen = useSelector((state) => state.payment.isPopupOpen);
-    const [amount, setAmount] = useState(1000);
+  const topic =
+    flashcard.length > 0 && currentIndex < flashcard.length
+      ? Object.keys(flashcard[currentIndex])[0]
+      : "";
+  const content =
+    flashcard.length > 0 && currentIndex < flashcard.length
+      ? flashcard[currentIndex][topic]
+      : null;
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
 
-    useEffect(() => {
-        if (!initialUserCheck.current) {
-            initialUserCheck.current = true;
-            if (!currentUser) {
-                navigate("/");
-            } else {
-                getUserInfo();
-            }
-        }
-    }, [currentUser, navigate]);
+  useEffect(() => {
+    if (!initialUserCheck.current) {
+      initialUserCheck.current = true;
+      if (!currentUser) {
+        navigate("/");
+      } else {
+        getUserInfo();
+      }
+    }
+  }, [currentUser, navigate]);
 
-    const getUserInfo = async () => {
-        try {
-            const res = await api.get("https://memmomind-be-ycwv.onrender.com/api/user/current", {
-                withCredentials: true,
-            });
+  const getUserInfo = async () => {
+    try {
+      const res = await api.get("https://memmomind-be-ycwv.onrender.com/api/user/current", {
+        withCredentials: true,
+      });
 
-            if (!res.data.success) {
-                toast.error("Không thể lấy thông tin người dùng!");
-                return;
-            }
+      if (!res.data.success) {
+        toast.error("Không thể lấy thông tin người dùng!");
+        return;
+      }
 
-            setUserInfo(res.data.user);
-        } catch (error) {
-            console.error("Error fetching user info:", error);
-            toast.error("Lỗi khi lấy thông tin người dùng!");
-        }
-    };
+      setUserInfo(res.data.user);
+    } catch (error) {
+      console.error("Error fetching user info:", error);
+      toast.error("Lỗi khi lấy thông tin người dùng!");
+    }
+  };
 
-    const handleChange = (e) => {
-        const value = e.target.value;
-        setFileContent(value);
-        setCharCount(value.length);
-        setPdfUrl('');
-        setImageSrc('');
-    };
+  const handleChange = (e) => {
+    const value = e.target.value;
+    setFileContent(value);
+    setCharCount(value.length);
+    setPdfUrl('');
+    setImageSrc('');
+  };
 
-    const handleRemoveFile = () => {
-        setFileContent('');
-        setPdfUrl('');
-        setImageSrc('');
-        setCharCount(0);
-    };
+  const handleRemoveFile = () => {
+    setFileContent('');
+    setPdfUrl('');
+    setImageSrc('');
+    setCharCount(0);
+  };
 
-    const handleAddNote = (note = { title: "", content: "" }) => {
-        setIsManuallyClosed(false);
-        setNoteData(note);
-        setAddEditType("add");
-    };
+  const handleAddNote = (note = { title: "", content: "" }) => {
+    setIsManuallyClosed(false);
+    setNoteData(note);
+    setAddEditType("add");
+  };
 
-    const handleFileUpload = (event) => {
-        const file = event.target.files[0];
-        if (!file) return;
+  const handleFileUpload = (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
 
-        // Validate file size (< 30MB)
-        const maxSize = 30 * 1024 * 1024; // 30MB in bytes
-        if (file.size > maxSize) {
-            toast.error("Kích thước file vượt quá 30MB!");
-            return;
-        }
+    // Validate file size (< 30MB)
+    const maxSize = 30 * 1024 * 1024; // 30MB in bytes
+    if (file.size > maxSize) {
+      toast.error("Kích thước file vượt quá 30MB!");
+      return;
+    }
 
-        const reader = new FileReader();
-        setUploadedFile(file); // Lưu file để gửi API
+    const reader = new FileReader();
+    setUploadedFile(file); // Lưu file để gửi API
 
-        if (file.type.startsWith("image/")) {
-            const imageUrl = URL.createObjectURL(file);
-            setImageSrc(imageUrl);
-            setPdfUrl(null);
-        } else if (file.type === "application/pdf") {
-            const pdfUrl = URL.createObjectURL(file);
-            setPdfUrl(pdfUrl);
-            setImageSrc(null);
+    if (file.type.startsWith("image/")) {
+      const imageUrl = URL.createObjectURL(file);
+      setImageSrc(imageUrl);
+      setPdfUrl(null);
+    } else if (file.type === "application/pdf") {
+      const pdfUrl = URL.createObjectURL(file);
+      setPdfUrl(pdfUrl);
+      setImageSrc(null);
+    } else {
+      alert("Chỉ hỗ trợ các định dạng file: .pdf, .jpg, .png");
+    }
+  };
+
+  const convertFileToBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result.split(",")[1]);
+      reader.onerror = (error) => reject(error);
+    });
+  };
+
+  const handleGenerateFlashCard = async () => {
+    if (!fileContent.trim() && !uploadedFile) {
+      toast.error("Vui lòng nhập văn bản hoặc tải lên tệp trước khi tạo flashcard!");
+      return;
+    }
+
+    try {
+      let payload = { userId: currentUser.user._id };
+
+      // Kiểm tra tệp được tải lên
+      if (uploadedFile) {
+        if (uploadedFile.type === "text/plain") {
+          const text = await uploadedFile.text();
+          payload.text = text;
         } else {
-            alert("Chỉ hỗ trợ các định dạng file: .pdf, .jpg, .png");
+          const base64String = await convertFileToBase64(uploadedFile);
+          payload.file = base64String;
+          payload.fileType = uploadedFile.type;
+          payload.fileName = uploadedFile.name;
         }
-    };
+      } else {
+        payload.text = fileContent;
+      }
 
-    const convertFileToBase64 = (file) => {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = () => resolve(reader.result.split(",")[1]);
-            reader.onerror = (error) => reject(error);
-        });
-    };
-
-    const handleGenerateFlashCard = async () => {
-        if (!fileContent.trim() && !uploadedFile) {
-            toast.error("Vui lòng nhập văn bản hoặc tải lên tệp trước khi tạo flashcard!");
-            return;
+      // Gửi yêu cầu đến API tạo flashcard
+      const response = await axios.post(
+        "http://vietserver.ddns.net:6082/flashcard",
+        payload,
+        {
+          headers: { "Content-Type": "application/json" },
+          responseType: "blob", // Nhận phản hồi dưới dạng blob
         }
+      );
 
-        try {
-            let payload = { userId: currentUser.user._id };
+      // Giải mã phản hồi nhận được từ server
+      const arrayBuffer = await response.data.arrayBuffer();
+      const decodedData = msgpack.decode(new Uint8Array(arrayBuffer));
 
-            // Kiểm tra tệp được tải lên
-            if (uploadedFile) {
-                if (uploadedFile.type === "text/plain") {
-                    const text = await uploadedFile.text();
-                    payload.text = text;
-                } else {
-                    const base64String = await convertFileToBase64(uploadedFile);
-                    payload.file = base64String;
-                    payload.fileType = uploadedFile.type;
-                    payload.fileName = uploadedFile.name;
-                }
-            } else {
-                payload.text = fileContent;
-            }
+      console.log("Decoded Data:", decodedData);  // Debug: Kiểm tra dữ liệu trả về
 
-            // Gửi yêu cầu đến API tạo flashcard
-            const response = await axios.post(
-                "http://localhost:6082/flashcard",
-                payload,
-                {
-                    headers: { "Content-Type": "application/json" },
-                    responseType: "blob", // Nhận phản hồi dưới dạng blob
-                }
-            );
+      // Lấy danh sách flashcards từ dữ liệu đã giải mã
+      const flashcardData = decodedData?.json?.flashcard || [];
 
-            // Giải mã phản hồi nhận được từ server
-            const arrayBuffer = await response.data.arrayBuffer();
-            const decodedData = msgpack.decode(new Uint8Array(arrayBuffer));
+      // Kiểm tra nếu dữ liệu hợp lệ và có flashcards
+      if (Array.isArray(flashcardData) && flashcardData.length > 0) {
+        setFlashCard(flashcardData);  // Cập nhật trạng thái hiển thị flashcards
+        setCurrentIndex(0);  // Đặt chỉ số hiện tại về 0
+      } else {
+        toast.error("Dữ liệu flashcard không hợp lệ!");  // Thông báo lỗi nếu dữ liệu không hợp lệ
+        setFlashCard([]);  // Đảm bảo không có flashcard nào hiển thị
+      }
 
-            console.log("Decoded Data:", decodedData);  // Debug: Kiểm tra dữ liệu trả về
+      // Lưu total_cost nếu có trong phản hồi từ server
+      const newCost = decodedData?.json?.total_cost || 0;
+      console.log("Total Cost:", newCost);  // Debug: In ra total_cost
 
-            // Lấy danh sách flashcards từ dữ liệu đã giải mã
-            const flashcardData = decodedData?.json?.flashcard || [];
-
-            // Kiểm tra nếu dữ liệu hợp lệ và có flashcards
-            if (Array.isArray(flashcardData) && flashcardData.length > 0) {
-                setFlashCard(flashcardData);  // Cập nhật trạng thái hiển thị flashcards
-                setCurrentIndex(0);  // Đặt chỉ số hiện tại về 0
-            } else {
-                toast.error("Dữ liệu flashcard không hợp lệ!");  // Thông báo lỗi nếu dữ liệu không hợp lệ
-                setFlashCard([]);  // Đảm bảo không có flashcard nào hiển thị
-            }
-
-            // Lưu total_cost nếu có trong phản hồi từ server
-            const newCost = decodedData?.json?.total_cost || 0;
-            console.log("Total Cost:", newCost);  // Debug: In ra total_cost
-
-            if (newCost > 0) {
-                // Gửi yêu cầu cập nhật chi phí lên server
-                await axios.post(
-                    "https://memmomind-be-ycwv.onrender.com/api/user/update-cost",
-                    {
-                        userId: currentUser.user._id,
-                        newCost: newCost,
-                    },
-                    {
-                        headers: {
-                            Authorization: `Bearer ${currentUser.token}`,
-                        },
-                    }
-                );
-                console.log("Total cost saved:", newCost);
-                // Cập nhật cost trong Redux store để cập nhật thanh tiến trình
-                if (currentUser?.user?.role === "freeVersion") {
-                    dispatch(updateUserCost((currentUser?.user?.freeCost || 0) + newCost));
-                } else if (currentUser?.user?.role === "costVersion") {
-                    dispatch(updateUserCost((currentUser?.user?.totalCost || 0) + newCost));
-                }
-            }
-
-        } catch (error) {
-            console.error("Error generating flashcard:", error);
-            toast.error("Có lỗi xảy ra khi tạo flashcard!");  // Thông báo lỗi
+      if (newCost > 0) {
+        // Gửi yêu cầu cập nhật chi phí lên server
+        await axios.post(
+          "https://memmomind-be-ycwv.onrender.com/api/user/update-cost",
+          {
+            userId: currentUser.user._id,
+            newCost: newCost,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${currentUser.token}`,
+            },
+          }
+        );
+        console.log("Total cost saved:", newCost);
+        // Cập nhật cost trong Redux store để cập nhật thanh tiến trình
+        if (currentUser?.user?.role === "freeVersion") {
+          dispatch(updateUserCost((currentUser?.user?.freeCost || 0) + newCost));
+        } else if (currentUser?.user?.role === "costVersion") {
+          dispatch(updateUserCost((currentUser?.user?.totalCost || 0) + newCost));
         }
-    };
+      }
 
-    const handleNext = () => {
-        setIsTransitioning(true); // Ẩn flashcard trước khi chuyển
-        setTimeout(() => {
-            setCurrentIndex((prev) => (prev + 1) % flashcard.length);
-            setIsFlipped(false); // Reset trạng thái lật
-            setIsTransitioning(false); // Hiển thị flashcard sau khi cập nhật
-        }, 100);
-    };
+    } catch (error) {
+      console.error("Error generating flashcard:", error);
+      toast.error("Có lỗi xảy ra khi tạo flashcard!");  // Thông báo lỗi
+    }
+  };
 
-    const handlePrev = () => {
-        setIsTransitioning(true);
-        setTimeout(() => {
-            setCurrentIndex(
-                (prev) => (prev - 1 + flashcard.length) % flashcard.length
-            );
-            setIsFlipped(false);
-            setIsTransitioning(false);
-        }, 100);
-    };
+  const handleNext = () => {
+    setIsTransitioning(true); // Ẩn flashcard trước khi chuyển
+    setTimeout(() => {
+      setCurrentIndex((prev) => (prev + 1) % flashcard.length);
+      setIsFlipped(false); // Reset trạng thái lật
+      setIsTransitioning(false); // Hiển thị flashcard sau khi cập nhật
+    }, 100);
+  };
 
-    const saveFlashcardAsHTML = () => {
-        let flashcardHTML = `
+  const handlePrev = () => {
+    setIsTransitioning(true);
+    setTimeout(() => {
+      setCurrentIndex(
+        (prev) => (prev - 1 + flashcard.length) % flashcard.length
+      );
+      setIsFlipped(false);
+      setIsTransitioning(false);
+    }, 100);
+  };
+
+  const saveFlashcardAsHTML = () => {
+    let flashcardHTML = `
       <!DOCTYPE html>
       <html lang="en">
       <head>
@@ -409,65 +405,58 @@ const FlashcardsPage = () => {
       </html>
     `;
 
-        const blob = new Blob([flashcardHTML], { type: "text/html" });
-        const a = document.createElement("a");
-        a.href = URL.createObjectURL(blob);
-        a.download = "flashcard.html";
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-    };
+    const blob = new Blob([flashcardHTML], { type: "text/html" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "flashcard.html";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  };
 
-    return (
-        <div className="flex h-screen bg-gray-100">
-            <Sidebar />
-            <div className="flex-1 flex flex-col overflow-hidden">
-                {/* <div className="p-4 bg-white border-b border-gray-200">
+  return (
+    <div className="flex h-screen bg-gray-100">
+      <Sidebar />
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="m-4 p-4 rounded-lg bg-white border-b border-gray-200 shadow-sm">
           <div className="flex items-center">
             <div className="flex-1">
-              <h2 className="text-xl font-bold mb-2">Summarize</h2>
+              <h2 className="text-xl font-bold mb-2">Tạo thẻ ghi nhớ</h2>
             </div>
           </div>
-        </div> */}
-                <div className="flex-1 overflow-auto p-4">
-                    <TextInput
-                        fileContent={fileContent}
-                        handleChange={handleChange}
-                        handleFileUpload={handleFileUpload}
-                        handleRemoveFile={handleRemoveFile}
-                        pdfUrl={pdfUrl}
-                        imageSrc={imageSrc}
-                        charCount={charCount}
-                        handleGenerateFlashCard={handleGenerateFlashCard}
-                    />
-                    {flashcard && <Flashcard
-                        flashcard={flashcard}
-                        setFlashCard={setFlashCard}
-                        currentIndex={currentIndex}
-                        setCurrentIndex={setCurrentIndex}
-                        isFlipped={isFlipped}
-                        setIsFlipped={setIsFlipped}
-                        topic={topic}
-                        content={content}
-                        handleNext={handleNext}
-                        handlePrev={handlePrev}
-                        isTransitioning={isTransitioning}
-                        saveFlashcardAsHTML={saveFlashcardAsHTML}
-                    />}
-                </div>
-                <div>
-                    <Footer />
-                </div>
-            </div>
-
-            {isPopupOpen && (
-                <PaymentModal
-                    amount={amount}
-                    setAmount={setAmount}
-                />
-            )}
         </div>
-    );
+        <div className="flex-1 overflow-auto p-4">
+          <TextInput
+            fileContent={fileContent}
+            handleChange={handleChange}
+            handleFileUpload={handleFileUpload}
+            handleRemoveFile={handleRemoveFile}
+            pdfUrl={pdfUrl}
+            imageSrc={imageSrc}
+            charCount={charCount}
+            handleGenerateFlashCard={handleGenerateFlashCard}
+          />
+          {flashcard && <Flashcard
+            flashcard={flashcard}
+            setFlashCard={setFlashCard}
+            currentIndex={currentIndex}
+            setCurrentIndex={setCurrentIndex}
+            isFlipped={isFlipped}
+            setIsFlipped={setIsFlipped}
+            topic={topic}
+            content={content}
+            handleNext={handleNext}
+            handlePrev={handlePrev}
+            isTransitioning={isTransitioning}
+            saveFlashcardAsHTML={saveFlashcardAsHTML}
+          />}
+        </div>
+        <div className="m-4 rounded-lg bg-white border-b border-gray-200 shadow-sm">
+          <Footer />
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default FlashcardsPage;

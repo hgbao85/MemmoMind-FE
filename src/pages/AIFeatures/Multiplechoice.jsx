@@ -13,6 +13,7 @@ import { updateUserCost } from "../../redux/user/userSlice";
 import { useDispatch } from "react-redux";
 import MultipleChoice from '../../components/Sidebar/MultipleChoice';
 import Footer from '../../components/Footer/Footer';
+import { useMemo } from "react";
 
 const MultipleChoicePage = () => {
     const { currentUser } = useSelector((state) => state.user);
@@ -25,16 +26,15 @@ const MultipleChoicePage = () => {
     const navigate = useNavigate();
     const [userInfo, setUserInfo] = useState(null);
     const dispatch = useDispatch();
-    const [isManuallyClosed, setIsManuallyClosed] = useState(false);
-    const [noteData, setNoteData] = useState(null);
-    const [addEditType, setAddEditType] = useState("add");
     const [uploadedFile, setUploadedFile] = useState(null);
     const [currentChoiceIndex, setCurrentChoiceIndex] = useState(0);
     const [topicMulchoice, setTopicMulchoice] = useState("");
     const [multipleChoice, setMultipleChoice] = useState([]);
     const [isTransitioning, setIsTransitioning] = useState(false);
     const [selectedAnswer, setSelectedAnswer] = useState(null);
-
+    const [userAnswers, setUserAnswers] = useState({});
+    const [isAnswerCorrect, setIsAnswerCorrect] = useState(null);
+    const [shuffledAnswers, setShuffledAnswers] = useState([]);
 
     useEffect(() => {
         if (!initialUserCheck.current) {
@@ -78,12 +78,6 @@ const MultipleChoicePage = () => {
         setPdfUrl('');
         setImageSrc('');
         setCharCount(0);
-    };
-
-    const handleAddNote = (note = { title: "", content: "" }) => {
-        setIsManuallyClosed(false);
-        setNoteData(note);
-        setAddEditType("add");
     };
 
     const handleFileUpload = (event) => {
@@ -162,7 +156,7 @@ const MultipleChoicePage = () => {
             }
 
             const response = await axios.post(
-                "http://localhost:6082/mul-choices",
+                "http://vietserver.ddns.net:6082/mul-choices",
                 payload,
                 { headers: { "Content-Type": "application/json" }, responseType: "arraybuffer" }
             );
@@ -230,14 +224,320 @@ const MultipleChoicePage = () => {
         }
     };
 
+    useEffect(() => {
+        if (multipleChoice.length > 0 && currentChoiceIndex < multipleChoice.length) {
+            const currentQuestionObj = multipleChoice[currentChoiceIndex];
+            const topicKey = Object.keys(currentQuestionObj)[0]; // Lấy chủ đề của câu hỏi hiện tại
+            setTopicMulchoice(topicKey || "Không có dữ liệu");
+        } else {
+            setTopicMulchoice("Không có dữ liệu");
+        }
+    }, [multipleChoice, currentChoiceIndex]);
+
+    const shuffleAnswers = (correctAnswer, wrongAnswers) => {
+        let options = [...wrongAnswers, correctAnswer]; // Thêm cả câu đúng
+        for (let i = options.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [options[i], options[j]] = [options[j], options[i]]; // Hoán đổi ngẫu nhiên
+        }
+        return options;
+    };
+
+    const currentQuestionData =
+        multipleChoice.length > 0 && currentChoiceIndex < multipleChoice.length
+            ? multipleChoice[currentChoiceIndex]
+            : null;
+
+    const contentMulchoice = useMemo(() => {
+        if (!currentQuestionData) {
+            return {
+                question: "Không có dữ liệu",
+                correctAnswer: "Không có dữ liệu",
+                wrongAnswers: [],
+            };
+        }
+        const topicKey = Object.keys(currentQuestionData)[0]; // Lấy chủ đề hiện tại
+        const questionData = currentQuestionData[topicKey] || {}; // Lấy dữ liệu câu hỏi
+        return {
+            question: questionData.Question?.[0] || "Không có dữ liệu",
+            correctAnswer: questionData.Answer?.[0] || "Không có dữ liệu",
+            wrongAnswers: questionData["Wrong Answer"] || [],
+        };
+    }, [currentQuestionData]);
+
+    useEffect(() => {
+        if (contentMulchoice.correctAnswer !== "Không có dữ liệu") {
+            setShuffledAnswers(shuffleAnswers(contentMulchoice.correctAnswer, contentMulchoice.wrongAnswers));
+        }
+    }, [contentMulchoice]);
+
+
+    useEffect(() => {
+        const previousAnswer = userAnswers[currentChoiceIndex] || null;
+        setSelectedAnswer(previousAnswer);
+        setIsAnswerCorrect(previousAnswer === contentMulchoice.correctAnswer);
+    }, [currentChoiceIndex, contentMulchoice, userAnswers]);
+
+    const handleAnswerClick = (selectedAnswer, correctIndex) => {
+        if (userAnswers[currentChoiceIndex] !== undefined) return; // Chỉ chọn 1 lần
+
+        setUserAnswers((prevAnswers) => ({
+            ...prevAnswers,
+            [currentChoiceIndex]: selectedAnswer,
+        }));
+
+        setIsAnswerCorrect(selectedAnswer === shuffledAnswers[correctIndex]);
+    };
+
+
+    const resetAllAnswers = () => {
+        setCurrentChoiceIndex(0);
+        setUserAnswers({});
+        setSelectedAnswer(null);
+        setIsAnswerCorrect(null);
+    };
+
+
+    const saveMultipleChoiceAsHTML = () => {
+        if (!multipleChoice || multipleChoice.length === 0) {
+            toast.error("Không có câu hỏi trắc nghiệm để lưu!");
+            return;
+        }
+
+        // Định dạng lại dữ liệu câu hỏi theo đúng cấu trúc UI trên web
+        const formattedQuestions = multipleChoice.map((questionData, index) => {
+            let topic = Object.keys(questionData).find(
+                (key) => key !== "Question" && key !== "Answer" && key !== "Wrong Answer"
+            ) || "Không có dữ liệu";
+
+            let content = questionData[topic] || questionData;
+
+            return {
+                index: index, // Đánh số câu hỏi
+                topic: topic,
+                question: content.Question[0] || "Không có dữ liệu",
+                correctAnswer: content.Answer[0] || "Không có dữ liệu",
+                wrongAnswers: content["Wrong Answer"] || [],
+            };
+        });
+
+        // Convert JSON thành chuỗi để nhúng vào HTML
+        const questions = JSON.stringify(formattedQuestions);
+
+        let multipleChoiceHTML = `
+      <!DOCTYPE html>
+      <html lang="vi">
+      <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Câu hỏi trắc nghiệm</title>
+          <style>
+              body {
+                  font-family: Arial, sans-serif;
+                  background: #f4f4f4;
+                  display: flex;
+                  justify-content: center;
+                  align-items: center;
+                  height: 100vh;
+              }
+              .quiz-container {
+                  background: white;
+                  padding: 20px;
+                  border-radius: 10px;
+                  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+                  width: 500px;
+                  text-align: center;
+              }
+              h2 {
+                  font-size: 22px;
+                  font-weight: bold;
+              }
+              h3 {
+                  font-size: 18px;
+                  margin-top: 15px;
+              }
+              #topic {
+                  font-size: 16px;
+                  font-weight: bold;
+                  color: #007BFF;
+                  margin-bottom: 10px;
+                  text-transform: uppercase;
+              }
+              .options button {
+                  display: block;
+                  width: 100%;
+                  padding: 10px;
+                  margin: 5px 0;
+                  border: none;
+                  background: #ececec;
+                  cursor: pointer;
+                  border-radius: 5px;
+                  text-align: left;
+                  font-size: 16px;
+                  transition: 0.3s;
+              }
+              .options button:hover {
+                  background: #ddd;
+              }
+              .options button.correct {
+                  background: #28a745;
+                  color: white;
+              }
+              .options button.incorrect {
+                  background: #dc3545;
+                  color: white;
+              }
+              .navigation {
+                  display: flex;
+                  justify-content: space-between;
+                  margin-top: 15px;
+              }
+              .navigation button {
+                  background: #007BFF;
+                  color: white;
+                  padding: 10px 15px;
+                  border: none;
+                  border-radius: 5px;
+                  cursor: pointer;
+                  font-size: 16px;
+              }
+              .reset-btn {
+                  background: #dc3545;
+                  margin-top: 10px;
+                  color: white;
+                  border: none;
+                  padding: 8px;
+                  border-radius: 5px;
+                  cursor: pointer;
+                  font-size: 14px;
+              }
+              #resultMessage {
+                  margin-top: 10px;
+                  font-weight: bold;
+                  font-size: 16px;
+                  padding: 10px;
+                  border-radius: 5px;
+                  display: inline-block;
+              }
+          </style>
+      </head>
+      <body>
+          <div class="quiz-container">
+              <h2>Câu hỏi trắc nghiệm</h2>
+              <h3 id="topic"></h3>
+              <h3 id="question"></h3>
+              <div class="options" id="options"></div>
+              <p id="resultMessage"></p>
+              <div class="navigation">
+                  <button onclick="prevQuestion()">&#9664; Trước</button>
+                  <span id="counter"></span>
+                  <button onclick="nextQuestion()">Tiếp &#9654;</button>
+              </div>
+              <button class="reset-btn" onclick="resetQuiz()">Thử lại toàn bộ câu hỏi</button>
+          </div>
+          
+          <script>
+              let questions = ${questions};
+              let currentQuestionIndex = 0;
+              let userAnswers = {}; // Lưu nội dung đáp án người dùng chọn
+  
+              function loadQuestion() {
+                  let questionData = questions[currentQuestionIndex];
+                  let { topic, question, correctAnswer, wrongAnswers } = questionData;
+  
+                  // Đảo ngẫu nhiên vị trí đáp án
+                  let answers = [...wrongAnswers, correctAnswer].sort(() => Math.random() - 0.5);
+                  let labels = ["A", "B", "C", "D"];
+  
+                  document.getElementById("topic").innerText = topic.toUpperCase();
+                  document.getElementById("question").innerText = question;
+  
+                  document.getElementById("options").innerHTML = answers.map((answer, index) => 
+                      \`<button onclick="checkAnswer(this, '\${answer}', '\${correctAnswer}')"
+                          id="btn-\${index}">\${labels[index]}. \${answer}
+                      </button>\`
+                  ).join("");
+  
+                  document.getElementById("counter").innerText = (currentQuestionIndex + 1) + " / " + questions.length;
+                  document.getElementById("resultMessage").innerText = "";
+  
+                  // Kiểm tra nếu người dùng đã chọn trước đó
+                  if (userAnswers[currentQuestionIndex] !== undefined) {
+                      let selectedAnswer = userAnswers[currentQuestionIndex];
+                      let buttons = document.querySelectorAll(".options button");
+  
+                      buttons.forEach((btn) => {
+                          if (btn.innerText.includes(selectedAnswer)) {
+                              btn.classList.add(selectedAnswer === correctAnswer ? "correct" : "incorrect");
+                          }
+                          if (btn.innerText.includes(correctAnswer)) {
+                              btn.classList.add("correct");
+                          }
+                          btn.disabled = true;
+                      });
+                  }
+              }
+  
+              function checkAnswer(button, selectedAnswer, correctAnswer) {
+                  let buttons = document.querySelectorAll(".options button");
+                  if (userAnswers[currentQuestionIndex] !== undefined) return; // Chỉ chọn 1 lần
+  
+                  userAnswers[currentQuestionIndex] = selectedAnswer;
+                  buttons.forEach(btn => btn.disabled = true);
+  
+                  if (selectedAnswer === correctAnswer) {
+                      button.classList.add("correct");
+                      document.getElementById("resultMessage").innerText = "✅ Đáp án đúng!";
+                  } else {
+                      button.classList.add("incorrect");
+                      buttons.forEach(b => {
+                          if (b.innerText.includes(correctAnswer)) {
+                              b.classList.add("correct");
+                          }
+                      });
+                      document.getElementById("resultMessage").innerText = "❌ Đáp án đúng là: " + correctAnswer;
+                  }
+              }
+  
+              function nextQuestion() {
+                  currentQuestionIndex = (currentQuestionIndex + 1) % questions.length;
+                  loadQuestion();
+              }
+  
+              function prevQuestion() {
+                  currentQuestionIndex = (currentQuestionIndex - 1 + questions.length) % questions.length;
+                  loadQuestion();
+              }
+  
+              function resetQuiz() {
+                  currentQuestionIndex = 0;
+                  userAnswers = {};
+                  loadQuestion();
+              }
+              
+              loadQuestion();
+          </script>
+      </body>
+      </html>
+    `;
+
+        const blob = new Blob([multipleChoiceHTML], { type: "text/html" });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "multiple_choice.html";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    };
+
     return (
         <div className="flex h-screen bg-gray-100">
             <Sidebar />
             <div className="flex-1 flex flex-col overflow-hidden">
-                <div className="p-4 bg-white border-b border-gray-200">
+                <div className="m-4 p-4 rounded-lg bg-white border-b border-gray-200 shadow-sm">
                     <div className="flex items-center">
                         <div className="flex-1">
-                            <h2 className="text-xl font-bold mb-2">MultipleChoice</h2>
+                            <h2 className="text-xl font-bold mb-2">Tạo câu hỏi trắc nghiệm</h2>
                         </div>
                     </div>
                 </div>
@@ -253,25 +553,35 @@ const MultipleChoicePage = () => {
                         handleGenerateMultipleChoice={handleGenerateMultipleChoice}
                         isSubmitting={isSubmitting}
                     />
+                    {multipleChoice && multipleChoice.length > 0 && (
+                        <MultipleChoice
+                            topic={topicMulchoice}
+                            setMultipleChoice={setMultipleChoice}
+                            currentChoiceIndex={currentChoiceIndex}
+                            setCurrentChoiceIndex={setCurrentChoiceIndex}
+                            isTransitioning={isTransitioning}
+                            setIsTransitioning={setIsTransitioning}
+                            selectedAnswer={selectedAnswer}
+                            setSelectedAnswer={setSelectedAnswer}
+                            handlePrevmulchoice={() => setCurrentChoiceIndex((prev) => Math.max(prev - 1, 0))}
+                            handleNextmulchoice={() => setCurrentChoiceIndex((prev) => Math.min(prev + 1, multipleChoice.length - 1))}
+                            saveMultipleChoiceAsHTML={saveMultipleChoiceAsHTML}
+                            multipleChoice={multipleChoice}
+                            shuffledAnswers={shuffledAnswers}
+                            isAnswerCorrect={isAnswerCorrect}
+                            handleAnswerClick={handleAnswerClick}
+                            resetAllAnswers={resetAllAnswers}
+                            contentMulchoice={contentMulchoice}
+                            userAnswers={userAnswers}
+                            setUserAnswers={setUserAnswers}
+                        />
+                    )}
                 </div>
-                <div>
+
+                <div className="m-4 rounded-lg bg-white border-b border-gray-200 shadow-sm">
                     <Footer />
                 </div>
             </div>
-
-            {multipleChoice && multipleChoice.length > 0 && (
-                <MultipleChoice
-                    text={fileContent}
-                    topic={topicMulchoice}
-                    setMultipleChoice={setMultipleChoice}
-                    currentChoiceIndex={currentChoiceIndex}
-                    setCurrentChoiceIndex={setCurrentChoiceIndex}
-                    isTransitioning={isTransitioning}
-                    setIsTransitioning={setIsTransitioning}
-                    selectedAnswer={selectedAnswer}
-                    setSelectedAnswer={setSelectedAnswer}
-                />
-            )}
         </div>
     );
 };

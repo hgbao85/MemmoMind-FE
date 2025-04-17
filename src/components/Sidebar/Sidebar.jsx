@@ -18,10 +18,12 @@ import ProfileInfo from "../ProfileInfo/ProfileInfo"
 import { useState } from "react"
 import { useNavigate, useLocation } from "react-router-dom"
 import { useEffect } from "react"
-import { useDispatch } from "react-redux"
+import { useDispatch, useSelector } from "react-redux"
 import { openPopup } from "../../redux/user/paymentSlice"
 import logo from "../../assets/images/logomoi4m.png"
+import paymentimg from "../../assets/images/payment.png"
 import { Link } from "react-router-dom"
+import PaymentModal from "../PaymentModal.jsx/PaymentModal"
 
 const Sidebar = () => {
   const [aiDropdownOpen, setAiDropdownOpen] = useState(false)
@@ -29,6 +31,8 @@ const Sidebar = () => {
   const location = useLocation()
   const dispatch = useDispatch()
   const [isLoading, setIsLoading] = useState(false)
+  const isPopupOpen = useSelector((state) => state.payment.isPopupOpen);
+  const [amount, setAmount] = useState(1000);
 
   useEffect(() => {
     const aiPaths = ["/summarize", "/mindmap", "/powerpoint", "/flashcards", "/multiplechoice", "/solve"]
@@ -173,7 +177,7 @@ const Sidebar = () => {
       <div className="mt-auto p-4">
         <div className="text-center">
           <div className="mb-2">
-            <img src={logo || "/placeholder.svg"} alt="Rocket" className="mx-auto" />
+            <img src={paymentimg || "/placeholder.svg"} alt="Rocket" className="mx-auto" />
           </div>
           <div className="text-xs text-gray-600 mb-2">Set Business Account To Explore Premium Features</div>
           <button onClick={() => dispatch(openPopup())} className="bg-gray-900 text-white text-xs rounded px-4 py-1">
@@ -182,6 +186,12 @@ const Sidebar = () => {
         </div>
       </div>
       {isLoading && <FullscreenLoader />}
+      {isPopupOpen && (
+        <PaymentModal
+          amount={amount}
+          setAmount={setAmount}
+        />
+      )}
     </div>
   )
 }

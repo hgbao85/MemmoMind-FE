@@ -20,7 +20,6 @@ const Flashcard = ({
   return (
     <div
       className="relative mt-4 p-2 border rounded-md bg-gray-200"
-      style={{ zIndex: 1000 }}
     >
       <div className="relative w-full max-w-7xl bg-white rounded-lg shadow-lg p-6 flex flex-col items-center">
         <button

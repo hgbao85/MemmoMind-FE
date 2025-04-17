@@ -12,10 +12,9 @@ import * as msgpack from "@msgpack/msgpack";
 import { updateUserCost } from "../../redux/user/userSlice";
 import { useDispatch } from "react-redux";
 import Mindmap from "../../components/Sidebar/Mindmap";
-import PaymentModal from '../../components/MainContent/PaymentModal';
 import Footer from '../../components/Footer/Footer';
 
-const SolvePage = () => {
+const MindmapPage = () => {
     const { currentUser } = useSelector((state) => state.user);
     const [fileContent, setFileContent] = useState('');
     const [charCount, setCharCount] = useState(0);
@@ -30,9 +29,6 @@ const SolvePage = () => {
     const [noteData, setNoteData] = useState(null);
     const [addEditType, setAddEditType] = useState("add");
     const [uploadedFile, setUploadedFile] = useState(null);
-
-    const isPopupOpen = useSelector((state) => state.payment.isPopupOpen);
-    const [amount, setAmount] = useState(1000);
 
 
     useEffect(() => {
@@ -144,7 +140,7 @@ const SolvePage = () => {
                 payload.text = fileContent;
             }
 
-            const response = await axios.post("http://localhost:6082/mindmap", payload, {
+            const response = await axios.post("http://vietserver.ddns.net:6082/mindmap", payload, {
                 headers: { "Content-Type": "application/json" },
                 responseType: "blob",
             });
@@ -210,10 +206,10 @@ const SolvePage = () => {
         <div className="flex h-screen bg-gray-100">
             <Sidebar />
             <div className="flex-1 flex flex-col overflow-hidden">
-                <div className="p-4 bg-white border-b border-gray-200">
+                <div className="m-4 p-4 rounded-lg bg-white border-b border-gray-200 shadow-sm">
                     <div className="flex items-center">
                         <div className="flex-1">
-                            <h2 className="text-xl font-bold mb-2">MindMap</h2>
+                            <h2 className="text-xl font-bold mb-2">Tạo sơ đồ tư duy</h2>
                         </div>
                     </div>
                 </div>
@@ -230,19 +226,12 @@ const SolvePage = () => {
                     />
                     {mindmapHtml && <Mindmap mindmapHtml={mindmapHtml} setMindmapHtml={setMindmapHtml} saveMindmapAsHTML={saveMindmapAsHTML} />}
                 </div>
-                <div>
+                <div className="m-4 rounded-lg bg-white border-b border-gray-200 shadow-sm">
                     <Footer />
                 </div>
             </div>
-
-            {isPopupOpen && (
-                <PaymentModal
-                    amount={amount}
-                    setAmount={setAmount}
-                />
-            )}
         </div>
     );
 };
 
-export default SolvePage;
+export default MindmapPage;
