@@ -1,5 +1,6 @@
 import PropTypes from 'prop-types';
 import { MdClose, MdFileDownload, MdArrowBack, MdArrowForward } from 'react-icons/md';
+import "./flashcard.css";
 
 const Flashcard = ({
   flashcard,
@@ -18,10 +19,10 @@ const Flashcard = ({
 
   return (
     <div
-      className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 p-4"
+      className="relative mt-4 p-2 border rounded-md bg-gray-200"
       style={{ zIndex: 1000 }}
     >
-      <div className="relative w-full max-w-3xl bg-white rounded-lg shadow-lg p-6 flex flex-col items-center">
+      <div className="relative w-full max-w-7xl bg-white rounded-lg shadow-lg p-6 flex flex-col items-center">
         <button
           onClick={() => setFlashCard([])}
           className="absolute top-3 right-3 text-gray-600 hover:text-black"
@@ -36,9 +37,8 @@ const Flashcard = ({
 
         <div className="flashcard-container w-full max-w-2xl">
           <div
-            className={`flashcard ${isFlipped ? "flipped" : ""} ${
-              isTransitioning ? "hidden" : ""
-            }`}
+            className={`flashcard ${isFlipped ? "flipped" : ""} ${isTransitioning ? "hidden" : ""
+              }`}
             onClick={() => setIsFlipped(!isFlipped)}
           >
             <div className="front">
