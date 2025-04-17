@@ -93,13 +93,11 @@ const ProfilePage = () => {
 
             if (response.data) {
                 toast.success("Cập nhật thông tin thành công")
-                // Cập nhật Redux store với tên mới
                 dispatch(setUser({
                     ...currentUser,
                     name: userProfile.name
                 }))
 
-                // Load lại trang sau 1 giây để thấy thay đổi
                 setTimeout(() => {
                     window.location.reload()
                 }, 1000)
