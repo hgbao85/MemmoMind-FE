@@ -168,7 +168,7 @@ export default function Home() {
             <div className="flex-1 relative">
               <input
                 type="text"
-                placeholder="Search notes..."
+                placeholder="Tìm kiếm ghi chú..."
                 className="w-full p-2 pl-10 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#1e2a4a]"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
