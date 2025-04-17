@@ -35,6 +35,7 @@ const MultipleChoicePage = () => {
     const [userAnswers, setUserAnswers] = useState({});
     const [isAnswerCorrect, setIsAnswerCorrect] = useState(null);
     const [shuffledAnswers, setShuffledAnswers] = useState([]);
+    const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
         if (!initialUserCheck.current) {
@@ -137,7 +138,7 @@ const MultipleChoicePage = () => {
             toast.error("Vui lòng nhập văn bản hoặc tải lên tệp trước khi tạo câu hỏi trắc nghiệm!");
             return;
         }
-
+        setIsLoading(true);
         try {
             let payload = { userId: currentUser.user._id };
 
@@ -221,6 +222,8 @@ const MultipleChoicePage = () => {
         } catch (error) {
             console.error("Error generating multiple choice:", error);
             toast.error("Có lỗi xảy ra khi tạo câu hỏi trắc nghiệm!");
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -574,6 +577,7 @@ const MultipleChoicePage = () => {
                             contentMulchoice={contentMulchoice}
                             userAnswers={userAnswers}
                             setUserAnswers={setUserAnswers}
+                            isLoading={isLoading}
                         />
                     )}
                 </div>

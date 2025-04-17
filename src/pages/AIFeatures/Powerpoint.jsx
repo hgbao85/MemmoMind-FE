@@ -28,7 +28,7 @@ const PowerPointPage = () => {
     const dispatch = useDispatch();
     const [uploadedFile, setUploadedFile] = useState(null);
     const [pptxFilename, setPptxFilename] = useState(null);
-
+    const [isLoading, setIsLoading] = useState(false);
     const isPopupOpen = useSelector((state) => state.payment.isPopupOpen);
     const [amount, setAmount] = useState(1000);
 
@@ -118,7 +118,7 @@ const PowerPointPage = () => {
             toast.error("Vui lòng nhập văn bản hoặc tải lên tệp trước khi tạo PowerPoint!");
             return;
         }
-
+        setIsLoading(true);
         try {
             let payload = { userId: currentUser.user._id, text: fileContent };
 
@@ -207,6 +207,8 @@ const PowerPointPage = () => {
         } catch (error) {
             console.error("Error generating PowerPoint:", error);
             toast.error("Có lỗi xảy ra khi tạo PowerPoint!");  // Thông báo lỗi
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -263,6 +265,7 @@ const PowerPointPage = () => {
                         imageSrc={imageSrc}
                         charCount={charCount}
                         handleGeneratePowerpoint={handleGeneratePowerpoint}
+                        isLoading={isLoading}
                     />
                     {powerpointPreview && <PowerPoint
                         powerpointPreview={powerpointPreview}

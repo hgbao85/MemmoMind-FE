@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { useLocation } from 'react-router-dom';
 import { MdOutlineFileUpload, MdOpenInNew, MdClose } from 'react-icons/md';
 import { useState, useRef } from 'react';
+import { Oval } from 'react-loader-spinner';
 
 const TextInput = ({
   fileContent,
@@ -18,6 +19,7 @@ const TextInput = ({
   pdfUrl,
   imageSrc,
   charCount,
+  isLoading,
 }) => {
   const location = useLocation();
   const pathname = location.pathname;
@@ -241,18 +243,32 @@ const TextInput = ({
       <div className="mt-6 text-right">
         <button
           onClick={handleSubmit}
-          disabled={isDisabled}
-          className={`px-6 py-2 rounded-lg text-white text-sm transition ${isDisabled
+          disabled={isDisabled || isLoading}
+          className={`px-6 py-2 rounded-lg text-white text-sm transition ${isDisabled || isLoading
             ? 'bg-gray-400 cursor-not-allowed'
             : 'bg-green-600 hover:bg-green-700'
             }`}
         >
-          {pathname.includes('/summarize') && 'Tóm tắt'}
-          {pathname.includes('/multiplechoice') && 'Tạo câu hỏi trắc nghiệm'}
-          {pathname.includes('/solve') && 'Hỗ trợ giải bài tập'}
-          {pathname.includes('/mindmap') && 'Tạo sơ đồ tư duy'}
-          {pathname.includes('/flashcards') && 'Tạo thẻ ghi nhớ'}
-          {pathname.includes('/powerpoint') && 'Tạo PowerPoint'}
+          {isLoading ? (
+            <Oval
+              height={22}
+              width={22}
+              color="white"
+              secondaryColor="#ccc"
+              strokeWidth={4}
+              strokeWidthSecondary={4}
+              visible={true}
+            />
+          ) : (
+            <>
+              {pathname.includes('/summarize') && 'Tóm tắt'}
+              {pathname.includes('/multiplechoice') && 'Tạo câu hỏi trắc nghiệm'}
+              {pathname.includes('/solve') && 'Hỗ trợ giải bài tập'}
+              {pathname.includes('/mindmap') && 'Tạo sơ đồ tư duy'}
+              {pathname.includes('/flashcards') && 'Tạo thẻ ghi nhớ'}
+              {pathname.includes('/powerpoint') && 'Tạo PowerPoint'}
+            </>
+          )}
         </button>
       </div>
     </div>
@@ -274,7 +290,8 @@ TextInput.propTypes = {
   pdfUrl: PropTypes.string,
   imageSrc: PropTypes.string,
   charCount: PropTypes.number,
-  isSubmitting: PropTypes.bool
+  isSubmitting: PropTypes.bool,
+  isLoading: PropTypes.bool,
 };
 
 export default TextInput;

@@ -29,6 +29,7 @@ const SolvePage = () => {
     const [noteData, setNoteData] = useState(null);
     const [addEditType, setAddEditType] = useState("add");
     const [uploadedFile, setUploadedFile] = useState(null);
+    const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
         if (!initialUserCheck.current) {
@@ -121,7 +122,7 @@ const SolvePage = () => {
             toast.error("Vui lòng nhập văn bản hoặc tải lên tệp trước khi tạo solve!");
             return;
         }
-
+        setIsLoading(true);
         try {
             let payload = { userId: currentUser.user._id };
 
@@ -190,6 +191,8 @@ const SolvePage = () => {
         } catch (error) {
             console.error("Error solving:", error.message);
             toast.error("Có lỗi xảy ra khi giải bài tập!");  // Thông báo lỗi
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -214,6 +217,7 @@ const SolvePage = () => {
                         imageSrc={imageSrc}
                         charCount={charCount}
                         handleGenerateSolve={handleGenerateSolve}
+                        isLoading={isLoading}
                     />
                     {solve && <Solve solve={solve} setSolve={setSolve} handleAddNote={handleAddNote} />}
                 </div>
