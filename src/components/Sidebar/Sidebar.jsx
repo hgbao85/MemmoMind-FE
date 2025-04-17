@@ -7,13 +7,12 @@ import {
   Brain,
   Map,
   FileText,
-  ChevronDown,
-  ChevronRight,
   PresentationIcon,
   LayoutGrid,
   ListChecks,
   Calculator,
 } from "lucide-react"
+import { FaChevronDown } from "react-icons/fa"
 import ProfileInfo from "../ProfileInfo/ProfileInfo"
 import { useState } from "react"
 import { useNavigate, useLocation } from "react-router-dom"
@@ -79,7 +78,7 @@ const Sidebar = () => {
             onClick={handleAddNoteClick}>
             <div className="flex items-center">
               <Plus size={16} className="mx-3" />
-              <span>Thêm Note mới</span>
+              <span>Thêm ghi chú mới</span>
             </div>
           </button>
         </div>
@@ -88,7 +87,7 @@ const Sidebar = () => {
           <button className="flex items-center p-2 text-[#1f1c2f]"
             onClick={() => handleNavigate("/homepage")}>
             <Pencil size={16} className="mr-2" />
-            <span>Note của bạn</span>
+            <span>Ghi chú của bạn</span>
           </button>
 
           {/* AI Features Dropdown */}
@@ -101,7 +100,9 @@ const Sidebar = () => {
                 <Brain size={16} className="mr-2" />
                 <span>Tính năng AI</span>
               </div>
-              {aiDropdownOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+              <FaChevronDown
+                className={`text-[#1f1c2f] text-sm transition-transform duration-200 ${aiDropdownOpen ? "rotate-180" : ""}`}
+              />
             </button>
 
             {aiDropdownOpen && (
@@ -174,13 +175,13 @@ const Sidebar = () => {
         </div>
       </div>
 
-      <div className="mt-auto p-4">
+      <div className="mt-auto p-2">
         <div className="text-center">
           <div className="mb-2">
             <img src={paymentimg || "/placeholder.svg"} alt="Rocket" className="mx-auto" />
           </div>
-          <div className="text-xs text-gray-600 mb-2">Set Business Account To Explore Premium Features</div>
-          <button onClick={() => dispatch(openPopup())} className="bg-gray-900 text-white text-xs rounded px-4 py-1">
+          <div className="text-xs text-[#1f1c2f] mb-2">Để sử dụng tính năng AI không giới hạn, hãy nạp tiền bằng nút <strong>Trả phí </strong>dưới đây!</div>
+          <button onClick={() => dispatch(openPopup())} className="bg-[#1f1c2f] text-white text-sm rounded px-8 py-2">
             Trả phí
           </button>
         </div>
