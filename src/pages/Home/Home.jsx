@@ -183,7 +183,7 @@ export default function Home() {
         <div className="flex-1 overflow-auto p-4">
           <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
             <div className="mb-4">
-              <h3 className="text-2xl text-[28px] text-[#131313] mb-2">Note của bạn</h3>
+              <h3 className="text-2xl text-[28px] text-[#131313] mb-2">Ghi chú của bạn</h3>
 
               <div className="flex border-b border-gray-200">
                 {tabs.map((tab) => (
@@ -275,8 +275,8 @@ export default function Home() {
                               <button
                                 onClick={() => handleTogglePin(note._id)}
                                 className={`p-2 rounded-full ${note.isPinned
-                                    ? "bg-red-100 text-red-600 hover:bg-red-200"
-                                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
+                                  ? "bg-red-100 text-red-600 hover:bg-red-200"
+                                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
                                 data-tooltip-id="favorite-tooltip"
                                 data-tooltip-content="Yêu thích"
                               >
@@ -340,7 +340,7 @@ export default function Home() {
         </div>
         {/* Footer */}
         <div className="m-4 rounded-lg bg-white border-b border-gray-200 shadow-sm">
-            <Footer />
+          <Footer />
         </div>
         <ChatbaseWidget />
       </div>
