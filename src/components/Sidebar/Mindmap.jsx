@@ -6,10 +6,10 @@ const Mindmap = ({ mindmapHtml, setMindmapHtml, saveMindmapAsHTML }) => {
 
   return (
     <div
-      className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 p-4"
+      className="relative mt-4 p-2 border rounded-md bg-gray-200"
       style={{ zIndex: 1000 }}
     >
-      <div className="relative w-full max-w-5xl bg-white rounded-lg shadow-lg p-4">
+      <div className="relative w-full max-w-7xl bg-white rounded-lg shadow-lg p-4">
         <button
           onClick={() => setMindmapHtml(null)}
           className="absolute top-2 right-2 text-gray-600 hover:text-black"
