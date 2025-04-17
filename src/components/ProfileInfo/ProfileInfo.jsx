@@ -211,9 +211,11 @@ const ProfileInfo = () => {
       {isDropdownOpen && (
         <div className="absolute right-0 left-0 mt-1 bg-white rounded-md shadow-lg z-10 py-1 border border-gray-100">
           <div className="py-1">
-            <button className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
+            <button
+              onClick={() => navigate("/profile")}
+              className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
               <FaUser className="mr-3 text-gray-500" />
-              My Profile
+              Trang cá nhân
             </button>
           </div>
           <div className="border-t border-gray-100">
@@ -222,7 +224,7 @@ const ProfileInfo = () => {
               className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
             >
               <FaSignOutAlt className="mr-3 text-gray-500" />
-              Logout
+              Đăng xuất
             </button>
           </div>
         </div>

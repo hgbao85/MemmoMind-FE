@@ -3,7 +3,7 @@
 import {
   Plus,
   Pencil,
-  CheckSquare,
+  Trash,
   Brain,
   Map,
   FileText,
@@ -14,7 +14,7 @@ import {
   ListChecks,
   Calculator,
 } from "lucide-react"
-import ProfileInfo from "../Cards/ProfileInfo"
+import ProfileInfo from "../ProfileInfo/ProfileInfo"
 import { useState } from "react"
 import { useNavigate, useLocation } from "react-router-dom"
 import { useEffect } from "react"
@@ -51,6 +51,10 @@ const Sidebar = () => {
     }, 700)
   }
 
+  const handleAddNoteClick = () => {
+    navigate("/add-note")
+  }
+
   return (
     <div className="w-64 bg-white border-r border-gray-200 rounded-lg flex flex-col overflow-auto mx-8 my-4">
       <div className="p-4 border-b border-gray-200">
@@ -67,19 +71,21 @@ const Sidebar = () => {
 
       <div className="p-2">
         <div className="relative">
-          <button className="bg-blue-500 text-white rounded w-full p-2 flex items-center justify-between">
+          <button className="bg-[#1f1c2f] text-white rounded w-full p-2 flex items-center justify-between"
+            onClick={handleAddNoteClick}>
             <div className="flex items-center">
-              <Plus size={16} className="mr-2" />
-              <span>Add New</span>
+              <Plus size={16} className="mx-3" />
+              <span>Thêm Note mới</span>
             </div>
           </button>
         </div>
 
         <div className="mt-4">
-          <div className="flex items-center p-2 text-blue-500">
+          <button className="flex items-center p-2 text-[#1f1c2f]"
+            onClick={() => handleNavigate("/homepage")}>
             <Pencil size={16} className="mr-2" />
-            <span>Your Notes</span>
-          </div>
+            <span>Note của bạn</span>
+          </button>
 
           {/* AI Features Dropdown */}
           <div className="mt-1">
@@ -115,8 +121,8 @@ const Sidebar = () => {
                 <button
                   onClick={() => handleNavigate("/powerpoint")}
                   className={`flex items-center p-2 rounded w-full text-left cursor-pointer ${location.pathname === "/powerpoint"
-                      ? "bg-blue-100 text-blue-600"
-                      : "text-gray-500 hover:bg-gray-100"
+                    ? "bg-blue-100 text-blue-600"
+                    : "text-gray-500 hover:bg-gray-100"
                     }`}
                 >
                   <PresentationIcon size={14} className="mr-2" />
@@ -125,8 +131,8 @@ const Sidebar = () => {
                 <button
                   onClick={() => handleNavigate("/flashcards")}
                   className={`flex items-center p-2 rounded w-full text-left cursor-pointer ${location.pathname === "/flashcards"
-                      ? "bg-blue-100 text-blue-600"
-                      : "text-gray-500 hover:bg-gray-100"
+                    ? "bg-blue-100 text-blue-600"
+                    : "text-gray-500 hover:bg-gray-100"
                     }`}
                 >
                   <LayoutGrid size={14} className="mr-2" />
@@ -135,8 +141,8 @@ const Sidebar = () => {
                 <button
                   onClick={() => handleNavigate("/multiplechoice")}
                   className={`flex items-center p-2 rounded w-full text-left cursor-pointer ${location.pathname === "/multiplechoice"
-                      ? "bg-blue-100 text-blue-600"
-                      : "text-gray-500 hover:bg-gray-100"
+                    ? "bg-blue-100 text-blue-600"
+                    : "text-gray-500 hover:bg-gray-100"
                     }`}
                 >
                   <ListChecks size={14} className="mr-2" />
@@ -156,10 +162,10 @@ const Sidebar = () => {
 
           <div
             className="flex items-center p-2 text-gray-500 hover:bg-gray-100 rounded cursor-pointer"
-            onClick={() => navigate("/bin")}
+            onClick={() => navigate("/trash")}
           >
-            <CheckSquare size={16} className="mr-2" />
-            <span>Bin</span>
+            <Trash size={16} className="mr-2" />
+            <span>Thùng rác</span>
           </div>
         </div>
       </div>
@@ -171,7 +177,7 @@ const Sidebar = () => {
           </div>
           <div className="text-xs text-gray-600 mb-2">Set Business Account To Explore Premium Features</div>
           <button onClick={() => dispatch(openPopup())} className="bg-gray-900 text-white text-xs rounded px-4 py-1">
-            Upgrade
+            Trả phí
           </button>
         </div>
       </div>
