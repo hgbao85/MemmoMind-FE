@@ -182,7 +182,7 @@ export default function Home() {
         <div className="flex-1 overflow-auto p-4">
           <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
             <div className="mb-4">
-              <h3 className="text-xl text-[28px] text-[#131313] mb-2">Note của bạn</h3>
+              <h3 className="text-2xl text-[28px] text-[#131313] mb-2">Note của bạn</h3>
 
               <div className="flex border-b border-gray-200">
                 {tabs.map((tab) => (

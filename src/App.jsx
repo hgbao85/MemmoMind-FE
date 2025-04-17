@@ -16,6 +16,9 @@ import PowerPointPage from "./pages/AIFeatures/Powerpoint";
 import FlashcardsPage from "./pages/AIFeatures/Flashcards";
 import MultipleChoicePage from "./pages/AIFeatures/Multiplechoice";
 import SolvePage from "./pages/AIFeatures/Solve"
+import AddNotePage from "./pages/AddNote/AddNotePage"
+import TrashPage from "./pages/TrashPage/TrashPage";
+import ProfilePage from "./pages/Profile/ProfilePage";
 import "./styles/toast.css";
 
 const App = () => {
@@ -37,6 +40,9 @@ const App = () => {
         <Route path="/flashcards" element={<FlashcardsPage />} />
         <Route path="/multiplechoice" element={<MultipleChoicePage />} />
         <Route path="/solve" element={<SolvePage />} />
+        <Route path="/add-note" element={<AddNotePage />} />
+        <Route path="/trash" element={<TrashPage />} />
+        <Route path="/profile" element={<ProfilePage />} />
       </Routes>
       <ToastContainer
         position="top-right"

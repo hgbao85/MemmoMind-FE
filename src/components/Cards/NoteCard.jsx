@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react"
 import PropTypes from "prop-types"
 import moment from "moment"
-import { Calendar, Eye, Edit3, Trash2, MoreHorizontal, Heart, FileText } from "lucide-react"
+import { Calendar, Eye, Edit3, Trash2, MoreHorizontal, Heart, FileText, RotateCcw } from "lucide-react"
 import api from "../../services/api"
 import { toast } from "react-toastify"
 import ConfirmationDialog from "../ConfirmationDialog/ConfirmationDialog"
@@ -207,13 +207,6 @@ const NoteCard = ({ note, onEdit, onView, onDelete, onRestore, onPermanentlyDele
                   </div>
                 )}
 
-                <div
-                  className="px-4 py-2 hover:bg-gray-100 flex items-center cursor-pointer text-red-500"
-                  onClick={handleDeleteClick}
-                >
-                  <Trash2 className="h-4 w-4 mr-2" /> Xóa
-                </div>
-
                 {isDeleted && (
                   <div
                     className="px-4 py-2 hover:bg-gray-100 flex items-center cursor-pointer text-green-500"
@@ -223,9 +216,16 @@ const NoteCard = ({ note, onEdit, onView, onDelete, onRestore, onPermanentlyDele
                       onRestore(_id)
                     }}
                   >
-                    <Calendar className="h-4 w-4 mr-2" /> Khôi phục
+                    <RotateCcw className="h-4 w-4 mr-2" /> Khôi phục
                   </div>
                 )}
+
+                <div
+                  className="px-4 py-2 hover:bg-gray-100 flex items-center cursor-pointer text-red-500"
+                  onClick={handleDeleteClick}
+                >
+                  <Trash2 className="h-4 w-4 mr-2" /> Xóa
+                </div>
               </div>
             )}
           </div>

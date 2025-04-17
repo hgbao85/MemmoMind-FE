@@ -47,7 +47,7 @@ const NoteModal = ({ isOpen, onClose, note, mode, onUpdateSuccess }) => {
             setTitle(note.title || "")
             setContent(note.content || "")
         }
-        setIsEditing(mode === "edit")
+        setIsEditing(mode === "edit" && !note?.isDeleted)
     }, [note, mode])
 
     useEffect(() => {
@@ -205,12 +205,14 @@ const NoteModal = ({ isOpen, onClose, note, mode, onUpdateSuccess }) => {
                             {isSubmitting ? "Đang lưu..." : "Lưu"}
                         </button>
                     ) : (
-                        <button
-                            onClick={() => setIsEditing(true)}
-                            className="px-4 py-2 bg-[#1e2a4a] text-white rounded-md hover:bg-[#2a3a5a] transition-colors"
-                        >
-                            Chỉnh sửa
-                        </button>
+                        !note?.isDeleted && (
+                            <button
+                                onClick={() => setIsEditing(true)}
+                                className="px-4 py-2 bg-[#1e2a4a] text-white rounded-md hover:bg-[#2a3a5a] transition-colors"
+                            >
+                                Chỉnh sửa
+                            </button>
+                        )
                     )}
                 </div>
             </div>
@@ -225,6 +227,7 @@ NoteModal.propTypes = {
         _id: PropTypes.string.isRequired,
         title: PropTypes.string,
         content: PropTypes.string,
+        isDeleted: PropTypes.bool,
     }).isRequired,
     mode: PropTypes.oneOf(["view", "edit"]).isRequired,
     onUpdateSuccess: PropTypes.func,
