@@ -3,13 +3,16 @@
 import { useState, useEffect } from "react"
 import { useSelector } from "react-redux"
 import { useNavigate } from "react-router-dom"
-import { User, Lock, Check, AlertCircle } from "lucide-react"
+import { User, Lock, Check, AlertCircle, Eye, EyeOff } from "lucide-react"
 import Sidebar from "../../components/Sidebar/Sidebar"
 import Footer from "../../components/Footer/Footer"
 import api from "../../services/api"
 import { toast } from "react-toastify"
+import { useDispatch } from "react-redux";
+import { setUser } from "../../redux/user/userSlice"
 
 const ProfilePage = () => {
+    const dispatch = useDispatch();
     const { currentUser } = useSelector((state) => state.user)
     const navigate = useNavigate()
     const [activeTab, setActiveTab] = useState("profile")
@@ -31,16 +34,21 @@ const ProfilePage = () => {
         confirmPassword: "",
     })
 
+    const [showPasswords, setShowPasswords] = useState({
+        currentPassword: false,
+        newPassword: false,
+        confirmPassword: false,
+    })
+
     // Fetch user profile
     const fetchUserProfile = async () => {
         setIsLoading(true)
         try {
-            const token = localStorage.getItem("token")
+            // const token = localStorage.getItem("token")
             const response = await api.get("https://memmomind-be-ycwv.onrender.com/api/user/profile", {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            })
+                // headers: { Authorization: `Bearer ${token}`, },
+            },
+                { withCredentials: true },)
 
             if (response.data) {
                 setUserProfile({
@@ -68,22 +76,34 @@ const ProfilePage = () => {
 
         setIsSaving(true)
         try {
-            const token = localStorage.getItem("token")
+            // const token = localStorage.getItem("token")
+
             const response = await api.put(
                 "https://memmomind-be-ycwv.onrender.com/api/user/profile",
                 {
                     name: userProfile.name,
                 },
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                },
+                // {
+                //     headers: {
+                //         Authorization: `Bearer ${token}`,
+                //     },
+                // },
+                { withCredentials: true },
             )
 
             if (response.data) {
                 toast.success("Cập nhật thông tin thành công")
-                // Update the user info in the ProfileInfo component
+                // Cập nhật Redux store với tên mới
+                dispatch(setUser({
+                    ...currentUser,
+                    name: userProfile.name
+                }))
+
+                // Load lại trang sau 1 giây để thấy thay đổi
+                setTimeout(() => {
+                    window.location.reload()
+                }, 1000)
+                // window.location.reload()
                 const userInfoResponse = await api.get("https://memmomind-be-ycwv.onrender.com/api/user/current", {
                     withCredentials: true,
                 })
@@ -136,18 +156,19 @@ const ProfilePage = () => {
 
         setIsSaving(true)
         try {
-            const token = localStorage.getItem("token")
+            // const token = localStorage.getItem("token")
             const response = await api.put(
                 "https://memmomind-be-ycwv.onrender.com/api/auth/change-password",
                 {
                     currentPassword: passwordData.currentPassword,
                     newPassword: passwordData.newPassword,
                 },
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                },
+                // {
+                //     headers: {
+                //         Authorization: `Bearer ${token}`,
+                //     },
+                // },
+                { withCredentials: true },
             )
 
             if (response.data) {
@@ -285,7 +306,8 @@ const ProfilePage = () => {
                                                     </>
                                                 )}
                                             </button>
-                                        </div>                                    </form>
+                                        </div>
+                                    </form>
                                 )}
 
                                 {/* Password Tab */}
@@ -295,19 +317,28 @@ const ProfilePage = () => {
                                             <label htmlFor="currentPassword" className="block text-sm font-medium text-gray-700 mb-1">
                                                 Mật khẩu hiện tại
                                             </label>
-                                            <input
-                                                type="password"
-                                                id="currentPassword"
-                                                className={`w-full p-3 border ${errors.currentPassword ? "border-red-500" : "border-gray-300"
-                                                    } rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500`}
-                                                value={passwordData.currentPassword}
-                                                onChange={(e) => {
-                                                    setPasswordData({ ...passwordData, currentPassword: e.target.value })
-                                                    if (e.target.value) {
-                                                        setErrors({ ...errors, currentPassword: "" })
+                                            <div className="relative">
+                                                <input
+                                                    type={showPasswords.currentPassword ? "text" : "password"} id="currentPassword"
+                                                    className={`w-full p-3 border ${errors.currentPassword ? "border-red-500" : "border-gray-300"
+                                                        } rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10`} value={passwordData.currentPassword}
+                                                    onChange={(e) => {
+                                                        setPasswordData({ ...passwordData, currentPassword: e.target.value })
+                                                        if (e.target.value) {
+                                                            setErrors({ ...errors, currentPassword: "" })
+                                                        }
+                                                    }}
+                                                />
+                                                <button
+                                                    type="button"
+                                                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-700 focus:outline-none"
+                                                    onClick={() =>
+                                                        setShowPasswords({ ...showPasswords, currentPassword: !showPasswords.currentPassword })
                                                     }
-                                                }}
-                                            />
+                                                >
+                                                    {showPasswords.currentPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                                </button>
+                                            </div>
                                             {errors.currentPassword && (
                                                 <p className="mt-1 text-sm text-red-500 flex items-center">
                                                     <AlertCircle className="h-4 w-4 mr-1" />
@@ -320,19 +351,30 @@ const ProfilePage = () => {
                                             <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700 mb-1">
                                                 Mật khẩu mới
                                             </label>
-                                            <input
-                                                type="password"
-                                                id="newPassword"
-                                                className={`w-full p-3 border ${errors.newPassword ? "border-red-500" : "border-gray-300"
-                                                    } rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500`}
-                                                value={passwordData.newPassword}
-                                                onChange={(e) => {
-                                                    setPasswordData({ ...passwordData, newPassword: e.target.value })
-                                                    if (e.target.value && e.target.value.length >= 6) {
-                                                        setErrors({ ...errors, newPassword: "" })
+                                            <div className="relative">
+                                                <input
+                                                    type={showPasswords.newPassword ? "text" : "password"}
+                                                    id="newPassword"
+                                                    className={`w-full p-3 border ${errors.newPassword ? "border-red-500" : "border-gray-300"
+                                                        } rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10`}
+                                                    value={passwordData.newPassword}
+                                                    onChange={(e) => {
+                                                        setPasswordData({ ...passwordData, newPassword: e.target.value })
+                                                        if (e.target.value && e.target.value.length >= 6) {
+                                                            setErrors({ ...errors, newPassword: "" })
+                                                        }
+                                                    }}
+                                                />
+                                                <button
+                                                    type="button"
+                                                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-700 focus:outline-none"
+                                                    onClick={() =>
+                                                        setShowPasswords({ ...showPasswords, newPassword: !showPasswords.newPassword })
                                                     }
-                                                }}
-                                            />
+                                                >
+                                                    {showPasswords.newPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                                </button>
+                                            </div>
                                             {errors.newPassword && (
                                                 <p className="mt-1 text-sm text-red-500 flex items-center">
                                                     <AlertCircle className="h-4 w-4 mr-1" />
@@ -345,19 +387,30 @@ const ProfilePage = () => {
                                             <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
                                                 Xác nhận mật khẩu mới
                                             </label>
-                                            <input
-                                                type="password"
-                                                id="confirmPassword"
-                                                className={`w-full p-3 border ${errors.confirmPassword ? "border-red-500" : "border-gray-300"
-                                                    } rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500`}
-                                                value={passwordData.confirmPassword}
-                                                onChange={(e) => {
-                                                    setPasswordData({ ...passwordData, confirmPassword: e.target.value })
-                                                    if (e.target.value === passwordData.newPassword) {
-                                                        setErrors({ ...errors, confirmPassword: "" })
+                                            <div className="relative">
+                                                <input
+                                                    type={showPasswords.confirmPassword ? "text" : "password"}
+                                                    id="confirmPassword"
+                                                    className={`w-full p-3 border ${errors.confirmPassword ? "border-red-500" : "border-gray-300"
+                                                        } rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10`}
+                                                    value={passwordData.confirmPassword}
+                                                    onChange={(e) => {
+                                                        setPasswordData({ ...passwordData, confirmPassword: e.target.value })
+                                                        if (e.target.value === passwordData.newPassword) {
+                                                            setErrors({ ...errors, confirmPassword: "" })
+                                                        }
+                                                    }}
+                                                />
+                                                <button
+                                                    type="button"
+                                                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-700 focus:outline-none"
+                                                    onClick={() =>
+                                                        setShowPasswords({ ...showPasswords, confirmPassword: !showPasswords.confirmPassword })
                                                     }
-                                                }}
-                                            />
+                                                >
+                                                    {showPasswords.confirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                                </button>
+                                            </div>
                                             {errors.confirmPassword && (
                                                 <p className="mt-1 text-sm text-red-500 flex items-center">
                                                     <AlertCircle className="h-4 w-4 mr-1" />
