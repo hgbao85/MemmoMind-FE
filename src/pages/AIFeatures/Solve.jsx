@@ -12,7 +12,6 @@ import * as msgpack from "@msgpack/msgpack";
 import { updateUserCost } from "../../redux/user/userSlice";
 import { useDispatch } from "react-redux";
 import Solve from '../../components/Sidebar/Solve';
-import PaymentModal from '../../components/MainContent/PaymentModal';
 import Footer from '../../components/Footer/Footer';
 
 const SolvePage = () => {
@@ -30,10 +29,6 @@ const SolvePage = () => {
     const [noteData, setNoteData] = useState(null);
     const [addEditType, setAddEditType] = useState("add");
     const [uploadedFile, setUploadedFile] = useState(null);
-
-    const isPopupOpen = useSelector((state) => state.payment.isPopupOpen);
-    const [amount, setAmount] = useState(1000);
-
 
     useEffect(() => {
         if (!initialUserCheck.current) {
@@ -147,7 +142,7 @@ const SolvePage = () => {
 
             // Gửi yêu cầu đến API giải bài tập
             const response = await axios.post(
-                "http://localhost:6082/ommi-solver",
+                "http://vietserver.ddns.net:6082/ommi-solver",
                 payload,
                 {
                     headers: { "Content-Type": "application/json" },
@@ -202,7 +197,7 @@ const SolvePage = () => {
         <div className="flex h-screen bg-gray-100">
             <Sidebar />
             <div className="flex-1 flex flex-col overflow-hidden">
-                <div className="p-4 bg-white border-b border-gray-200">
+                <div className="m-4 p-4 rounded-lg bg-white border-b border-gray-200 shadow-sm">
                     <div className="flex items-center">
                         <div className="flex-1">
                             <h2 className="text-xl font-bold mb-2">Hỗ trợ làm bài</h2>
@@ -222,17 +217,10 @@ const SolvePage = () => {
                     />
                     {solve && <Solve solve={solve} setSolve={setSolve} handleAddNote={handleAddNote} />}
                 </div>
-                <div>
+                <div className="m-4 rounded-lg bg-white border-b border-gray-200 shadow-sm">
                     <Footer />
                 </div>
             </div>
-
-            {isPopupOpen && (
-                <PaymentModal
-                    amount={amount}
-                    setAmount={setAmount}
-                />
-            )}
         </div>
     );
 };

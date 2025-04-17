@@ -12,7 +12,7 @@ import * as msgpack from "@msgpack/msgpack";
 import { updateUserCost } from "../../redux/user/userSlice";
 import { useDispatch } from "react-redux";
 import PowerPoint from '../../components/Sidebar/PowerPoint';
-import PaymentModal from '../../components/MainContent/PaymentModal';
+import PaymentModal from '../../components/PaymentModal.jsx/PaymentModal';
 import Footer from '../../components/Footer/Footer';
 
 const PowerPointPage = () => {
@@ -131,7 +131,7 @@ const PowerPointPage = () => {
 
             // Gửi yêu cầu API để tạo PowerPoint
             const response = await axios.post(
-                "http://localhost:6082/powpoint-create",
+                "http://vietserver.ddns.net:6082/powpoint-create",
                 payload,
                 {
                     headers: { "Content-Type": "application/json" },
@@ -218,7 +218,7 @@ const PowerPointPage = () => {
 
         try {
             const response = await axios.post(
-                "http://localhost:6082/powpoint-download",
+                "http://vietserver.ddns.net:6082/powpoint-download",
                 { powpointPath: pptxFilename },
                 {
                     headers: { "Content-Type": "application/json" },
@@ -246,10 +246,10 @@ const PowerPointPage = () => {
         <div className="flex h-screen bg-gray-100">
             <Sidebar />
             <div className="flex-1 flex flex-col overflow-hidden">
-                <div className="p-4 bg-white border-b border-gray-200">
+                <div className="m-4 p-4 rounded-lg bg-white border-b border-gray-200 shadow-sm">
                     <div className="flex items-center">
                         <div className="flex-1">
-                            <h2 className="text-xl font-bold mb-2">MindMap</h2>
+                            <h2 className="text-xl font-bold mb-2">Tạo PowerPoint</h2>
                         </div>
                     </div>
                 </div>
@@ -270,17 +270,10 @@ const PowerPointPage = () => {
                         handleDownloadPowerpoint={handleDownloadPowerpoint}
                     />}
                 </div>
-                <div>
+                <div className="m-4 rounded-lg bg-white border-b border-gray-200 shadow-sm">
                     <Footer />
                 </div>
             </div>
-
-            {isPopupOpen && (
-                <PaymentModal
-                    amount={amount}
-                    setAmount={setAmount}
-                />
-            )}
         </div>
     );
 };

@@ -11,6 +11,7 @@ import ConfirmationDialog from "../../components/ConfirmationDialog/Confirmation
 import Footer from "../../components/Footer/Footer"
 import NoteModal from "../../components/Cards/NoteModal"
 import { Tooltip } from 'react-tooltip'
+import ChatbaseWidget from "../../components/ChatBase/ChatbaseWidget"
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState("All")
@@ -336,11 +337,12 @@ export default function Home() {
               </div>
             )}
           </div>
-          {/* Footer */}
-          <div className="mt-[50px] ">
-            <Footer />
-          </div>
         </div>
+        {/* Footer */}
+        <div className="m-4 rounded-lg bg-white border-b border-gray-200 shadow-sm">
+            <Footer />
+        </div>
+        <ChatbaseWidget />
       </div>
 
       {/* Note Modal */}
