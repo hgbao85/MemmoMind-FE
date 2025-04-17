@@ -12,6 +12,7 @@ import * as msgpack from "@msgpack/msgpack";
 import { updateUserCost } from "../../redux/user/userSlice";
 import { useDispatch } from "react-redux";
 import MultipleChoice from '../../components/Sidebar/MultipleChoice';
+import Footer from '../../components/Footer/Footer';
 
 const MultipleChoicePage = () => {
     const { currentUser } = useSelector((state) => state.user);
@@ -161,7 +162,7 @@ const MultipleChoicePage = () => {
             }
 
             const response = await axios.post(
-                "http://vietserver.ddns.net:6082/mul-choices",
+                "http://localhost:6082/mul-choices",
                 payload,
                 { headers: { "Content-Type": "application/json" }, responseType: "arraybuffer" }
             );
@@ -253,14 +254,8 @@ const MultipleChoicePage = () => {
                         isSubmitting={isSubmitting}
                     />
                 </div>
-                <div className="p-4 bg-white border-t border-gray-200 flex justify-between text-xs text-gray-500">
-                    <div className="flex gap-4">
-                        <span>Privacy Policy</span>
-                        <span>Terms of Use</span>
-                    </div>
-                    <div>
-                        <span>2025© NotePlus</span>
-                    </div>
+                <div>
+                    <Footer />
                 </div>
             </div>
 

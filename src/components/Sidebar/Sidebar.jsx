@@ -102,7 +102,7 @@ const Sidebar = () => {
                     }`}
                 >
                   <FileText size={14} className="mr-2" />
-                  <span>Summarize</span>
+                  <span>Tóm tắt</span>
                 </button>
                 <button
                   onClick={() => handleNavigate("/mindmap")}
@@ -110,7 +110,7 @@ const Sidebar = () => {
                     }`}
                 >
                   <Map size={14} className="mr-2" />
-                  <span>Mindmap</span>
+                  <span>Sơ đồ tư duy</span>
                 </button>
                 <button
                   onClick={() => handleNavigate("/powerpoint")}
@@ -130,7 +130,7 @@ const Sidebar = () => {
                     }`}
                 >
                   <LayoutGrid size={14} className="mr-2" />
-                  <span>Flashcards</span>
+                  <span>Thẻ ghi nhớ</span>
                 </button>
                 <button
                   onClick={() => handleNavigate("/multiplechoice")}
@@ -140,7 +140,7 @@ const Sidebar = () => {
                     }`}
                 >
                   <ListChecks size={14} className="mr-2" />
-                  <span>MultipleChoice</span>
+                  <span>Câu hỏi trắc nghiệm</span>
                 </button>
                 <button
                   onClick={() => handleNavigate("/solve")}
@@ -148,7 +148,7 @@ const Sidebar = () => {
                     }`}
                 >
                   <Calculator size={14} className="mr-2" />
-                  <span>Solve</span>
+                  <span>Hỗ trợ làm bài</span>
                 </button>
               </div>
             )}
