@@ -37,7 +37,7 @@ const TextInput = ({
       handleGenerateSolve();
     } else if (pathname.includes('/mindmap') && handleGenerateMindmap) {
       handleGenerateMindmap();
-    } else if (pathname.includes('/flashcard') && handleGenerateFlashCard) {
+    } else if (pathname.includes('/flashcards') && handleGenerateFlashCard) {
       handleGenerateFlashCard();
     } else if (pathname.includes('/powerpoint') && handleGeneratePowerpoint) {
       handleGeneratePowerpoint();
@@ -251,7 +251,7 @@ const TextInput = ({
           {pathname.includes('/multiplechoice') && 'Tạo câu hỏi trắc nghiệm'}
           {pathname.includes('/solve') && 'Hỗ trợ giải bài tập'}
           {pathname.includes('/mindmap') && 'Tạo sơ đồ tư duy'}
-          {pathname.includes('/flashcard') && 'Tạo thẻ ghi nhớ'}
+          {pathname.includes('/flashcards') && 'Tạo thẻ ghi nhớ'}
           {pathname.includes('/powerpoint') && 'Tạo PowerPoint'}
         </button>
       </div>

@@ -9,8 +9,8 @@ const PowerPoint = ({
   if (!powerpointPreview) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-3/4 max-h-[80vh] overflow-y-auto relative">
+    <div className="relative mt-4 p-2 border rounded-md bg-gray-200">
+      <div className="bg-white rounded-lg p-6 h-full overflow-y-auto relative">
         <button
           className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
           onClick={() => setPowerpointPreview(null)}
@@ -24,7 +24,7 @@ const PowerPoint = ({
           PowerPoint đã được tạo thành công! Bạn có thể tải xuống file hoặc xem trước bên dưới.
         </div>
 
-        <div className="w-full h-[60vh] mb-4">
+        <div className="w-full h-[70vh] mb-6 rounded overflow-hidden border border-gray-300">
           <iframe
             src={powerpointPreview.url}
             className="w-full h-full border-0"
@@ -54,4 +54,4 @@ PowerPoint.propTypes = {
   handleDownloadPowerpoint: PropTypes.func.isRequired
 };
 
-export default PowerPoint; 
+export default PowerPoint;
