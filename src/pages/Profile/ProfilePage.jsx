@@ -1,6 +1,7 @@
+/* eslint-disable no-unused-vars */
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useSelector } from "react-redux"
 import { useNavigate } from "react-router-dom"
 import { User, Lock, Check, AlertCircle, Eye, EyeOff } from "lucide-react"
@@ -18,6 +19,8 @@ const ProfilePage = () => {
     const [activeTab, setActiveTab] = useState("profile")
     const [isLoading, setIsLoading] = useState(true)
     const [isSaving, setIsSaving] = useState(false)
+    const initialUserCheck = useRef(false);
+    const [userInfo, setUserInfo] = useState(null);
     const [userProfile, setUserProfile] = useState({
         name: "",
         email: "",
@@ -40,29 +43,38 @@ const ProfilePage = () => {
         confirmPassword: false,
     })
 
-    // Fetch user profile
-    const fetchUserProfile = async () => {
+    useEffect(() => {
+        if (!initialUserCheck.current) {
+            initialUserCheck.current = true;
+            if (!currentUser) {
+                navigate("/");
+            } else {
+                getUserInfo();
+            }
+        }
+    }, [currentUser, navigate]);
+    console.log(currentUser.token)
+    const getUserInfo = async () => {
         setIsLoading(true)
         try {
-            // const token = localStorage.getItem("token")
-            const response = await api.get("https://memmomind-be-ycwv.onrender.com/api/user/profile", {
-                // headers: { Authorization: `Bearer ${token}`, },
-            },
-                { withCredentials: true },)
+            const res = await api.get("https://memmomind-be-ycwv.onrender.com/api/user/current", {
+                withCredentials: true,
+            });
 
-            if (response.data) {
-                setUserProfile({
-                    name: response.data.name || "",
-                    email: response.data.email || "",
-                })
+            if (!res.data.success) {
+                toast.error("Không thể lấy thông tin người dùng!");
+                return;
             }
+
+            setUserInfo(res.data.user);
         } catch (error) {
-            console.error("Error fetching profile:", error)
-            toast.error("Không thể tải thông tin người dùng")
+            console.error("Error fetching user info:", error);
+            toast.error("Lỗi khi lấy thông tin người dùng!");
         } finally {
             setIsLoading(false)
         }
-    }
+    };
+    console.log(userInfo)
 
     // Update profile
     const handleUpdateProfile = async (e) => {
@@ -161,14 +173,13 @@ const ProfilePage = () => {
                     currentPassword: passwordData.currentPassword,
                     newPassword: passwordData.newPassword,
                 },
-                // {
-                //     headers: {
-                //         Authorization: `Bearer ${token}`,
-                //     },
-                // },
+                {
+                    headers: {
+                        Authorization: `Bearer ${currentUser.token}`,
+                    },
+                },
                 { withCredentials: true },
             )
-
             if (response.data) {
                 toast.success("Đổi mật khẩu thành công")
                 setPasswordData({
@@ -189,16 +200,6 @@ const ProfilePage = () => {
             setIsSaving(false)
         }
     }
-
-    // Check if user is logged in
-    useEffect(() => {
-        if (!currentUser) {
-            navigate("/login")
-            return
-        }
-
-        fetchUserProfile()
-    }, [currentUser, navigate])
 
     return (
         <div className="flex h-screen bg-[#f0f5ff]">
@@ -279,10 +280,11 @@ const ProfilePage = () => {
                                             <input
                                                 type="email"
                                                 id="email"
-                                                className="w-full p-3 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed"
-                                                value={userProfile.email}
+                                                className="w-full p-3 border text-gray-500 border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed"
+                                                value={userInfo.email}
                                                 disabled
                                             />
+
                                             <p className="mt-1 text-sm text-gray-500">Email không thể thay đổi</p>
                                         </div>
 
