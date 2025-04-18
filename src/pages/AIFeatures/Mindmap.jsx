@@ -243,7 +243,7 @@ const MindmapPage = () => {
                     {mindmapHtml && <Mindmap mindmapHtml={mindmapHtml} setMindmapHtml={setMindmapHtml} saveMindmapAsHTML={saveMindmapAsHTML} />}
                 </div>
                 <div className="m-4 rounded-lg bg-white border-b border-gray-200 shadow-sm">
-                    <Footer />
+                    <Footer userInfo={userInfo} />
                 </div>
             </div>
         </div>

@@ -1,6 +1,7 @@
+/* eslint-disable no-unused-vars */
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Grid, List, Search, Trash2, RotateCcw, Eye } from "lucide-react"
 import Sidebar from "../../components/Sidebar/Sidebar"
 import NoteCard from "../../components/Cards/NoteCard"
@@ -11,6 +12,8 @@ import ConfirmationDialog from "../../components/ConfirmationDialog/Confirmation
 import Footer from "../../components/Footer/Footer"
 import NoteModal from "../../components/Cards/NoteModal"
 import { Tooltip } from "react-tooltip"
+import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 
 export default function TrashPage() {
     const [viewMode, setViewMode] = useState("grid")
@@ -22,6 +25,56 @@ export default function TrashPage() {
     const [selectedNoteId, setSelectedNoteId] = useState(null)
     const [noteModalOpen, setNoteModalOpen] = useState(false)
     const [selectedNote, setSelectedNote] = useState(null)
+    const [userInfo, setUserInfo] = useState(null);
+    const [progress, setProgress] = useState(0);
+    const { currentUser } = useSelector((state) => state.user);
+    const initialUserCheck = useRef(false);
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        if (!initialUserCheck.current) {
+            initialUserCheck.current = true;
+            if (!currentUser) {
+                navigate("/");
+            } else {
+                getUserInfo();
+            }
+        }
+    }, [currentUser, navigate]);
+
+    const getUserInfo = async () => {
+        try {
+            const res = await api.get("https://memmomind-be-ycwv.onrender.com/api/user/current", {
+                withCredentials: true,
+            });
+
+            if (!res.data.success) {
+                toast.error("Không thể lấy thông tin người dùng!");
+                return;
+            }
+
+            setUserInfo(res.data.user);
+        } catch (error) {
+            console.error("Error fetching user info:", error);
+            toast.error("Lỗi khi lấy thông tin người dùng!");
+        }
+    };
+
+    useEffect(() => {
+        if (!userInfo) return;
+
+        if (userInfo.role === "freeVersion") {
+            if (userInfo.totalFreeCost !== 0 && userInfo.freeCost !== undefined) {
+                const percentage = (userInfo.freeCost / userInfo.totalFreeCost) * 100;
+                setProgress(Math.min(percentage, 100));
+            }
+        } else if (userInfo.role === "costVersion") {
+            if (userInfo.totalPurchasedCost !== 0 && userInfo.totalCost !== undefined) {
+                const percentage = (userInfo.totalCost / userInfo.totalPurchasedCost) * 100;
+                setProgress(Math.min(percentage, 100));
+            }
+        }
+    }, [userInfo]);
 
     const getDeletedNotes = async () => {
         setIsLoading(true)
@@ -313,7 +366,7 @@ export default function TrashPage() {
                     </div>
 
                     <div className="mt-[50px]">
-                        <Footer />
+                        <Footer userInfo={userInfo} />
                     </div>
                 </div>
             </div>

@@ -446,7 +446,7 @@ const ProfilePage = () => {
 
                     {/* Footer */}
                     <div className="mt-[50px]">
-                        <Footer />
+                        <Footer userInfo={userInfo} />
                     </div>
                 </div>
             </div>

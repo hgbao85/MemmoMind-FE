@@ -6,13 +6,13 @@ const Footer = ({ userInfo }) => {
         <div className="p-4 bg-white border-t border-gray-200 rounded-lg flex justify-between text-sm text-gray-500">
             <div className="flex gap-4">
                 <div className="cursor-pointer">
-                    {userInfo?.role === "freeVersion" ? (
+                    {userInfo?.role === "costVersion" ? (
                         <p className="text-sm font-semibold text-gray-600">
-                            Bạn đang ở phiên bản miễn phí
+                            Bạn đang ở phiên bản trả phí
                         </p>
                     ) : (
                         <p className="text-sm font-semibold text-gray-600">
-                            Bạn đang ở phiên bản trả phí
+                            Bạn đang ở phiên bản miễn phí
                         </p>
                     )}
                 </div>

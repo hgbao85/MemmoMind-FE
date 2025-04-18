@@ -1,6 +1,6 @@
+/* eslint-disable no-unused-vars */
 "use client"
-
-import { useState } from "react"
+import { useState, useEffect, useRef } from "react"
 import {
     Calendar,
     Save,
@@ -20,12 +20,64 @@ import { toast } from "react-toastify"
 import { useNavigate } from "react-router-dom"
 import Sidebar from "../../components/Sidebar/Sidebar"
 import Footer from "../../components/Footer/Footer"
+import { useSelector } from 'react-redux';
+
 
 const AddNotePage = () => {
     const [title, setTitle] = useState("")
     const [content, setContent] = useState("")
     const [isSubmitting, setIsSubmitting] = useState(false)
     const navigate = useNavigate()
+    const [userInfo, setUserInfo] = useState(null);
+    const [progress, setProgress] = useState(0);
+    const { currentUser } = useSelector((state) => state.user);
+    const initialUserCheck = useRef(false);
+
+    useEffect(() => {
+        if (!initialUserCheck.current) {
+            initialUserCheck.current = true;
+            if (!currentUser) {
+                navigate("/");
+            } else {
+                getUserInfo();
+            }
+        }
+    }, [currentUser, navigate]);
+
+    const getUserInfo = async () => {
+        try {
+            const res = await api.get("https://memmomind-be-ycwv.onrender.com/api/user/current", {
+                withCredentials: true,
+            });
+
+            if (!res.data.success) {
+                toast.error("Không thể lấy thông tin người dùng!");
+                return;
+            }
+
+            setUserInfo(res.data.user);
+        } catch (error) {
+            console.error("Error fetching user info:", error);
+            toast.error("Lỗi khi lấy thông tin người dùng!");
+        }
+    };
+
+    useEffect(() => {
+        if (!userInfo) return;
+
+        if (userInfo.role === "freeVersion") {
+            if (userInfo.totalFreeCost !== 0 && userInfo.freeCost !== undefined) {
+                const percentage = (userInfo.freeCost / userInfo.totalFreeCost) * 100;
+                setProgress(Math.min(percentage, 100));
+            }
+        } else if (userInfo.role === "costVersion") {
+            if (userInfo.totalPurchasedCost !== 0 && userInfo.totalCost !== undefined) {
+                const percentage = (userInfo.totalCost / userInfo.totalPurchasedCost) * 100;
+                setProgress(Math.min(percentage, 100));
+            }
+        }
+    }, [userInfo]);
+
 
     const handleReset = () => {
         setTitle("")
@@ -239,7 +291,7 @@ const AddNotePage = () => {
 
                     {/* Footer */}
                     <div className="mt-8">
-                        <Footer />
+                        <Footer userInfo={userInfo} />
                     </div>
                 </div>
             </div>

@@ -1,6 +1,7 @@
+/* eslint-disable no-unused-vars */
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Grid, List, Search, Edit, Trash2, Eye, Heart } from "lucide-react"
 import Sidebar from "../../components/Sidebar/Sidebar"
 import NoteCard from "../../components/Cards/NoteCard"
@@ -12,6 +13,8 @@ import Footer from "../../components/Footer/Footer"
 import NoteModal from "../../components/Cards/NoteModal"
 import { Tooltip } from 'react-tooltip'
 import ChatbaseWidget from "../../components/ChatBase/ChatbaseWidget"
+import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState("All")
@@ -25,8 +28,58 @@ export default function Home() {
   const [noteModalOpen, setNoteModalOpen] = useState(false)
   const [selectedNote, setSelectedNote] = useState(null)
   const [noteModalMode, setNoteModalMode] = useState("view")
+  const [userInfo, setUserInfo] = useState(null);
+  const [progress, setProgress] = useState(0);
+  const { currentUser } = useSelector((state) => state.user);
+  const initialUserCheck = useRef(false);
+  const navigate = useNavigate();
 
   const tabs = ["Tất cả", "Yêu thích"]
+
+  useEffect(() => {
+    if (!initialUserCheck.current) {
+      initialUserCheck.current = true;
+      if (!currentUser) {
+        navigate("/");
+      } else {
+        getUserInfo();
+      }
+    }
+  }, [currentUser, navigate]);
+
+  const getUserInfo = async () => {
+    try {
+      const res = await api.get("https://memmomind-be-ycwv.onrender.com/api/user/current", {
+        withCredentials: true,
+      });
+
+      if (!res.data.success) {
+        toast.error("Không thể lấy thông tin người dùng!");
+        return;
+      }
+
+      setUserInfo(res.data.user);
+    } catch (error) {
+      console.error("Error fetching user info:", error);
+      toast.error("Lỗi khi lấy thông tin người dùng!");
+    }
+  };
+
+  useEffect(() => {
+    if (!userInfo) return;
+
+    if (userInfo.role === "freeVersion") {
+      if (userInfo.totalFreeCost !== 0 && userInfo.freeCost !== undefined) {
+        const percentage = (userInfo.freeCost / userInfo.totalFreeCost) * 100;
+        setProgress(Math.min(percentage, 100));
+      }
+    } else if (userInfo.role === "costVersion") {
+      if (userInfo.totalPurchasedCost !== 0 && userInfo.totalCost !== undefined) {
+        const percentage = (userInfo.totalCost / userInfo.totalPurchasedCost) * 100;
+        setProgress(Math.min(percentage, 100));
+      }
+    }
+  }, [userInfo]);
 
   // Fetch all notes
   const getAllNotes = async () => {
@@ -340,7 +393,7 @@ export default function Home() {
         </div>
         {/* Footer */}
         <div className="m-4 rounded-lg bg-white border-b border-gray-200 shadow-sm">
-          <Footer />
+          <Footer userInfo={userInfo} />
         </div>
         <ChatbaseWidget />
       </div>
