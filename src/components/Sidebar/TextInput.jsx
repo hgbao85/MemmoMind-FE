@@ -143,12 +143,6 @@ const TextInput = ({
       )}
 
       <div className="flex flex-wrap justify-between items-center w-full mt-4 gap-2">
-        {!isDragDropVisible && (
-          <label className="cursor-pointer text-sm bg-blue-500 text-white px-3 py-2 rounded-lg hover:bg-blue-600 transition flex items-center gap-1"
-            onClick={handleFileUploadClick}>
-            Tải lên tài liệu
-          </label>
-        )}
 
         <div className="flex items-center space-x-2 ml-auto">
           {isDragDropVisible && pdfUrl && (
@@ -188,7 +182,7 @@ const TextInput = ({
                 }
               }}
               title="Kéo tệp mới vào đây hoặc bấm để chọn"
-              className="w-96 h-10 flex items-center justify-center rounded-full bg-blue-100 hover:bg-blue-200 cursor-pointer transition border border-blue-400"
+              className="w-96 h-10 flex items-center justify-center rounded-lg bg-blue-100 hover:bg-blue-200 cursor-pointer transition border border-blue-400"
             >
               <MdOutlineFileUpload className="text-xl text-blue-600" />
               <span className="ml-2 text-sm text-blue-600 font-medium">Kéo thả tệp mới vào đây hoặc nhấn để chọn tệp</span>
@@ -215,32 +209,23 @@ const TextInput = ({
         </div>
       </div>
 
-      {/* {isDragDropVisible && imageSrc && (
-        <img
-          src={imageSrc}
-          alt="Uploaded"
-          className="w-1/2 h-auto my-4 border rounded-md"
-        />
-      )}
-      {isDragDropVisible && pdfUrl && (
-        <iframe
-          src={pdfUrl}
-          title="PDF Viewer"
-          className="w-full mt-4 h-auto border rounded-md shadow-lg"
-        />
-      )} */}
-
-      {/* Nút quay lại form nhập văn bản */}
-      {isDragDropVisible && (
-        <div className="flex flex-wrap justify-between items-center w-full mt-4 gap-2">
-          <label className="cursor-pointer text-sm bg-blue-500 text-white px-3 py-2 rounded-lg hover:bg-blue-600 transition flex items-center gap-1"
-            onClick={handleBackToTextInput}>
+      <div className="mt-6 flex justify-between items-center flex-wrap gap-2">
+        {isDragDropVisible ? (
+          <label
+            className="cursor-pointer text-sm bg-blue-500 text-white px-3 py-2 rounded-lg hover:bg-blue-600 transition flex items-center gap-1"
+            onClick={handleBackToTextInput}
+          >
             Quay lại nhập văn bản
           </label>
-        </div>
-      )}
+        ) : (
+          <label
+            className="cursor-pointer text-sm bg-blue-500 text-white px-3 py-2 rounded-lg hover:bg-blue-600 transition flex items-center gap-1"
+            onClick={handleFileUploadClick}
+          >
+            Tải lên tài liệu
+          </label>
+        )}
 
-      <div className="mt-6 text-right">
         <button
           onClick={handleSubmit}
           disabled={isDisabled || isLoading}
@@ -271,6 +256,7 @@ const TextInput = ({
           )}
         </button>
       </div>
+
     </div>
   );
 };

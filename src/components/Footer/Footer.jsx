@@ -1,11 +1,21 @@
 "use client"
+import PropTypes from "prop-types"
 
-const Footer = () => {
+const Footer = ({ userInfo }) => {
     return (
         <div className="p-4 bg-white border-t border-gray-200 rounded-lg flex justify-between text-sm text-gray-500">
             <div className="flex gap-4">
-                <span className="cursor-pointer hover:underline">Chính sách bảo mật</span>
-                <span className="cursor-pointer hover:underline">Điều khoản sử dụng</span>
+                <div className="cursor-pointer">
+                    {userInfo?.role === "freeVersion" ? (
+                        <p className="text-sm font-semibold text-gray-600">
+                            Bạn đang ở phiên bản miễn phí
+                        </p>
+                    ) : (
+                        <p className="text-sm font-semibold text-gray-600">
+                            Bạn đang ở phiên bản trả phí
+                        </p>
+                    )}
+                </div>
             </div>
             <div>
                 <a
@@ -23,5 +33,13 @@ const Footer = () => {
         </div>
     )
 }
+
+Footer.propTypes = {
+    userInfo: PropTypes.shape({
+        role: PropTypes.string.isRequired,
+    }),
+    role: PropTypes.string.isRequired,
+}
+
 
 export default Footer
