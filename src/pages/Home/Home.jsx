@@ -227,7 +227,7 @@ export default function Home() {
                       <th className="px-4 py-3 text-left">Chủ đề</th>
                       <th className="px-4 py-3 text-left">Nội dung</th>
                       <th className="px-4 py-3 text-left">Ngày tạo</th>
-                      <th className="px-4 py-3 text-center">Hoạt động</th>
+                      <th className="px-4 py-3 text-center">Thao tác</th>
                     </tr>
                   </thead>
                   <tbody>
