@@ -3,17 +3,39 @@
 import { useState, useRef, useEffect } from "react"
 import PropTypes from "prop-types"
 import moment from "moment"
-import { Calendar, Eye, Edit3, Trash2, MoreHorizontal, Heart, FileText, RotateCcw } from "lucide-react"
+import {
+  Calendar, Eye, Edit3, Trash2, MoreHorizontal, Heart, FileText, RotateCcw,
+  FileText as HtmlIcon, FileText as PdfIcon, FileText as WordIcon, Download
+} from "lucide-react"
 import api from "../../services/api"
 import { toast } from "react-toastify"
 import ConfirmationDialog from "../ConfirmationDialog/ConfirmationDialog"
+import { jsPDF } from "jspdf"
+import html2canvas from 'html2canvas';
 
 const NoteCard = ({ note, onEdit, onView, onDelete, onRestore, onPermanentlyDelete, onUpdateSuccess }) => {
   const [showMenu, setShowMenu] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false)
   const [confirmDialogType, setConfirmDialogType] = useState(null)
+  const [showExportMenu, setShowExportMenu] = useState(false)
+
   const menuRef = useRef(null)
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setShowMenu(false)
+        setShowExportMenu(false)
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside)
+    }
+  }, [])
+
   const { _id, title, content, createdAt, isPinned, isDeleted, category } = note
 
   // Get card base color based on category or default
@@ -141,7 +163,281 @@ const NoteCard = ({ note, onEdit, onView, onDelete, onRestore, onPermanentlyDele
     }
   }, [])
 
-  // Update the card component to change text color on hover
+  //Handle export
+  const handleExport = (type) => {
+    setShowExportMenu(false)
+
+    switch (type) {
+      case 'html':
+        exportToHtml(note.title, note.content)
+        break
+      case 'pdf':
+        exportToPdf(note.title, note.content)
+        break
+      case 'word':
+        exportToWord(note.title, note.content)
+        break
+      default:
+        break
+    }
+  }
+
+  const exportToHtml = (title, content) => {
+    try {
+      const htmlContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <title>${title}</title>
+          <style>
+            body {
+              font-family: Arial, sans-serif;
+              line-height: 1.6;
+              padding: 20px;
+              max-width: 800px;
+              margin: 0 auto;
+              color: #333;
+            }
+            h1, h2, h3 {
+              color: #1f1c2f;
+              margin-top: 24px;
+              margin-bottom: 16px;
+            }
+            p {
+              margin-bottom: 16px;
+            }
+            ul, ol {
+              padding-left: 30px;
+              margin-bottom: 16px;
+            }
+            li {
+              margin-bottom: 8px;
+            }
+            strong {
+              font-weight: bold;
+            }
+            em {
+              font-style: italic;
+            }
+            u {
+              text-decoration: underline;
+            }
+            code {
+              font-family: monospace;
+              background-color: #f5f5f5;
+              padding: 2px 4px;
+              border-radius: 3px;
+            }
+            blockquote {
+              border-left: 4px solid #ddd;
+              padding-left: 15px;
+              color: #777;
+              margin-left: 0;
+            }
+          </style>
+        </head>
+        <body>
+          <h1>${title}</h1>
+          <div>${content}</div>
+        </body>
+        </html>
+      `;
+
+      const blob = new Blob([htmlContent], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${title}.html`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      toast.error("Lỗi khi xuất file HTML");
+      console.error("Export HTML error:", error);
+    }
+  };
+
+  const exportToPdf = async (title, content) => {
+    try {
+      const tempDiv = document.createElement('div');
+      tempDiv.style.width = '800px';
+      tempDiv.style.padding = '20px';
+      tempDiv.style.fontFamily = 'Arial, sans-serif';
+      tempDiv.style.lineHeight = '1.6';
+      tempDiv.innerHTML = `
+        <h1 style="color: #1f1c2f; margin-bottom: 20px;">${title}</h1>
+        <div>${content}</div>
+      `;
+      document.body.appendChild(tempDiv);
+
+      const canvas = await html2canvas(tempDiv, {
+        scale: 2,
+        logging: false,
+        useCORS: true,
+        allowTaint: true
+      });
+      document.body.removeChild(tempDiv);
+
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm'
+      });
+
+      const imgWidth = 210;
+      const pageHeight = 297;
+      const imgHeight = canvas.height * imgWidth / canvas.width;
+
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+
+      pdf.save(`${title}.pdf`);
+    } catch (error) {
+      toast.error("Lỗi khi xuất file PDF");
+      console.error("Export PDF error:", error);
+    }
+  };
+
+  const exportToWord = async (title, content) => {
+    try {
+      const { Document, Paragraph, TextRun, HeadingLevel } = await import('docx');
+
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = content;
+
+      const children = [];
+
+      children.push(
+        new Paragraph({
+          text: title,
+          heading: HeadingLevel.HEADING_1,
+          spacing: { after: 200 }
+        })
+      );
+
+      const processNodes = (nodes) => {
+        for (const node of nodes) {
+          if (node.nodeType === Node.TEXT_NODE) {
+            if (node.textContent.trim()) {
+              children.push(
+                new Paragraph({
+                  children: [new TextRun(node.textContent)],
+                  spacing: { after: 100 }
+                })
+              );
+            }
+          } else if (node.nodeType === Node.ELEMENT_NODE) {
+            const tagName = node.tagName.toLowerCase();
+            const text = node.textContent;
+
+            if (tagName === 'p') {
+              children.push(
+                new Paragraph({
+                  children: [new TextRun(text)],
+                  spacing: { after: 100 }
+                })
+              );
+            } else if (tagName === 'h1') {
+              children.push(
+                new Paragraph({
+                  text: text,
+                  heading: HeadingLevel.HEADING_1,
+                  spacing: { after: 200 }
+                })
+              );
+            } else if (tagName === 'h2') {
+              children.push(
+                new Paragraph({
+                  text: text,
+                  heading: HeadingLevel.HEADING_2,
+                  spacing: { after: 200 }
+                })
+              );
+            } else if (tagName === 'strong' || tagName === 'b') {
+              children.push(
+                new Paragraph({
+                  children: [new TextRun({ text: text, bold: true })],
+                  spacing: { after: 100 }
+                })
+              );
+            } else if (tagName === 'em' || tagName === 'i') {
+              children.push(
+                new Paragraph({
+                  children: [new TextRun({ text: text, italics: true })],
+                  spacing: { after: 100 }
+                })
+              );
+            } else if (tagName === 'u') {
+              children.push(
+                new Paragraph({
+                  children: [new TextRun({ text: text, underline: {} })],
+                  spacing: { after: 100 }
+                })
+              );
+            } else if (tagName === 'ul' || tagName === 'ol') {
+              const items = node.querySelectorAll('li');
+              items.forEach(item => {
+                children.push(
+                  new Paragraph({
+                    text: item.textContent,
+                    bullet: { level: 0 },
+                    spacing: { after: 100 }
+                  })
+                );
+              });
+            } else {
+              // Xử lý các tag khác
+              children.push(
+                new Paragraph({
+                  children: [new TextRun(text)],
+                  spacing: { after: 100 }
+                })
+              );
+            }
+          }
+        }
+      };
+
+      processNodes(tempDiv.childNodes);
+
+      // Tạo document
+      const doc = new Document({
+        sections: [{
+          properties: {},
+          children: children
+        }]
+      });
+
+      // Xuất file
+      const { Packer } = await import('docx');
+      const blob = await Packer.toBlob(doc);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${title}.docx`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+    } catch (error) {
+      toast.error("Lỗi khi xuất file Word");
+      console.error("Export Word error:", error);
+    }
+  };
+
   return (
     <>
       <div
@@ -171,11 +467,13 @@ const NoteCard = ({ note, onEdit, onView, onDelete, onRestore, onPermanentlyDele
                   onClick={handleTogglePin}
                 />
               )}
+
               <MoreHorizontal
                 className={`h-5 w-5 cursor-pointer ${isHovered ? "text-white" : "text-gray-600"}`}
                 onClick={(e) => {
                   e.stopPropagation()
                   setShowMenu(!showMenu)
+                  setShowExportMenu(false)
                 }}
               />
             </div>
@@ -246,6 +544,47 @@ const NoteCard = ({ note, onEdit, onView, onDelete, onRestore, onPermanentlyDele
                 <Calendar className="h-4 w-4 mr-1 inline" />
                 <span>{moment(createdAt).format("DD/MM/YYYY")}</span>
               </div>
+            </div>
+
+            <div className="flex items-center relative">
+              <button
+                className={`p-1 flex rounded-lg ${isHovered ? "text-white hover:bg-opacity-20" : "text-gray-500 hover:bg-gray-200"}`}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setShowExportMenu(!showExportMenu)
+                }}
+              >
+                <Download className="h-4 w-4" />
+                <span className="ml-2">Xuất file</span>
+              </button>
+
+              {/* Export Menu */}
+              {showExportMenu && (
+                <div
+                  ref={menuRef}
+                  className="absolute right-0 bottom-full bg-white shadow-lg rounded-md py-2 z-20 w-32"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div
+                    className="px-4 py-2 hover:bg-gray-100 flex items-center cursor-pointer"
+                    onClick={() => handleExport('html')}
+                  >
+                    <HtmlIcon className="h-4 w-4 mr-2 text-blue-500" /> HTML
+                  </div>
+                  <div
+                    className="px-4 py-2 hover:bg-gray-100 flex items-center cursor-pointer"
+                    onClick={() => handleExport('pdf')}
+                  >
+                    <PdfIcon className="h-4 w-4 mr-2 text-red-500" /> PDF
+                  </div>
+                  <div
+                    className="px-4 py-2 hover:bg-gray-100 flex items-center cursor-pointer"
+                    onClick={() => handleExport('word')}
+                  >
+                    <WordIcon className="h-4 w-4 mr-2 text-blue-600" /> Word
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
