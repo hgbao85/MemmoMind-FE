@@ -13,6 +13,7 @@ import { updateUserCost } from "../../redux/user/userSlice";
 import { useDispatch } from "react-redux";
 import Summarize from '../../components/Sidebar/Summarize';
 import Footer from '../../components/Footer/Footer';
+import Header from '../../components/Header/Header';
 
 const SummarizePage = () => {
   const { currentUser } = useSelector((state) => state.user);
@@ -30,6 +31,7 @@ const SummarizePage = () => {
   const [addEditType, setAddEditType] = useState("add");
   const [uploadedFile, setUploadedFile] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [progress, setProgress] = useState(0);
 
   useEffect(() => {
     if (!initialUserCheck.current) {
@@ -59,6 +61,22 @@ const SummarizePage = () => {
       toast.error("Lỗi khi lấy thông tin người dùng!");
     }
   };
+
+  useEffect(() => {
+    if (!userInfo) return;
+
+    if (userInfo.role === "freeVersion") {
+      if (userInfo.totalFreeCost !== 0 && userInfo.freeCost !== undefined) {
+        const percentage = (userInfo.freeCost / userInfo.totalFreeCost) * 100;
+        setProgress(Math.min(percentage, 100));
+      }
+    } else if (userInfo.role === "costVersion") {
+      if (userInfo.totalPurchasedCost !== 0 && userInfo.totalCost !== undefined) {
+        const percentage = (userInfo.totalCost / userInfo.totalPurchasedCost) * 100;
+        setProgress(Math.min(percentage, 100));
+      }
+    }
+  }, [userInfo]);
 
   const handleChange = (e) => {
     const value = e.target.value;
@@ -141,7 +159,7 @@ const SummarizePage = () => {
       }
 
       const response = await axios.post(
-        "http://vietserver.ddns.net:6082/summarize",
+        "http://localhost:6082/summarize",
         payload,
         {
           headers: { "Content-Type": "application/json" },
@@ -192,13 +210,7 @@ const SummarizePage = () => {
     <div className="flex h-screen bg-gray-100">
       <Sidebar />
       <div className="flex-1 flex flex-col overflow-hidden">
-        <div className="m-4 p-4 rounded-lg bg-white border-b border-gray-200 shadow-sm">
-          <div className="flex items-center">
-            <div className="flex-1">
-              <h2 className="text-xl font-bold mb-2">Tạo tóm tắt</h2>
-            </div>
-          </div>
-        </div>
+        <Header progress={progress} />
         <div className="flex-1 overflow-auto p-4">
           <TextInput
             fileContent={fileContent}
