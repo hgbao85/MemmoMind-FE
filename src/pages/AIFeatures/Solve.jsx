@@ -13,6 +13,7 @@ import { updateUserCost } from "../../redux/user/userSlice";
 import { useDispatch } from "react-redux";
 import Solve from '../../components/Sidebar/Solve';
 import Footer from '../../components/Footer/Footer';
+import Header from '../../components/Header/Header';
 
 const SolvePage = () => {
     const { currentUser } = useSelector((state) => state.user);
@@ -30,6 +31,7 @@ const SolvePage = () => {
     const [addEditType, setAddEditType] = useState("add");
     const [uploadedFile, setUploadedFile] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
+    const [progress, setProgress] = useState(0);
 
     useEffect(() => {
         if (!initialUserCheck.current) {
@@ -59,6 +61,22 @@ const SolvePage = () => {
             toast.error("Lỗi khi lấy thông tin người dùng!");
         }
     };
+
+    useEffect(() => {
+        if (!userInfo) return;
+
+        if (userInfo.role === "freeVersion") {
+            if (userInfo.totalFreeCost !== 0 && userInfo.freeCost !== undefined) {
+                const percentage = (userInfo.freeCost / userInfo.totalFreeCost) * 100;
+                setProgress(Math.min(percentage, 100));
+            }
+        } else if (userInfo.role === "costVersion") {
+            if (userInfo.totalPurchasedCost !== 0 && userInfo.totalCost !== undefined) {
+                const percentage = (userInfo.totalCost / userInfo.totalPurchasedCost) * 100;
+                setProgress(Math.min(percentage, 100));
+            }
+        }
+    }, [userInfo]);
 
     const handleChange = (e) => {
         const value = e.target.value;
@@ -143,7 +161,7 @@ const SolvePage = () => {
 
             // Gửi yêu cầu đến API giải bài tập
             const response = await axios.post(
-                "http://vietserver.ddns.net:6082/ommi-solver",
+                "http://localhost:6082/ommi-solver",
                 payload,
                 {
                     headers: { "Content-Type": "application/json" },
@@ -200,13 +218,7 @@ const SolvePage = () => {
         <div className="flex h-screen bg-gray-100">
             <Sidebar />
             <div className="flex-1 flex flex-col overflow-hidden">
-                <div className="m-4 p-4 rounded-lg bg-white border-b border-gray-200 shadow-sm">
-                    <div className="flex items-center">
-                        <div className="flex-1">
-                            <h2 className="text-xl font-bold mb-2">Hỗ trợ làm bài</h2>
-                        </div>
-                    </div>
-                </div>
+                <Header progress={progress} />
                 <div className="flex-1 overflow-auto p-4">
                     <TextInput
                         fileContent={fileContent}

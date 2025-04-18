@@ -14,6 +14,7 @@ import { useDispatch } from "react-redux";
 import PowerPoint from '../../components/Sidebar/PowerPoint';
 import PaymentModal from '../../components/PaymentModal.jsx/PaymentModal';
 import Footer from '../../components/Footer/Footer';
+import Header from '../../components/Header/Header';
 
 const PowerPointPage = () => {
     const { currentUser } = useSelector((state) => state.user);
@@ -31,6 +32,7 @@ const PowerPointPage = () => {
     const [isLoading, setIsLoading] = useState(false);
     const isPopupOpen = useSelector((state) => state.payment.isPopupOpen);
     const [amount, setAmount] = useState(1000);
+    const [progress, setProgress] = useState(0);
 
 
     useEffect(() => {
@@ -61,6 +63,22 @@ const PowerPointPage = () => {
             toast.error("Lỗi khi lấy thông tin người dùng!");
         }
     };
+
+    useEffect(() => {
+        if (!userInfo) return;
+
+        if (userInfo.role === "freeVersion") {
+            if (userInfo.totalFreeCost !== 0 && userInfo.freeCost !== undefined) {
+                const percentage = (userInfo.freeCost / userInfo.totalFreeCost) * 100;
+                setProgress(Math.min(percentage, 100));
+            }
+        } else if (userInfo.role === "costVersion") {
+            if (userInfo.totalPurchasedCost !== 0 && userInfo.totalCost !== undefined) {
+                const percentage = (userInfo.totalCost / userInfo.totalPurchasedCost) * 100;
+                setProgress(Math.min(percentage, 100));
+            }
+        }
+    }, [userInfo]);
 
     const handleChange = (e) => {
         const value = e.target.value;
@@ -131,7 +149,7 @@ const PowerPointPage = () => {
 
             // Gửi yêu cầu API để tạo PowerPoint
             const response = await axios.post(
-                "http://vietserver.ddns.net:6082/powpoint-create",
+                "http://localhost:6082/powpoint-create",
                 payload,
                 {
                     headers: { "Content-Type": "application/json" },
@@ -220,7 +238,7 @@ const PowerPointPage = () => {
 
         try {
             const response = await axios.post(
-                "http://vietserver.ddns.net:6082/powpoint-download",
+                "http://localhost:6082/powpoint-download",
                 { powpointPath: pptxFilename },
                 {
                     headers: { "Content-Type": "application/json" },
@@ -248,13 +266,7 @@ const PowerPointPage = () => {
         <div className="flex h-screen bg-gray-100">
             <Sidebar />
             <div className="flex-1 flex flex-col overflow-hidden">
-                <div className="m-4 p-4 rounded-lg bg-white border-b border-gray-200 shadow-sm">
-                    <div className="flex items-center">
-                        <div className="flex-1">
-                            <h2 className="text-xl font-bold mb-2">Tạo PowerPoint</h2>
-                        </div>
-                    </div>
-                </div>
+                <Header progress={progress} />
                 <div className="flex-1 overflow-auto p-4">
                     <TextInput
                         fileContent={fileContent}
